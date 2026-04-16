@@ -5,11 +5,10 @@ import { MOCK_OFFICES } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 
-interface OfficesListProps {
-  onSelectOffice: (id: string) => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
-export const OfficesList: React.FC<OfficesListProps> = ({ onSelectOffice }) => {
+export const OfficesList: React.FC = () => {
+  const navigate = useNavigate();
   const { t, language, dir } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
@@ -23,9 +22,9 @@ export const OfficesList: React.FC<OfficesListProps> = ({ onSelectOffice }) => {
 
       <div className="space-y-4">
         {MOCK_OFFICES.map(office => (
-          <GlassCard 
-            key={office.id} 
-            onClick={() => onSelectOffice(office.id)} 
+          <GlassCard
+            key={office.id}
+            onClick={() => navigate({ to: '/office/$officeId', params: { officeId: office.id } } as any)}
             className="flex items-center justify-between group"
           >
             <div className="flex items-center gap-4">
@@ -36,15 +35,11 @@ export const OfficesList: React.FC<OfficesListProps> = ({ onSelectOffice }) => {
                   <MapPin size={12} className="me-1" />
                   {office.location[language]}
                 </div>
-                <div className="flex items-center text-xs text-secondary mt-0.5">
-                  <Star size={12} className="me-1 text-yellow-400 fill-yellow-400" />
-                  <span className="font-medium text-primary me-1">{office.rating}</span>
-                  <span>({office.reviewCount})</span>
-                </div>
+
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(office.id); }}
                 className={`p-2 rounded-full transition-colors ${isFavorite(office.id) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
               >

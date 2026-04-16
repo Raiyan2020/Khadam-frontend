@@ -5,11 +5,10 @@ import { useLanguage } from '../i18n';
 import { useTheme, Theme } from '../theme';
 import { GlassCard } from '../components/GlassUI';
 
-interface SettingsProps {
-  onBack: () => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
-export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
+export const Settings: React.FC = () => {
+  const navigate = useNavigate();
   const { language, setLanguage, t, dir } = useLanguage();
   const { theme, setTheme } = useTheme();
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
@@ -19,7 +18,7 @@ export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
       {/* Header */}
       <div className="flex items-center gap-4 px-5 pt-8 mb-6">
         <button 
-          onClick={onBack} 
+          onClick={() => navigate({ to: '/profile' })} 
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
         >
           <BackIcon size={20} />

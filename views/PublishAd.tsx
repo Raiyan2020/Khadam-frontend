@@ -6,12 +6,12 @@ import { ServiceCategory } from '../types';
 import { useLanguage } from '../i18n';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
 
-interface PublishAdProps {
-  onBack: () => void;
-  adId?: string;
-}
+import { useNavigate } from '@tanstack/react-router';
+import { useSearch } from '@tanstack/react-router';
 
-export const PublishAd: React.FC<PublishAdProps> = ({ onBack, adId }) => {
+export const PublishAd: React.FC = () => {
+  const { adId } = useSearch({ strict: false }) as { adId?: string };
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const { t, language } = useLanguage();
 
@@ -34,7 +34,7 @@ export const PublishAd: React.FC<PublishAdProps> = ({ onBack, adId }) => {
   return (
     <div className="px-5 pt-8 pb-20">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={onBack} className="text-secondary hover:text-primary"><X size={24} /></button>
+        <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary"><X size={24} /></button>
         <h1 className="text-2xl font-bold text-primary">{isEditing ? t('edit_ad') : t('new_listing')}</h1>
         <div className="w-6" /> {/* Spacer to keep title centered if needed, or just let it be */}
       </div>
@@ -116,7 +116,7 @@ export const PublishAd: React.FC<PublishAdProps> = ({ onBack, adId }) => {
            {step < 3 ? (
              <Button className="flex-1" onClick={() => setStep(s => s + 1)}>{t('next_step')}</Button>
            ) : (
-             <Button className="flex-1" onClick={onBack}>{isEditing ? t('save_changes') : t('publish_now')}</Button>
+             <Button className="flex-1" onClick={() => navigate({ to: '/my-ads' })}>{isEditing ? t('save_changes') : t('publish_now')}</Button>
            )}
         </div>
       </div>

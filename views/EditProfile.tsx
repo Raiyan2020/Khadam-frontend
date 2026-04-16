@@ -4,12 +4,12 @@ import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 
-interface EditProfileProps {
-  onBack: () => void;
-  userRole: UserRole;
-}
+import { useNavigate } from '@tanstack/react-router';
+import { useUserRole } from '../UserRoleContext';
 
-export const EditProfile: React.FC<EditProfileProps> = ({ onBack, userRole }) => {
+export const EditProfile: React.FC = () => {
+  const navigate = useNavigate();
+  const { userRole } = useUserRole();
   const { t, dir } = useLanguage();
   const isSeeker = userRole === UserRole.SEEKER;
 
@@ -37,7 +37,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onBack, userRole }) =>
   const handleSave = () => {
     // Implement save logic here
     console.log('Saving profile data:', formData);
-    onBack();
+    navigate({ to: '/profile' });
   };
 
   return (
@@ -45,7 +45,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onBack, userRole }) =>
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
         <button 
-          onClick={onBack}
+          onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

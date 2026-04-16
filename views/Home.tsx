@@ -8,14 +8,7 @@ import { ServiceCategory, Ad, Office, Worker } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
 
-interface HomeProps {
-  onSelectWorker: (id: string) => void;
-  onSelectOffice: (id: string) => void;
-  onNavigateNotifications: () => void;
-  onSelectNationality: (nationality: string) => void;
-  onViewAll: (filterType: string) => void;
-  onSearch: (query: string, category: string) => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -30,7 +23,8 @@ const handleFlagError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   }
 };
 
-export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNavigateNotifications, onSelectNationality, onViewAll, onSearch }) => {
+export const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -122,7 +116,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
     const newHistory = [id, ...lastViewedIds.filter(v => v !== id)].slice(0, 10);
     setLastViewedIds(newHistory);
     localStorage.setItem('last_viewed_workers', JSON.stringify(newHistory));
-    onSelectWorker(id);
+    navigate({ to: '/worker/$workerId', params: { workerId: id } } as any);
   };
 
   return (
@@ -143,7 +137,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
             </div>
           </div>
           <button 
-            onClick={onNavigateNotifications}
+            onClick={() => navigate({ to: '/notifications' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
             aria-label={t('nav_notifications')}
           >
@@ -161,7 +155,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                onSearch(searchQuery, activeCategory);
+                navigate({ to: '/search', search: { query: searchQuery, category: activeCategory !== 'All' ? activeCategory : undefined } });
               }
             }}
           />
@@ -201,7 +195,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
               {NATIONALITIES.map(nat => (
                 <div 
                   key={nat.name.en}
-                  onClick={() => onSelectNationality(nat.name.en)}
+                  onClick={() => navigate({ to: '/country/$nationality', params: { nationality: nat.name.en } } as any)}
                   className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
                 >
                   <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
@@ -219,7 +213,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
         </section>
 
         {continueViewed.length > 0 && (
-          <SectionContainer title={t('section_continue')} onViewAll={() => onViewAll('continue')}>
+          <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue' } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {continueViewed.map(worker => (
                 <CompactCard 
@@ -234,7 +228,7 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
         )}
 
         {availableNow.length > 0 && (
-          <SectionContainer title={t('section_available')} onViewAll={() => onViewAll('available')}>
+          <SectionContainer title={t('section_available')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'available' } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {availableNow.map(worker => (
                 <CompactCard 
@@ -248,14 +242,14 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
           </SectionContainer>
         )}
 
-        <SectionContainer title={t('section_newest')} onViewAll={() => onViewAll('newest')}>
+        <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest' } })}>
           <div className="px-5 space-y-4">
             {newestListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={onSelectOffice}
+                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
                 t={t}
                 dir={dir}
@@ -264,14 +258,14 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
           </div>
         </SectionContainer>
 
-        <SectionContainer title={t('section_budget')} onViewAll={() => onViewAll('budget')}>
+        <SectionContainer title={t('section_budget')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'budget' } })}>
           <div className="px-5 space-y-4">
             {budgetListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={onSelectOffice}
+                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
                 t={t}
                 dir={dir}
@@ -280,14 +274,14 @@ export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNa
           </div>
         </SectionContainer>
 
-        <SectionContainer title={t('section_experience')} onViewAll={() => onViewAll('experience')}>
+        <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience' } })}>
           <div className="px-5 space-y-4">
             {experiencedListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={onSelectOffice}
+                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
                 t={t}
                 dir={dir}

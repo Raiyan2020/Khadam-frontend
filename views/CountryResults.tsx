@@ -6,19 +6,16 @@ import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 import { GlassCard, Badge, Avatar } from '../components/GlassUI';
 
-interface CountryResultsProps {
-  nationality: string;
-  onBack: () => void;
-  onSelectWorker: (id: string) => void;
-  onSelectOffice: (id: string) => void;
-}
+import { useNavigate, useParams } from '@tanstack/react-router';
 
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
   e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
 };
 
-export const CountryResults: React.FC<CountryResultsProps> = ({ nationality, onBack, onSelectWorker, onSelectOffice }) => {
+export const CountryResults: React.FC = () => {
+  const { nationality } = useParams({ strict: false }) as { nationality: string };
+  const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
 
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
@@ -63,7 +60,7 @@ export const CountryResults: React.FC<CountryResultsProps> = ({ nationality, onB
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
           <button 
-            onClick={onBack}
+            onClick={() => navigate({ to: '/' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -120,8 +117,8 @@ export const CountryResults: React.FC<CountryResultsProps> = ({ nationality, onB
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
-                onSelect={() => onSelectWorker(worker.id)}
-                onSelectOffice={onSelectOffice}
+                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
+                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
                 t={t}
                 dir={dir}

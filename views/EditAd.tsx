@@ -5,12 +5,11 @@ import { ServiceCategory } from '../types';
 import { useLanguage } from '../i18n';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
 
-interface EditAdProps {
-  adId: string;
-  onBack: () => void;
-}
+import { useNavigate, useParams } from '@tanstack/react-router';
 
-export const EditAd: React.FC<EditAdProps> = ({ adId, onBack }) => {
+export const EditAd: React.FC = () => {
+  const { adId } = useParams({ strict: false }) as { adId: string };
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   
   const ad = MOCK_ADS.find(a => a.id === adId);
@@ -33,7 +32,7 @@ export const EditAd: React.FC<EditAdProps> = ({ adId, onBack }) => {
   return (
     <div className="px-5 pt-8 pb-20">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={onBack} className="text-secondary hover:text-primary"><X size={24} /></button>
+        <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary"><X size={24} /></button>
         <h1 className="text-2xl font-bold text-primary">{t('edit_ad')}</h1>
         <div className="w-6" />
       </div>
@@ -90,7 +89,7 @@ export const EditAd: React.FC<EditAdProps> = ({ adId, onBack }) => {
         <InputGroup label={t('contact_phone')} placeholder="965 XXXXXXXX" defaultValue="965 12345678" />
 
         <div className="pt-4">
-          <Button fullWidth onClick={onBack}>{t('save_changes')}</Button>
+          <Button fullWidth onClick={() => navigate({ to: '/my-ads' })}>{t('save_changes')}</Button>
         </div>
       </div>
     </div>

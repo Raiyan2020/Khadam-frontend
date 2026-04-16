@@ -3,11 +3,10 @@ import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Twitter, Faceb
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 
-interface HelpSupportProps {
-  onBack: () => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
-export const HelpSupport: React.FC<HelpSupportProps> = ({ onBack }) => {
+export const HelpSupport: React.FC = () => {
+  const navigate = useNavigate();
   const { t, dir } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,7 +27,7 @@ export const HelpSupport: React.FC<HelpSupportProps> = ({ onBack }) => {
     <div className="pb-20 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
         <button 
-          onClick={onBack}
+          onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

@@ -3,15 +3,13 @@ import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon } from 'lucide-react';
 
-interface SignUpProps {
-  onSignUpSuccess: () => void;
-  onBackToLogin: () => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
 type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE' | 'OTP' | 'PROFILE_SETUP';
 type AccountType = 'PERSONAL' | 'BUSINESS' | null;
 
-export const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess, onBackToLogin }) => {
+export const SignUp: React.FC = () => {
+  const navigate = useNavigate();
   const { t, dir } = useLanguage();
   const [step, setStep] = useState<SignUpStep>('ACCOUNT_TYPE');
   const [accountType, setAccountType] = useState<AccountType>(null);
@@ -48,7 +46,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess, onBackToLogin }
   const handleCompleteProfile = (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically save the profile data
-    onSignUpSuccess();
+    navigate({ to: '/' });
   };
 
   const renderAccountType = () => (
@@ -314,7 +312,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess, onBackToLogin }
       <div className="absolute top-5 start-5 z-20">
         <button 
           onClick={() => {
-            if (step === 'ACCOUNT_TYPE') onBackToLogin();
+            if (step === 'ACCOUNT_TYPE') navigate({ to: '/login' });
             else if (step === 'PHONE') setStep('ACCOUNT_TYPE');
             else if (step === 'OTP') setStep('PHONE');
             else if (step === 'PROFILE_SETUP') setStep('OTP');
@@ -335,7 +333,7 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess, onBackToLogin }
           <p className="text-sm text-secondary">
             {t('already_have_account') || "Already have an account?"}{' '}
             <button 
-              onClick={onBackToLogin}
+              onClick={() => navigate({ to: '/login' })}
               className="text-brand-500 font-bold hover:underline"
             >
               {t('sign_in') || 'Sign in'}

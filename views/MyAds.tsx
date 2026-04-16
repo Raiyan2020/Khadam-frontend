@@ -4,13 +4,10 @@ import { GlassCard, Button, Badge } from '../components/GlassUI';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 
-interface MyAdsProps {
-  onPublish: () => void;
-  onEditAd: (id: string) => void;
-  onSelectWorker: (id: string) => void;
-}
+import { useNavigate } from '@tanstack/react-router';
 
-export const MyAds: React.FC<MyAdsProps> = ({ onPublish, onEditAd, onSelectWorker }) => {
+export const MyAds: React.FC = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   
   // Simulate logged-in office (ID: o1)
@@ -25,7 +22,7 @@ export const MyAds: React.FC<MyAdsProps> = ({ onPublish, onEditAd, onSelectWorke
     <div className="pb-24 pt-6 px-5">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-primary">{t('my_ads_title')}</h1>
-        <Button onClick={onPublish} className="!h-9 !px-3 gap-2 !text-xs">
+        <Button onClick={() => navigate({ to: '/publish-ad' })} className="!h-9 !px-3 gap-2 !text-xs">
           <Plus size={16} />
           {t('post_new_ad')}
         </Button>
@@ -43,7 +40,7 @@ export const MyAds: React.FC<MyAdsProps> = ({ onPublish, onEditAd, onSelectWorke
             
             return (
               <GlassCard key={ad.id} className="group">
-                <div className="flex gap-3 mb-3" onClick={() => onSelectWorker(worker.id)}>
+                <div className="flex gap-3 mb-3" onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}>
                    <img 
                       src={worker.photo} 
                       alt={worker.name[language]} 
@@ -64,13 +61,13 @@ export const MyAds: React.FC<MyAdsProps> = ({ onPublish, onEditAd, onSelectWorke
                 <div className="flex gap-2 pt-3 border-t border-border">
                    <button 
                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => onSelectWorker(worker.id)}
+                     onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
                    >
                       <Eye size={14} /> {t('action_view')}
                    </button>
                    <button 
                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => onEditAd(ad.id)}
+                     onClick={() => navigate({ to: '/edit-ad/$adId', params: { adId: ad.id } } as any)}
                    >
                       <Edit2 size={14} /> {t('action_edit')}
                    </button>

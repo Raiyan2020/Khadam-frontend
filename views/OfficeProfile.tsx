@@ -6,13 +6,11 @@ import { MOCK_OFFICES, MOCK_ADS, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 
-interface OfficeProfileProps {
-  officeId: string;
-  onBack: () => void;
-  onSelectWorker: (id: string) => void;
-}
+import { useNavigate, useParams } from '@tanstack/react-router';
 
-export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId, onBack, onSelectWorker }) => {
+export const OfficeProfile: React.FC = () => {
+  const { officeId } = useParams({ strict: false }) as { officeId: string };
+  const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const office = MOCK_OFFICES.find(o => o.id === officeId);
@@ -63,7 +61,7 @@ export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId, onBack, 
         
         <div className="absolute top-5 start-5 z-20">
            <button 
-             onClick={onBack} 
+             onClick={() => { if (window.history.length > 1) { navigate({ to: '..' }); } else { navigate({ to: '/' }); } }} 
              className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/30 transition-colors"
            >
             <BackIcon size={20} />
@@ -140,7 +138,7 @@ export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId, onBack, 
                return (
                  <div 
                    key={ad.id} 
-                   onClick={() => onSelectWorker(worker.id)} 
+                   onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)} 
                    className="cursor-pointer group animate-in fade-in slide-in-from-bottom-2 duration-300"
                  >
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden relative border border-border bg-glass shadow-sm">

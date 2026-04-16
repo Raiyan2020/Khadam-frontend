@@ -1,20 +1,25 @@
 import React from 'react';
 import { Home, Heart, User, Building2, LayoutList, Inbox } from 'lucide-react';
-import { ViewState, UserRole } from '../types';
+import { useLocation, useNavigate } from '@tanstack/react-router';
+import { UserRole } from '../types';
 import { useLanguage } from '../i18n';
+import { useUserRole } from '../UserRoleContext';
 
 interface LayoutProps {
   children: React.ReactNode;
-  currentView: ViewState;
-  onNavigate: (view: ViewState) => void;
-  userRole: UserRole;
-  hideNav?: boolean;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, userRole, hideNav }) => {
+export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t, dir } = useLanguage();
+  const { userRole } = useUserRole();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const isSeeker = userRole === UserRole.SEEKER;
+  const hideNav = location.pathname === '/login' || location.pathname === '/sign-up';
+
+  const isHomeActive = location.pathname === '/' || location.pathname.startsWith('/country') || location.pathname.startsWith('/search');
+  const isProfileActive = location.pathname === '/profile' || location.pathname === '/settings';
 
   return (
     <div className="h-screen w-full flex justify-center bg-[var(--bg-app)] transition-colors duration-300 overflow-hidden" dir={dir}>
@@ -34,8 +39,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
               <NavItem 
                 icon={<Home size={22} />} 
                 label={t('nav_home')} 
-                isActive={currentView.type === 'HOME' || currentView.type === 'COUNTRY_RESULTS' || currentView.type === 'SEARCH_RESULTS'} 
-                onClick={() => onNavigate({ type: 'HOME' })} 
+                isActive={isHomeActive} 
+                onClick={() => navigate({ to: '/' })} 
               />
 
               {isSeeker ? (
@@ -43,14 +48,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
                   <NavItem 
                     icon={<Heart size={22} />} 
                     label={t('nav_saved')} 
-                    isActive={currentView.type === 'FAVORITES'} 
-                    onClick={() => onNavigate({ type: 'FAVORITES' })} 
+                    isActive={location.pathname === '/favorites'} 
+                    onClick={() => navigate({ to: '/favorites' })} 
                   />
                   <NavItem 
                     icon={<Building2 size={22} />} 
                     label={t('nav_offices')} 
-                    isActive={currentView.type === 'OFFICES_LIST'} 
-                    onClick={() => onNavigate({ type: 'OFFICES_LIST' })} 
+                    isActive={location.pathname === '/offices'} 
+                    onClick={() => navigate({ to: '/offices' })} 
                   />
                 </>
               ) : (
@@ -58,14 +63,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
                   <NavItem 
                     icon={<LayoutList size={22} />} 
                     label={t('nav_my_ads')} 
-                    isActive={currentView.type === 'MY_ADS'} 
-                    onClick={() => onNavigate({ type: 'MY_ADS' })} 
+                    isActive={location.pathname === '/my-ads'} 
+                    onClick={() => navigate({ to: '/my-ads' })} 
                   />
                   <NavItem 
                     icon={<Inbox size={22} />} 
                     label={t('nav_leads')} 
-                    isActive={currentView.type === 'LEADS'} 
-                    onClick={() => onNavigate({ type: 'LEADS' })} 
+                    isActive={location.pathname === '/leads'} 
+                    onClick={() => navigate({ to: '/leads' })} 
                   />
                 </>
               )}
@@ -73,8 +78,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
               <NavItem 
                 icon={<User size={22} />} 
                 label={t('nav_profile')} 
-                isActive={currentView.type === 'USER_PROFILE' || currentView.type === 'SETTINGS'} 
-                onClick={() => onNavigate({ type: 'USER_PROFILE' })} 
+                isActive={isProfileActive} 
+                onClick={() => navigate({ to: '/profile' })} 
               />
             </div>
           </div>

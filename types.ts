@@ -62,23 +62,3 @@ export interface Ad {
   postedAt: string;
   featured: boolean;
 }
-
-export type ViewState = 
-  | { type: 'HOME' }
-  | { type: 'OFFICE_PROFILE'; officeId: string }
-  | { type: 'WORKER_PROFILE'; workerId: string }
-  | { type: 'PUBLISH_AD' }
-  | { type: 'FAVORITES' }
-  | { type: 'COUNTRY_RESULTS'; nationality: string }
-  | { type: 'SEARCH_RESULTS'; filterType?: string; category?: string; query?: string }
-  | { type: 'OFFICES_LIST' }
-  | { type: 'MY_ADS' }
-  | { type: 'LEADS' }
-  | { type: 'USER_PROFILE' }
-  | { type: 'SETTINGS' }
-  | { type: 'NOTIFICATIONS' }
-  | { type: 'LOGIN' }
-  | { type: 'SIGN_UP' }
-  | { type: 'HELP_SUPPORT' }
-  | { type: 'EDIT_PROFILE' }
-  | { type: 'EDIT_AD'; adId: string };

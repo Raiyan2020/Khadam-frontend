@@ -7,13 +7,11 @@ import { Worker, Office, ServiceCategory } from '../types';
 import { MOCK_OFFICES, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 
-interface WorkerProfileProps {
-  workerId: string;
-  onBack: () => void;
-  onNavigateOffice: (id: string) => void;
-}
+import { useNavigate, useParams } from '@tanstack/react-router';
 
-export const WorkerProfile: React.FC<WorkerProfileProps> = ({ workerId, onBack, onNavigateOffice }) => {
+export const WorkerProfile: React.FC = () => {
+  const { workerId } = useParams({ strict: false }) as { workerId: string };
+  const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
   const worker = MOCK_WORKERS.find(w => w.id === workerId);
   const office = worker ? MOCK_OFFICES.find(o => o.id === worker.officeId) : null;
@@ -50,7 +48,7 @@ export const WorkerProfile: React.FC<WorkerProfileProps> = ({ workerId, onBack, 
         
         {/* Nav Header */}
         <div className="absolute top-0 left-0 right-0 p-5 flex justify-between items-center z-20">
-          <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
+          <button onClick={() => { if (window.history.length > 1) { navigate({ to: '..' }); } else { navigate({ to: '/' }); } }} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
             <BackIcon size={20} />
           </button>
           <div className="flex gap-2">
@@ -90,7 +88,7 @@ export const WorkerProfile: React.FC<WorkerProfileProps> = ({ workerId, onBack, 
       </div>
 
       <div className="px-5 mt-6 space-y-6">
-        <GlassCard onClick={() => onNavigateOffice(office.id)} className="flex items-center justify-between !py-3 hover:border-brand-300 transition-colors">
+        <GlassCard onClick={() => navigate({ to: '/office/$officeId', params: { officeId: office.id } } as any)} className="flex items-center justify-between !py-3 hover:border-brand-300 transition-colors">
           <div className="flex items-center gap-3">
             <img src={office.avatar} alt={office.name[language]} className="w-10 h-10 rounded-full border border-border" />
             <div>

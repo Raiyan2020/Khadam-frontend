@@ -6,16 +6,11 @@ import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 import { GlassCard, Avatar, Badge } from '../components/GlassUI';
 
-interface SearchResultsProps {
-  filterType?: string;
-  category?: string;
-  query?: string;
-  onBack: () => void;
-  onSelectWorker: (id: string) => void;
-  onSelectOffice: (id: string) => void;
-}
+import { useNavigate, useSearch } from '@tanstack/react-router';
 
-export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, category, query, onBack, onSelectWorker, onSelectOffice }) => {
+export const SearchResults: React.FC = () => {
+  const { filterType, category, query } = useSearch({ strict: false }) as { filterType?: string, category?: string, query?: string };
+  const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
   
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>(
@@ -99,7 +94,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
           <button 
-            onClick={onBack}
+            onClick={() => navigate({ to: '/' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -149,8 +144,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
-                onSelect={() => onSelectWorker(worker.id)}
-                onSelectOffice={onSelectOffice}
+                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
+                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
                 t={t}
                 dir={dir}
