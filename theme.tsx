@@ -34,7 +34,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     try {
-      localStorage.setItem('app_theme', newTheme);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app_theme', newTheme);
+      }
     } catch (e) {
       // Ignore localStorage errors
     }

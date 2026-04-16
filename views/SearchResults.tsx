@@ -57,7 +57,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
         filtered.sort((a, b) => b.experienceYears - a.experienceYears);
         break;
       case 'continue':
-        const saved = localStorage.getItem('last_viewed_workers');
+        const saved = typeof window !== 'undefined' ? localStorage.getItem('last_viewed_workers') : null;
         const lastViewedIds: string[] = saved ? JSON.parse(saved) : [];
         filtered = filtered.filter(w => lastViewedIds.includes(w.id));
         filtered.sort((a, b) => lastViewedIds.indexOf(a.id) - lastViewedIds.indexOf(b.id));

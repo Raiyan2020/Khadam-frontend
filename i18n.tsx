@@ -351,6 +351,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize default language to 'ar' unless a saved preference exists
   const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'ar';
     try {
       const savedLang = localStorage.getItem('app_language') as Language;
       return (savedLang === 'en' || savedLang === 'ar') ? savedLang : 'ar';
@@ -361,7 +362,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('app_language', lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('app_language', lang);
+    }
   };
 
   const dir = language === 'ar' ? 'rtl' : 'ltr';
