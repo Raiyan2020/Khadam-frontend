@@ -221,7 +221,7 @@ export const SignUp: React.FC = () => {
 
               {/* Website */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary px-1">{t('website') || 'Website (Optional)'}</label>
+                <label className="text-xs font-bold text-primary px-1">{t('website_optional') || 'Website (Optional)'}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
                     <Globe size={18} />
