@@ -1,16 +1,15 @@
-'use client';
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Camera, Save } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
-import { useUserRole } from '../UserRoleContext';
-import { useRouter } from 'next/navigation';
 
-export const EditProfile: React.FC = () => {
-  const router = useRouter();
-  const { userRole } = useUserRole();
+interface EditProfileProps {
+  onBack: () => void;
+  userRole: UserRole;
+}
+
+export const EditProfile: React.FC<EditProfileProps> = ({ onBack, userRole }) => {
   const { t, dir } = useLanguage();
   const isSeeker = userRole === UserRole.SEEKER;
 
@@ -38,7 +37,7 @@ export const EditProfile: React.FC = () => {
   const handleSave = () => {
     // Implement save logic here
     console.log('Saving profile data:', formData);
-    router.back();
+    onBack();
   };
 
   return (
@@ -46,7 +45,7 @@ export const EditProfile: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
         <button 
-          onClick={() => router.back()}
+          onClick={onBack}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

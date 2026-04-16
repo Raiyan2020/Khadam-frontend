@@ -1,4 +1,3 @@
-'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, MapPin, ChevronRight, Filter, ChevronLeft, Bell, Globe, Heart } from 'lucide-react';
@@ -8,31 +7,37 @@ import { useFavorites } from '../FavoritesContext';
 import { ServiceCategory, Ad, Office, Worker } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
-import { useRouter } from 'next/navigation';
+
+interface HomeProps {
+  onSelectWorker: (id: string) => void;
+  onSelectOffice: (id: string) => void;
+  onNavigateNotifications: () => void;
+  onSelectNationality: (nationality: string) => void;
+  onViewAll: (filterType: string) => void;
+  onSearch: (query: string, category: string) => void;
+}
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
+  e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'; // Fallback to logo or generic avatar
   e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
 };
 
 const handleFlagError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.style.display = 'none';
   if (e.currentTarget.parentElement) {
-    e.currentTarget.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-accent-subtle text-accent-text font-bold text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>';
+    e.currentTarget.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-accent-subtle text-accent-text font-bold text-xs"><Globe size={24}/></div>';
   }
 };
 
-export const Home: React.FC = () => {
+export const Home: React.FC<HomeProps> = ({ onSelectWorker, onSelectOffice, onNavigateNotifications, onSelectNationality, onViewAll, onSearch }) => {
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
   const { t, dir, language } = useLanguage();
-  const router = useRouter();
 
   const [lastViewedIds, setLastViewedIds] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return ['w1', 'w4', 'w8'];
     const saved = localStorage.getItem('last_viewed_workers');
     return saved ? JSON.parse(saved) : ['w1', 'w4', 'w8']; 
   });
@@ -45,6 +50,7 @@ export const Home: React.FC = () => {
       worker.nationality[language].toLowerCase().includes(searchLower) ||
       worker.specialty[language].toLowerCase().includes(searchLower);
       
+    // Apply advanced filters
     let matchesFilters = true;
     if (filterCriteria.maxSalary !== undefined && worker.salary > filterCriteria.maxSalary) {
       matchesFilters = false;
@@ -116,7 +122,7 @@ export const Home: React.FC = () => {
     const newHistory = [id, ...lastViewedIds.filter(v => v !== id)].slice(0, 10);
     setLastViewedIds(newHistory);
     localStorage.setItem('last_viewed_workers', JSON.stringify(newHistory));
-    router.push(`/worker/${id}`);
+    onSelectWorker(id);
   };
 
   return (
@@ -137,7 +143,7 @@ export const Home: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => router.push('/notifications')}
+            onClick={onNavigateNotifications}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
             aria-label={t('nav_notifications')}
           >
@@ -155,7 +161,7 @@ export const Home: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                router.push(`/search?query=${encodeURIComponent(searchQuery)}&category=${activeCategory}`);
+                onSearch(searchQuery, activeCategory);
               }
             }}
           />
@@ -195,7 +201,7 @@ export const Home: React.FC = () => {
               {NATIONALITIES.map(nat => (
                 <div 
                   key={nat.name.en}
-                  onClick={() => router.push(`/country/${encodeURIComponent(nat.name.en)}`)}
+                  onClick={() => onSelectNationality(nat.name.en)}
                   className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
                 >
                   <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
@@ -213,7 +219,7 @@ export const Home: React.FC = () => {
         </section>
 
         {continueViewed.length > 0 && (
-          <SectionContainer title={t('section_continue')} onViewAll={() => router.push('/search?filterType=continue')}>
+          <SectionContainer title={t('section_continue')} onViewAll={() => onViewAll('continue')}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {continueViewed.map(worker => (
                 <CompactCard 
@@ -228,7 +234,7 @@ export const Home: React.FC = () => {
         )}
 
         {availableNow.length > 0 && (
-          <SectionContainer title={t('section_available')} onViewAll={() => router.push('/search?filterType=available')}>
+          <SectionContainer title={t('section_available')} onViewAll={() => onViewAll('available')}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {availableNow.map(worker => (
                 <CompactCard 
@@ -242,14 +248,14 @@ export const Home: React.FC = () => {
           </SectionContainer>
         )}
 
-        <SectionContainer title={t('section_newest')} onViewAll={() => router.push('/search?filterType=newest')}>
+        <SectionContainer title={t('section_newest')} onViewAll={() => onViewAll('newest')}>
           <div className="px-5 space-y-4">
             {newestListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => router.push(`/office/${id}`)}
+                onSelectOffice={onSelectOffice}
                 language={language}
                 t={t}
                 dir={dir}
@@ -258,14 +264,14 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
 
-        <SectionContainer title={t('section_budget')} onViewAll={() => router.push('/search?filterType=budget')}>
+        <SectionContainer title={t('section_budget')} onViewAll={() => onViewAll('budget')}>
           <div className="px-5 space-y-4">
             {budgetListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => router.push(`/office/${id}`)}
+                onSelectOffice={onSelectOffice}
                 language={language}
                 t={t}
                 dir={dir}
@@ -274,14 +280,14 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
 
-        <SectionContainer title={t('section_experience')} onViewAll={() => router.push('/search?filterType=experience')}>
+        <SectionContainer title={t('section_experience')} onViewAll={() => onViewAll('experience')}>
           <div className="px-5 space-y-4">
             {experiencedListings.slice(0, 4).map(worker => (
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
                 onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => router.push(`/office/${id}`)}
+                onSelectOffice={onSelectOffice}
                 language={language}
                 t={t}
                 dir={dir}

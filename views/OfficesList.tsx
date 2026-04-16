@@ -1,15 +1,15 @@
-'use client';
-
 import React from 'react';
 import { MapPin, ChevronLeft, ChevronRight, Star, Heart } from 'lucide-react';
 import { GlassCard, Avatar } from '../components/GlassUI';
 import { MOCK_OFFICES } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
-import { useRouter } from 'next/navigation';
 
-export const OfficesList: React.FC = () => {
-  const router = useRouter();
+interface OfficesListProps {
+  onSelectOffice: (id: string) => void;
+}
+
+export const OfficesList: React.FC<OfficesListProps> = ({ onSelectOffice }) => {
   const { t, language, dir } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
@@ -25,7 +25,7 @@ export const OfficesList: React.FC = () => {
         {MOCK_OFFICES.map(office => (
           <GlassCard 
             key={office.id} 
-            onClick={() => router.push(`/office/${office.id}`)} 
+            onClick={() => onSelectOffice(office.id)} 
             className="flex items-center justify-between group"
           >
             <div className="flex items-center gap-4">

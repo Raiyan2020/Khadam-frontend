@@ -1,14 +1,15 @@
-'use client';
 
 import React from 'react';
 import { ArrowLeft, ArrowRight, Globe, Check, Moon, Sun, Smartphone } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { useTheme, Theme } from '../theme';
 import { GlassCard } from '../components/GlassUI';
-import { useRouter } from 'next/navigation';
 
-export const Settings: React.FC = () => {
-  const router = useRouter();
+interface SettingsProps {
+  onBack: () => void;
+}
+
+export const Settings: React.FC<SettingsProps> = ({ onBack }) => {
   const { language, setLanguage, t, dir } = useLanguage();
   const { theme, setTheme } = useTheme();
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
@@ -18,7 +19,7 @@ export const Settings: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 px-5 pt-8 mb-6">
         <button 
-          onClick={() => router.back()} 
+          onClick={onBack} 
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
         >
           <BackIcon size={20} />

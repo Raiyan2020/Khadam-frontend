@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Heart, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
 import { useLanguage } from '../i18n';
@@ -7,10 +5,14 @@ import { useFavorites } from '../FavoritesContext';
 import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS } from '../constants';
 import { Worker, Office } from '../types';
 import { GlassCard, Avatar, Badge } from '../components/GlassUI';
-import { useRouter } from 'next/navigation';
 
-export const Favorites: React.FC = () => {
-  const router = useRouter();
+interface FavoritesProps {
+  onBack: () => void;
+  onSelectWorker: (id: string) => void;
+  onSelectOffice: (id: string) => void;
+}
+
+export const Favorites: React.FC<FavoritesProps> = ({ onBack, onSelectWorker, onSelectOffice }) => {
   const { t, dir, language } = useLanguage();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const [activeTab, setActiveTab] = useState<'workers' | 'offices'>('workers');
@@ -23,7 +25,7 @@ export const Favorites: React.FC = () => {
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.back()}
+            onClick={onBack}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -59,8 +61,8 @@ export const Favorites: React.FC = () => {
                 <FullListingCard 
                   key={worker.id} 
                   worker={worker} 
-                  onSelect={() => router.push(`/worker/${worker.id}`)}
-                  onSelectOffice={(id) => router.push(`/office/${id}`)}
+                  onSelect={() => onSelectWorker(worker.id)}
+                  onSelectOffice={onSelectOffice}
                   language={language}
                   t={t}
                   dir={dir}
@@ -75,7 +77,7 @@ export const Favorites: React.FC = () => {
                 <Heart size={32} />
               </div>
               <p>{t('no_favorites') || 'No favorites yet'}</p>
-              <button onClick={() => router.back()} className="text-accent text-sm">{t('browse_workers') || 'Browse workers'}</button>
+              <button onClick={onBack} className="text-accent text-sm">{t('browse_workers') || 'Browse workers'}</button>
             </div>
           )
         ) : (
@@ -85,7 +87,7 @@ export const Favorites: React.FC = () => {
                 <FavoriteOfficeCard 
                   key={office.id} 
                   office={office} 
-                  onSelect={() => router.push(`/office/${office.id}`)}
+                  onSelect={() => onSelectOffice(office.id)}
                   language={language}
                   dir={dir}
                   isFavorite={isFavorite(office.id)}
@@ -99,7 +101,7 @@ export const Favorites: React.FC = () => {
                 <Heart size={32} />
               </div>
               <p>{t('no_favorites') || 'No favorites yet'}</p>
-              <button onClick={() => router.back()} className="text-accent text-sm">{t('browse_offices') || 'Browse offices'}</button>
+              <button onClick={onBack} className="text-accent text-sm">{t('browse_offices') || 'Browse offices'}</button>
             </div>
           )
         )}

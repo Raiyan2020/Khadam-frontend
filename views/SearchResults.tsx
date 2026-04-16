@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Filter, Search, Heart } from 'lucide-react';
 import { Worker, ServiceCategory } from '../types';
@@ -7,16 +5,17 @@ import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS, NATIONALITIES } from '../constant
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 import { GlassCard, Avatar, Badge } from '../components/GlassUI';
-import { useRouter } from 'next/navigation';
 
 interface SearchResultsProps {
   filterType?: string;
   category?: string;
   query?: string;
+  onBack: () => void;
+  onSelectWorker: (id: string) => void;
+  onSelectOffice: (id: string) => void;
 }
 
-export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, category, query }) => {
-  const router = useRouter();
+export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, category, query, onBack, onSelectWorker, onSelectOffice }) => {
   const { t, dir, language } = useLanguage();
   
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>(
@@ -57,7 +56,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
         filtered.sort((a, b) => b.experienceYears - a.experienceYears);
         break;
       case 'continue':
-        const saved = typeof window !== 'undefined' ? localStorage.getItem('last_viewed_workers') : null;
+        const saved = localStorage.getItem('last_viewed_workers');
         const lastViewedIds: string[] = saved ? JSON.parse(saved) : [];
         filtered = filtered.filter(w => lastViewedIds.includes(w.id));
         filtered.sort((a, b) => lastViewedIds.indexOf(a.id) - lastViewedIds.indexOf(b.id));
@@ -100,7 +99,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.back()}
+            onClick={onBack}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -150,8 +149,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({ filterType, catego
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
-                onSelect={() => router.push(`/worker/${worker.id}`)}
-                onSelectOffice={(id) => router.push(`/office/${id}`)}
+                onSelect={() => onSelectWorker(worker.id)}
+                onSelectOffice={onSelectOffice}
                 language={language}
                 t={t}
                 dir={dir}

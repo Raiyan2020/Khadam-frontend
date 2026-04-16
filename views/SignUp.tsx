@@ -1,18 +1,18 @@
-'use client';
-
 import React, { useState } from 'react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
+interface SignUpProps {
+  onSignUpSuccess: () => void;
+  onBackToLogin: () => void;
+}
 
 type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE' | 'OTP' | 'PROFILE_SETUP';
 type AccountType = 'PERSONAL' | 'BUSINESS' | null;
 
-export const SignUp: React.FC = () => {
+export const SignUp: React.FC<SignUpProps> = ({ onSignUpSuccess, onBackToLogin }) => {
   const { t, dir } = useLanguage();
-  const router = useRouter();
-
   const [step, setStep] = useState<SignUpStep>('ACCOUNT_TYPE');
   const [accountType, setAccountType] = useState<AccountType>(null);
   const [phoneNumber, setPhoneNumber] = useState('+965 1234 5678');
@@ -47,7 +47,8 @@ export const SignUp: React.FC = () => {
 
   const handleCompleteProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    router.replace('/');
+    // Here you would typically save the profile data
+    onSignUpSuccess();
   };
 
   const renderAccountType = () => (
@@ -221,7 +222,7 @@ export const SignUp: React.FC = () => {
 
               {/* Website */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary px-1">{t('website_optional') || 'Website (Optional)'}</label>
+                <label className="text-xs font-bold text-primary px-1">{t('website') || 'Website (Optional)'}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
                     <Globe size={18} />
@@ -313,14 +314,14 @@ export const SignUp: React.FC = () => {
       <div className="absolute top-5 start-5 z-20">
         <button 
           onClick={() => {
-            if (step === 'ACCOUNT_TYPE') router.push('/login');
+            if (step === 'ACCOUNT_TYPE') onBackToLogin();
             else if (step === 'PHONE') setStep('ACCOUNT_TYPE');
             else if (step === 'OTP') setStep('PHONE');
             else if (step === 'PROFILE_SETUP') setStep('OTP');
           }}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
-          {dir === 'rtl' ? <ChevronRightIcon size={20} /> : <ChevronLeft size={20} />}
+          {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
 
@@ -334,7 +335,7 @@ export const SignUp: React.FC = () => {
           <p className="text-sm text-secondary">
             {t('already_have_account') || "Already have an account?"}{' '}
             <button 
-              onClick={() => router.push('/login')}
+              onClick={onBackToLogin}
               className="text-brand-500 font-bold hover:underline"
             >
               {t('sign_in') || 'Sign in'}
@@ -346,7 +347,7 @@ export const SignUp: React.FC = () => {
   );
 };
 
-const ChevronRightIcon = ({ size }: { size: number }) => (
+const ChevronRight = ({ size }: { size: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m9 18 6-6-6-6"/>
   </svg>

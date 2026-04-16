@@ -1,13 +1,13 @@
-'use client';
-
 import React from 'react';
 import { ArrowLeft, ArrowRight, Bell, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { GlassCard } from '../components/GlassUI';
-import { useRouter } from 'next/navigation';
 
-export const Notifications: React.FC = () => {
-  const router = useRouter();
+interface NotificationsProps {
+  onBack: () => void;
+}
+
+export const Notifications: React.FC<NotificationsProps> = ({ onBack }) => {
   const { t, dir } = useLanguage();
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
 
@@ -42,7 +42,7 @@ export const Notifications: React.FC = () => {
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-5 pt-8 pb-4 flex items-center justify-between transition-colors">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.back()} 
+            onClick={onBack} 
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
           >
             <BackIcon size={20} />

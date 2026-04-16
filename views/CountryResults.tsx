@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Search, Filter, Heart } from 'lucide-react';
 import { Worker, Ad, ServiceCategory } from '../types';
@@ -7,10 +5,12 @@ import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS, NATIONALITIES } from '../constant
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 import { GlassCard, Badge, Avatar } from '../components/GlassUI';
-import { useRouter } from 'next/navigation';
 
 interface CountryResultsProps {
   nationality: string;
+  onBack: () => void;
+  onSelectWorker: (id: string) => void;
+  onSelectOffice: (id: string) => void;
 }
 
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -18,8 +18,7 @@ const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
 };
 
-export const CountryResults: React.FC<CountryResultsProps> = ({ nationality }) => {
-  const router = useRouter();
+export const CountryResults: React.FC<CountryResultsProps> = ({ nationality, onBack, onSelectWorker, onSelectOffice }) => {
   const { t, dir, language } = useLanguage();
 
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
@@ -64,7 +63,7 @@ export const CountryResults: React.FC<CountryResultsProps> = ({ nationality }) =
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => router.back()}
+            onClick={onBack}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -121,8 +120,8 @@ export const CountryResults: React.FC<CountryResultsProps> = ({ nationality }) =
               <FullListingCard 
                 key={worker.id} 
                 worker={worker} 
-                onSelect={() => router.push(`/worker/${worker.id}`)}
-                onSelectOffice={() => router.push(`/office/${worker.officeId}`)}
+                onSelect={() => onSelectWorker(worker.id)}
+                onSelectOffice={onSelectOffice}
                 language={language}
                 t={t}
                 dir={dir}

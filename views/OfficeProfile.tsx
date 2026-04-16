@@ -1,4 +1,3 @@
-'use client';
 
 import React from 'react';
 import { ArrowLeft, ArrowRight, MapPin, MessageCircle, Phone, Globe, Heart } from 'lucide-react';
@@ -6,14 +5,14 @@ import { GlassCard, Button, Avatar } from '../components/GlassUI';
 import { MOCK_OFFICES, MOCK_ADS, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
-import { useRouter } from 'next/navigation';
 
 interface OfficeProfileProps {
   officeId: string;
+  onBack: () => void;
+  onSelectWorker: (id: string) => void;
 }
 
-export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId }) => {
-  const router = useRouter();
+export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId, onBack, onSelectWorker }) => {
   const { t, dir, language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const office = MOCK_OFFICES.find(o => o.id === officeId);
@@ -64,7 +63,7 @@ export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId }) => {
         
         <div className="absolute top-5 start-5 z-20">
            <button 
-             onClick={() => router.back()} 
+             onClick={onBack} 
              className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/30 transition-colors"
            >
             <BackIcon size={20} />
@@ -141,7 +140,7 @@ export const OfficeProfile: React.FC<OfficeProfileProps> = ({ officeId }) => {
                return (
                  <div 
                    key={ad.id} 
-                   onClick={() => router.push(`/worker/${worker.id}`)} 
+                   onClick={() => onSelectWorker(worker.id)} 
                    className="cursor-pointer group animate-in fade-in slide-in-from-bottom-2 duration-300"
                  >
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden relative border border-border bg-glass shadow-sm">

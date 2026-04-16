@@ -1,14 +1,15 @@
-'use client';
-
 import React, { useState } from 'react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { ChevronLeft, Phone, Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
-export const Login: React.FC = () => {
+interface LoginProps {
+  onLoginSuccess: () => void;
+  onNavigateSignUp: () => void;
+}
+
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onNavigateSignUp }) => {
   const { t, dir } = useLanguage();
-  const router = useRouter();
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
   const [phoneNumber, setPhoneNumber] = useState('+965 1234 5678');
   const [otp, setOtp] = useState('1234');
@@ -23,7 +24,7 @@ export const Login: React.FC = () => {
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length >= 4) {
-      router.replace('/');
+      onLoginSuccess();
     }
   };
 
@@ -115,7 +116,7 @@ export const Login: React.FC = () => {
           <p className="text-sm text-secondary">
             {t('dont_have_account') || "Don't have an account?"}{' '}
             <button 
-              onClick={() => router.push('/signup')}
+              onClick={onNavigateSignUp}
               className="text-brand-500 font-bold hover:underline"
             >
               {t('sign_up') || 'Sign up'}

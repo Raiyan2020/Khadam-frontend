@@ -1,16 +1,19 @@
-'use client';
-
 import React from 'react';
 import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw } from 'lucide-react';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
-import { useUserRole } from '../UserRoleContext';
-import { useRouter } from 'next/navigation';
 
-export const UserProfile: React.FC = () => {
-  const router = useRouter();
-  const { userRole, toggleRole } = useUserRole();
+interface UserProfileProps {
+  onNavigateSettings: () => void;
+  onNavigateHelpSupport: () => void;
+  onNavigateEditProfile: () => void;
+  userRole: UserRole;
+  onToggleRole: () => void;
+  onLogout: () => void;
+}
+
+export const UserProfile: React.FC<UserProfileProps> = ({ onNavigateSettings, onNavigateHelpSupport, onNavigateEditProfile, userRole, onToggleRole, onLogout }) => {
   const { t } = useLanguage();
   const isSeeker = userRole === UserRole.SEEKER;
 
@@ -23,7 +26,7 @@ export const UserProfile: React.FC = () => {
               <Avatar src={isSeeker ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200"} alt="User" size="xl" className="border-4 border-background" />
               <button 
                 className="absolute bottom-0 end-0 bg-accent text-accent-fg rounded-full p-1.5 border-4 border-background hover:scale-105 transition-transform"
-                onClick={() => router.push('/profile/edit')}
+                onClick={onNavigateEditProfile}
               >
                  <Edit size={14} />
               </button>
@@ -35,7 +38,7 @@ export const UserProfile: React.FC = () => {
 
       <div className="px-5 space-y-3">
          {/* Role Switcher Demo */}
-         <GlassCard onClick={toggleRole} className="flex items-center gap-4 !py-4 hover:bg-glassHigh active:scale-[0.99] transition-all bg-accent/5 border-accent/20">
+         <GlassCard onClick={onToggleRole} className="flex items-center gap-4 !py-4 hover:bg-glassHigh active:scale-[0.99] transition-all bg-accent/5 border-accent/20">
              <div className="text-accent">
                <RefreshCw size={20} />
              </div>
@@ -45,11 +48,11 @@ export const UserProfile: React.FC = () => {
              </div>
          </GlassCard>
 
-         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={() => router.push('/profile/edit')} />
-         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={() => router.push('/settings')} />
-         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => router.push('/help')} />
+         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={onNavigateEditProfile} />
+         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={onNavigateSettings} />
+         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={onNavigateHelpSupport} />
          <div className="pt-4">
-            <MenuButton icon={<LogOut size={20} />} label={t('logout')} danger onClick={() => router.push('/login')} />
+            <MenuButton icon={<LogOut size={20} />} label={t('logout')} danger onClick={onLogout} />
          </div>
       </div>
     </div>

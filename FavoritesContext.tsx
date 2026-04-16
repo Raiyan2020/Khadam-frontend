@@ -1,5 +1,3 @@
-'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface FavoritesContextType {
@@ -12,15 +10,12 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [favorites, setFavorites] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-    }
+    localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
   const toggleFavorite = (id: string) => {

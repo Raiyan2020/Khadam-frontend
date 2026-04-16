@@ -1,14 +1,16 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Eye } from 'lucide-react';
 import { GlassCard, Button, Badge } from '../components/GlassUI';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
-import { useRouter } from 'next/navigation';
 
-export const MyAds: React.FC = () => {
-  const router = useRouter();
+interface MyAdsProps {
+  onPublish: () => void;
+  onEditAd: (id: string) => void;
+  onSelectWorker: (id: string) => void;
+}
+
+export const MyAds: React.FC<MyAdsProps> = ({ onPublish, onEditAd, onSelectWorker }) => {
   const { t, language } = useLanguage();
   
   // Simulate logged-in office (ID: o1)
@@ -23,7 +25,7 @@ export const MyAds: React.FC = () => {
     <div className="pb-24 pt-6 px-5">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-primary">{t('my_ads_title')}</h1>
-        <Button onClick={() => router.push('/my-ads/publish')} className="!h-9 !px-3 gap-2 !text-xs">
+        <Button onClick={onPublish} className="!h-9 !px-3 gap-2 !text-xs">
           <Plus size={16} />
           {t('post_new_ad')}
         </Button>
@@ -41,7 +43,7 @@ export const MyAds: React.FC = () => {
             
             return (
               <GlassCard key={ad.id} className="group">
-                <div className="flex gap-3 mb-3" onClick={() => router.push(`/worker/${worker.id}`)}>
+                <div className="flex gap-3 mb-3" onClick={() => onSelectWorker(worker.id)}>
                    <img 
                       src={worker.photo} 
                       alt={worker.name[language]} 
@@ -62,13 +64,13 @@ export const MyAds: React.FC = () => {
                 <div className="flex gap-2 pt-3 border-t border-border">
                    <button 
                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => router.push(`/worker/${worker.id}`)}
+                     onClick={() => onSelectWorker(worker.id)}
                    >
                       <Eye size={14} /> {t('action_view')}
                    </button>
                    <button 
                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => router.push(`/my-ads/edit/${ad.id}`)}
+                     onClick={() => onEditAd(ad.id)}
                    >
                       <Edit2 size={14} /> {t('action_edit')}
                    </button>

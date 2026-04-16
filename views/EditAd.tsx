@@ -1,19 +1,16 @@
-'use client';
-
 import React from 'react';
 import { Upload, X } from 'lucide-react';
 import { Button } from '../components/GlassUI';
 import { ServiceCategory } from '../types';
 import { useLanguage } from '../i18n';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
-import { useRouter } from 'next/navigation';
 
 interface EditAdProps {
   adId: string;
+  onBack: () => void;
 }
 
-export const EditAd: React.FC<EditAdProps> = ({ adId }) => {
-  const router = useRouter();
+export const EditAd: React.FC<EditAdProps> = ({ adId, onBack }) => {
   const { t, language } = useLanguage();
   
   const ad = MOCK_ADS.find(a => a.id === adId);
@@ -36,7 +33,7 @@ export const EditAd: React.FC<EditAdProps> = ({ adId }) => {
   return (
     <div className="px-5 pt-8 pb-20">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={() => router.back()} className="text-secondary hover:text-primary"><X size={24} /></button>
+        <button onClick={onBack} className="text-secondary hover:text-primary"><X size={24} /></button>
         <h1 className="text-2xl font-bold text-primary">{t('edit_ad')}</h1>
         <div className="w-6" />
       </div>
@@ -93,7 +90,7 @@ export const EditAd: React.FC<EditAdProps> = ({ adId }) => {
         <InputGroup label={t('contact_phone')} placeholder="965 XXXXXXXX" defaultValue="965 12345678" />
 
         <div className="pt-4">
-          <Button fullWidth onClick={() => router.back()}>{t('save_changes')}</Button>
+          <Button fullWidth onClick={onBack}>{t('save_changes')}</Button>
         </div>
       </div>
     </div>

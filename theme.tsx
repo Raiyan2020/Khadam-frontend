@@ -1,5 +1,3 @@
-'use client';
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type Theme = 'dark' | 'light' | 'system';
@@ -34,9 +32,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     try {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('app_theme', newTheme);
-      }
+      localStorage.setItem('app_theme', newTheme);
     } catch (e) {
       // Ignore localStorage errors
     }

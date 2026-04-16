@@ -1,4 +1,3 @@
-'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
@@ -73,6 +72,7 @@ export const translations = {
     full_name: "Full Name",
     phone_number: "Phone Number",
     email: "Email Address",
+    location: "Location",
     website: "Website",
     bio: "Bio / Description",
     save_changes: "Save Changes",
@@ -85,8 +85,6 @@ export const translations = {
     send_message: "Send Message",
     follow_us: "Follow Us",
     logout: "Logout",
-    workers: "Workers",
-    offices: "Offices",
     location: "Location",
     cat_babysitter: "Babysitter",
     cat_cook_female: "Home Cook (F)",
@@ -141,6 +139,7 @@ export const translations = {
     verify_otp: "Verify OTP",
     enter_phone_desc: "Enter your phone number to continue",
     enter_otp_desc: "Enter the code sent to your phone",
+    phone_number: "Phone Number",
     otp_code: "OTP Code",
     verify: "Verify",
     change_phone: "Change phone number",
@@ -164,10 +163,11 @@ export const translations = {
     business_name: "Business Name",
     business_name_placeholder: "Enter business name",
     location_placeholder: "e.g. Kuwait City",
-    website_optional: "Website (Optional)",
+    website: "Website (Optional)",
     contact_number: "Business Contact Number",
     description: "Description",
     description_placeholder: "Tell us about your business...",
+    full_name: "Full Name",
     name_placeholder: "Enter your full name",
     complete_signup: "Complete Sign Up"
   },
@@ -252,8 +252,7 @@ export const translations = {
     send_message: "إرسال الرسالة",
     follow_us: "تابعنا",
     logout: "تسجيل الخروج",
-    workers: "العمالة",
-    offices: "المكاتب",
+    location: "الموقع",
     cat_babysitter: "جليسة الأطفال",
     cat_cook_female: "طباخة منزلية",
     cat_nurse: "ممرضة منزلية",
@@ -307,6 +306,7 @@ export const translations = {
     verify_otp: "التحقق من الرمز",
     enter_phone_desc: "أدخل رقم هاتفك للمتابعة",
     enter_otp_desc: "أدخل الرمز المرسل إلى هاتفك",
+    phone_number: "رقم الهاتف",
     otp_code: "رمز التحقق",
     verify: "تحقق",
     change_phone: "تغيير رقم الهاتف",
@@ -330,10 +330,11 @@ export const translations = {
     business_name: "اسم العمل",
     business_name_placeholder: "أدخل اسم العمل",
     location_placeholder: "مثال: مدينة الكويت",
-    website_optional: "الموقع الإلكتروني (اختياري)",
+    website: "الموقع الإلكتروني (اختياري)",
     contact_number: "رقم التواصل للعمل",
     description: "الوصف",
     description_placeholder: "أخبرنا عن عملك...",
+    full_name: "الاسم الكامل",
     name_placeholder: "أدخل اسمك الكامل",
     complete_signup: "إكمال إنشاء الحساب"
   }
@@ -351,7 +352,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize default language to 'ar' unless a saved preference exists
   const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window === 'undefined') return 'ar';
     try {
       const savedLang = localStorage.getItem('app_language') as Language;
       return (savedLang === 'en' || savedLang === 'ar') ? savedLang : 'ar';
@@ -362,9 +362,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('app_language', lang);
-    }
+    localStorage.setItem('app_language', lang);
   };
 
   const dir = language === 'ar' ? 'rtl' : 'ltr';

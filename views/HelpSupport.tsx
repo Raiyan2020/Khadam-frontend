@@ -1,13 +1,13 @@
-'use client';
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Twitter, Facebook, MessageCircle } from 'lucide-react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
-import { useRouter } from 'next/navigation';
 
-export const HelpSupport: React.FC = () => {
-  const router = useRouter();
+interface HelpSupportProps {
+  onBack: () => void;
+}
+
+export const HelpSupport: React.FC<HelpSupportProps> = ({ onBack }) => {
   const { t, dir } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,7 +28,7 @@ export const HelpSupport: React.FC = () => {
     <div className="pb-20 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
         <button 
-          onClick={() => router.back()}
+          onClick={onBack}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}

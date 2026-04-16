@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Inbox } from 'lucide-react';
 import { useLanguage } from '../i18n';
