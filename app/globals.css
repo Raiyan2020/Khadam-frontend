@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@100..900&display=swap');
+
+:root {
+  /* Brand Color Palette - #9AAB89 Base */
+  --brand-50:  #F5F7F3;
+  --brand-100: #EBEEE7;
+  --brand-200: #D7DDD0;
+  --brand-300: #C2CDB8;
+  --brand-400: #AEBCA1;
+  --brand-500: #9AAB89; /* Main Accent */
+  --brand-600: #8B9A7B;
+  --brand-700: #7B896E;
+  --brand-800: #6C7860;
+  --brand-900: #4D5644;
+  
+  --brand-rgb: 154, 171, 137;
+  --focus-ring: rgba(154, 171, 137, 0.35);
+
+  /* Light Mode Defaults */
+  --bg-app: #e2e8f0;
+  --bg-background-rgb: 248, 250, 252; /* Slate 50 */
+  --bg-surface-rgb: 255, 255, 255;    /* White */
+  
+  --color-glass: rgba(255, 255, 255, 0.6);
+  --color-glass-high: rgba(255, 255, 255, 0.8);
+  --color-border: rgba(148, 163, 184, 0.25);
+  
+  --text-primary-rgb: 15, 23, 42;     /* Slate 900 */
+  --text-secondary-rgb: 100, 116, 139; /* Slate 500 */
+  
+  /* Semantic Colors */
+  --color-accent: var(--brand-500);
+  --color-accent-hover: var(--brand-600);
+  --color-accent-fg: #1C2418; /* Dark text for contrast */
+  --color-accent-subtle: var(--brand-200);
+  --color-accent-text: var(--brand-900);
+}
+
+.dark {
+  --bg-app: #050505;
+  --bg-background-rgb: 14, 17, 22;
+  --bg-surface-rgb: 19, 25, 34;
+  
+  --color-glass: rgba(255, 255, 255, 0.08);
+  --color-glass-high: rgba(255, 255, 255, 0.12);
+  --color-border: rgba(255, 255, 255, 0.15);
+  
+  --text-primary-rgb: 243, 246, 250;
+  --text-secondary-rgb: 174, 184, 197;
+  
+  /* Dark Mode Brand Adjustments */
+  --color-accent: var(--brand-400); /* Slightly lighter for dark mode visibility */
+  --color-accent-hover: var(--brand-500);
+  --color-accent-fg: #0F172A;
+  --color-accent-subtle: rgba(154, 171, 137, 0.2);
+  --color-accent-text: var(--brand-200);
+}
+
+body {
+  font-family: 'Noto Kufi Arabic', sans-serif;
+  background-color: rgb(var(--bg-background-rgb));
+  color: rgb(var(--text-primary-rgb));
+  overflow: hidden; /* Prevent body scroll, handle inside app shell */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
