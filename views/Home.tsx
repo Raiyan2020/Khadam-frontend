@@ -153,7 +153,10 @@ export const Home: React.FC = () => {
   };
 
   const { userRole } = useUserRole();
-  const isSeeker = userRole === 'seeker';
+
+  const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
+  console.log(isSeeker);
+
   return (
     <div className="pb-10">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">
@@ -287,7 +290,7 @@ export const Home: React.FC = () => {
             {/* Total Servants */}
             <GlassCard className="p-4 relative overflow-hidden group">
               <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-xl group-hover:bg-blue-500/30 transition-all duration-500" />
-              
+
               <div className="flex justify-between items-start mb-2 relative z-10">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10">
                   <Users size={16} />
@@ -296,7 +299,7 @@ export const Home: React.FC = () => {
                   +12%
                 </div>
               </div>
-              
+
               <div className="relative z-10 mt-1">
                 <h3 className="text-2xl font-black text-primary tracking-tight"><AnimatedNumber value={45} /></h3>
                 <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_servants') || 'Total Workers'}</p>
@@ -320,7 +323,7 @@ export const Home: React.FC = () => {
             {/* Profile Visits */}
             <GlassCard className="p-4 relative overflow-hidden group">
               <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-500" />
-              
+
               <div className="flex justify-between items-start mb-2 relative z-10">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/10">
                   <Eye size={16} />
@@ -329,7 +332,7 @@ export const Home: React.FC = () => {
                   +34%
                 </div>
               </div>
-              
+
               <div className="relative z-10 mt-1">
                 <h3 className="text-2xl font-black text-primary tracking-tight"><AnimatedNumber value={893} /></h3>
                 <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_visits') || 'Profile Visits'}</p>
