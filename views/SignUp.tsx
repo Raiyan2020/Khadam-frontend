@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
-import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon, CreditCard } from 'lucide-react';
 
 import { useNavigate } from '@tanstack/react-router';
 import { LocationPicker, KUWAIT_CITIES } from '../components/LocationPicker';
@@ -17,7 +17,7 @@ export const SignUp: React.FC = () => {
   const [accountType, setAccountType] = useState<AccountType>(null);
   const [phoneNumber, setPhoneNumber] = useState('+965 1234 5678');
   const [otp, setOtp] = useState('1234');
-  
+
   // Profile Setup State
   const [name, setName] = useState('John Doe');
   const [businessName, setBusinessName] = useState('Al-Aman Recruitment');
@@ -28,6 +28,27 @@ export const SignUp: React.FC = () => {
   const [website, setWebsite] = useState('https://alaman.com');
   const [contactNumber, setContactNumber] = useState('+965 9876 5432');
   const [description, setDescription] = useState('We provide the best domestic workers in Kuwait.');
+
+  // New Business Registration States
+  const [responsibleId, setResponsibleId] = useState('');
+  const [responsibleNumber, setResponsibleNumber] = useState('');
+
+  // File Upload States
+  const [taxIdFrontFile, setTaxIdFrontFile] = useState<File | null>(null);
+  const [taxIdBackFile, setTaxIdBackFile] = useState<File | null>(null);
+  const [responsibleIdFile, setResponsibleIdFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
+  const [taxIdFrontPreview, setTaxIdFrontPreview] = useState<string | null>(null);
+  const [taxIdBackPreview, setTaxIdBackPreview] = useState<string | null>(null);
+  const [responsibleIdPreview, setResponsibleIdPreview] = useState<string | null>(null);
+
+  // Input Refs
+  const taxIdFrontRef = useRef<HTMLInputElement>(null);
+  const taxIdBackRef = useRef<HTMLInputElement>(null);
+  const responsibleIdRef = useRef<HTMLInputElement>(null);
+  const profileImageRef = useRef<HTMLInputElement>(null);
+  const bannerImageRef = useRef<HTMLInputElement>(null);
 
   const handleSelectAccountType = (type: AccountType) => {
     setAccountType(type);
@@ -60,8 +81,8 @@ export const SignUp: React.FC = () => {
         <h1 className="text-2xl font-bold text-primary">{t('choose_account_type') || 'Choose Account Type'}</h1>
         <p className="text-sm text-secondary">{t('account_type_desc') || 'Select how you want to use the app'}</p>
       </div>
-      
-      <GlassCard 
+
+      <GlassCard
         className="p-6 cursor-pointer hover:border-brand-400 transition-all flex items-center gap-4 group"
         onClick={() => handleSelectAccountType('PERSONAL')}
       >
@@ -74,7 +95,7 @@ export const SignUp: React.FC = () => {
         </div>
       </GlassCard>
 
-      <GlassCard 
+      <GlassCard
         className="p-6 cursor-pointer hover:border-accent transition-all flex items-center gap-4 group"
         onClick={() => handleSelectAccountType('BUSINESS')}
       >
@@ -164,11 +185,28 @@ export const SignUp: React.FC = () => {
       </div>
       <GlassCard className="p-6">
         <form onSubmit={handleCompleteProfile} className="space-y-4">
-          
+
           {/* Profile Image (Both) */}
           <div className="flex flex-col items-center justify-center space-y-2">
-            <div className="w-24 h-24 rounded-full bg-glass border-2 border-dashed border-border flex items-center justify-center text-secondary relative overflow-hidden group cursor-pointer hover:border-brand-400 transition-colors">
-              <Camera size={24} className="group-hover:text-brand-400 transition-colors" />
+            <div
+              onClick={() => profileImageRef.current?.click()}
+              className="w-24 h-24 rounded-full bg-glass border-2 border-dashed border-border flex items-center justify-center text-secondary relative overflow-hidden group cursor-pointer hover:border-brand-400 transition-colors"
+            >
+              <input
+                type="file"
+                ref={profileImageRef}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setProfileImagePreview(URL.createObjectURL(file));
+                }}
+                accept="image/*"
+              />
+              {profileImagePreview ? (
+                <img src={profileImagePreview} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <Camera size={24} className="group-hover:text-brand-400 transition-colors" />
+              )}
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-white text-xs font-medium">{t('upload') || 'Upload'}</span>
               </div>
@@ -181,9 +219,33 @@ export const SignUp: React.FC = () => {
               {/* Banner Image */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-primary px-1">{t('banner_image') || 'Banner Image'}</label>
-                <div className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary cursor-pointer hover:border-brand-400 transition-colors">
-                  <ImageIcon size={24} className="mb-2" />
-                  <span className="text-xs">{t('upload_banner') || 'Upload Banner'}</span>
+                <div
+                  onClick={() => bannerImageRef.current?.click()}
+                  className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary cursor-pointer hover:border-brand-400 transition-colors relative overflow-hidden group"
+                >
+                  <input
+                    type="file"
+                    ref={bannerImageRef}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setBannerImagePreview(URL.createObjectURL(file));
+                    }}
+                    accept="image/*"
+                  />
+                  {bannerImagePreview ? (
+                    <img src={bannerImagePreview} alt="Banner" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <ImageIcon size={24} className="mb-2 group-hover:text-brand-400 transition-colors" />
+                      <span className="text-xs">{t('upload_banner') || 'Upload Banner'}</span>
+                    </>
+                  )}
+                  {bannerImagePreview && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-white text-xs font-medium">{t('change') || 'Change'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -248,6 +310,143 @@ export const SignUp: React.FC = () => {
                 </div>
               </div>
 
+              {/* Company Tax ID Uploads */}
+              <div className="space-y-1.5 pt-2">
+                <label className="text-xs font-bold text-primary px-1">{t('company_tax_id') || 'Company Tax ID (البطاقة الضريبية)'}</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div
+                    onClick={() => taxIdFrontRef.current?.click()}
+                    className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors"
+                  >
+                    <input
+                      type="file"
+                      ref={taxIdFrontRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setTaxIdFrontFile(file);
+                        if (file && file.type.startsWith('image/')) {
+                          setTaxIdFrontPreview(URL.createObjectURL(file));
+                        } else {
+                          setTaxIdFrontPreview(null);
+                        }
+                      }}
+                      accept="image/*,.pdf"
+                    />
+                    {taxIdFrontPreview ? (
+                      <img src={taxIdFrontPreview} alt="Tax ID Front" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <ImageIcon size={24} className={`mb-2 transition-colors ${taxIdFrontFile ? 'text-brand-400' : 'group-hover:text-brand-400'}`} />
+                        <span className="text-[10px] font-medium text-center px-2 truncate w-full">
+                          {taxIdFrontFile ? taxIdFrontFile.name : (t('tax_id_front') || 'Front Side')}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div
+                    onClick={() => taxIdBackRef.current?.click()}
+                    className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors relative overflow-hidden"
+                  >
+                    <input
+                      type="file"
+                      ref={taxIdBackRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setTaxIdBackFile(file);
+                        if (file && file.type.startsWith('image/')) {
+                          setTaxIdBackPreview(URL.createObjectURL(file));
+                        } else {
+                          setTaxIdBackPreview(null);
+                        }
+                      }}
+                      accept="image/*,.pdf"
+                    />
+                    {taxIdBackPreview ? (
+                      <img src={taxIdBackPreview} alt="Tax ID Back" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <ImageIcon size={24} className={`mb-2 transition-colors ${taxIdBackFile ? 'text-brand-400' : 'group-hover:text-brand-400'}`} />
+                        <span className="text-[10px] font-medium text-center px-2 truncate w-full">
+                          {taxIdBackFile ? taxIdBackFile.name : (t('tax_id_back') || 'Back Side')}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Responsible Personnel Information */}
+              <div className="space-y-1.5 pt-2">
+                <label className="text-xs font-bold text-primary px-1">{t('responsible_id') || 'Responsible ID'}</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                    <CreditCard size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    value={responsibleId}
+                    onChange={(e) => setResponsibleId(e.target.value)}
+                    placeholder={t('responsible_id_placeholder') || 'Enter ID details'}
+                    className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-primary px-1">{t('responsible_number') || 'Responsible Phone Number'}</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                    <Phone size={18} />
+                  </div>
+                  <input
+                    type="tel"
+                    value={responsibleNumber}
+                    onChange={(e) => setResponsibleNumber(e.target.value)}
+                    placeholder="+965 XXXX XXXX"
+                    className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    dir="ltr"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-primary px-1">{t('responsible_id_file') || 'Responsible ID File'}</label>
+                <div
+                  onClick={() => responsibleIdRef.current?.click()}
+                  className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors px-4"
+                >
+                  <input
+                    type="file"
+                    ref={responsibleIdRef}
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setResponsibleIdFile(file);
+                      if (file && file.type.startsWith('image/')) {
+                        setResponsibleIdPreview(URL.createObjectURL(file));
+                      } else {
+                        setResponsibleIdPreview(null);
+                      }
+                    }}
+                    accept="image/*,.pdf"
+                  />
+                  {responsibleIdPreview ? (
+                    <img src={responsibleIdPreview} alt="Responsible ID" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <ImageIcon size={18} className={`me-2 transition-colors ${responsibleIdFile ? 'text-brand-400' : 'group-hover:text-brand-400'}`} />
+                      <span className="text-xs font-medium truncate">
+                        {responsibleIdFile ? responsibleIdFile.name : (t('upload_responsible_id') || 'Upload ID Picture')}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
               {/* Description */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-primary px-1">{t('description') || 'Description'}</label>
@@ -301,9 +500,9 @@ export const SignUp: React.FC = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden pb-20">
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
-      
+
       <div className="absolute top-5 start-5 z-20">
-        <button 
+        <button
           onClick={() => {
             if (step === 'ACCOUNT_TYPE') navigate({ to: '/login' });
             else if (step === 'PHONE') setStep('ACCOUNT_TYPE');
@@ -325,7 +524,7 @@ export const SignUp: React.FC = () => {
         <div className="text-center mt-6">
           <p className="text-sm text-secondary">
             {t('already_have_account') || "Already have an account?"}{' '}
-            <button 
+            <button
               onClick={() => navigate({ to: '/login' })}
               className="text-brand-500 font-bold hover:underline"
             >
@@ -340,6 +539,6 @@ export const SignUp: React.FC = () => {
 
 const ChevronRight = ({ size }: { size: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m9 18 6-6-6-6"/>
+    <path d="m9 18 6-6-6-6" />
   </svg>
 );

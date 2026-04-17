@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Heart, User, Building2, LayoutList, Inbox } from 'lucide-react';
+import { Home, Heart, User, Building2, LayoutList, Inbox, Award } from 'lucide-react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { UserRole } from '../types';
 import { useLanguage } from '../i18n';
@@ -67,10 +67,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     onClick={() => navigate({ to: '/my-ads' })}
                   />
                   <NavItem
-                    icon={<Inbox size={22} />}
-                    label={t('nav_leads')}
-                    isActive={location.pathname === '/leads'}
-                    onClick={() => navigate({ to: '/leads' })}
+                    icon={<Award size={22} />}
+                    label={t('nav_subscriptions') || 'Subscriptions'}
+                    isActive={location.pathname === '/subscriptions'}
+                    onClick={() => navigate({ to: '/subscriptions' })}
                   />
                 </>
               )}

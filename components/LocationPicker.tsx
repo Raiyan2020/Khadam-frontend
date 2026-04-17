@@ -79,24 +79,33 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    setIsSearching(true);
-    try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=kw`);
-      const data = await response.json();
-      if (data && data.length > 0) {
-        const result = data[0];
-        const newPos = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
-        onChange({ cityEn: value.cityEn, position: newPos });
+  useEffect(() => {
+    const handler = setTimeout(async () => {
+      if (!searchQuery.trim()) return;
+      
+      setIsSearching(true);
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=kw`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          const result = data[0];
+          const newPos = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+          onChange({ cityEn: value.cityEn, position: newPos });
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsSearching(false);
       }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSearching(false);
-    }
+    }, 800);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
   };
 
   return (
@@ -141,10 +150,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange 
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  handleSearch(e)
-                }}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={isAr ? 'ابحث عن شارع، مبنى، أو معلم' : 'Search for street, building, or landmark'}
                 className="w-full h-11 bg-background/95 backdrop-blur-md border border-border rounded-xl ps-4 pe-12 text-sm text-primary placeholder-secondary/70 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-sm"
               />

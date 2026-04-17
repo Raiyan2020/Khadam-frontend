@@ -9,7 +9,7 @@ import { Settings } from './views/Settings';
 import { UserProfile } from './views/UserProfile';
 import { OfficesList } from './views/OfficesList';
 import { MyAds } from './views/MyAds';
-import { Leads } from './views/Leads';
+import { Subscriptions } from './views/Subscriptions';
 import { Notifications } from './views/Notifications';
 import { CountryResults } from './views/CountryResults';
 import { SearchResults } from './views/SearchResults';
@@ -94,10 +94,10 @@ export const myAdsRoute = createRoute({
   component: MyAds,
 });
 
-export const leadsRoute = createRoute({
+export const subscriptionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/leads',
-  component: Leads,
+  path: '/subscriptions',
+  component: Subscriptions,
 });
 
 export const notificationsRoute = createRoute({
@@ -163,7 +163,7 @@ const routeTree = rootRoute.addChildren([
   userProfileRoute,
   officesListRoute,
   myAdsRoute,
-  leadsRoute,
+  subscriptionsRoute,
   notificationsRoute,
   countryResultsRoute,
   searchResultsRoute,
