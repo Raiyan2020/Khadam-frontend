@@ -69,3 +69,17 @@ export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | '
     <img src={src} alt={alt} className={`${sizes[size]} rounded-full object-cover border border-border ${className}`} />
   );
 };
+
+export const Switch: React.FC<{ checked?: boolean; onChange?: (checked: boolean) => void }> = ({ checked = false, onChange }) => {
+  return (
+    <div 
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onChange) onChange(!checked);
+      }}
+      className={`relative w-10 h-6 flex shrink-0 items-center rounded-full transition-colors cursor-pointer ${checked !== false ? 'bg-brand-500' : 'bg-surface border border-border'}`}
+    >
+      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${checked !== false ? 'end-1' : 'start-1'}`} />
+    </div>
+  );
+};

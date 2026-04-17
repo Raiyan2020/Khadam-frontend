@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { ArrowLeft, ArrowRight, MapPin, MessageCircle, Phone, Globe, Heart } from 'lucide-react';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 import { MOCK_OFFICES, MOCK_ADS, MOCK_WORKERS } from '../constants';
+import { useUserRole } from '../UserRoleContext';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 
@@ -13,6 +13,8 @@ export const OfficeProfile: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
   const office = MOCK_OFFICES.find(o => o.id === officeId);
 
   if (!office) return <div className="p-10 text-center">{t('no_workers')}</div>;
@@ -69,12 +71,14 @@ export const OfficeProfile: React.FC = () => {
         </div>
 
         <div className="absolute top-5 end-5 z-20">
-           <button 
-             onClick={() => toggleFavorite(office.id)} 
-             className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border transition-colors ${isFavorite(office.id) ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-black/20 text-white border-white/10 hover:bg-black/30'}`}
-           >
-            <Heart size={20} fill={isFavorite(office.id) ? "currentColor" : "none"} />
-          </button>
+          {isSeeker && (
+            <button 
+              onClick={() => toggleFavorite(office.id)} 
+              className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border transition-colors ${isFavorite(office.id) ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-black/20 text-white border-white/10 hover:bg-black/30'}`}
+            >
+              <Heart size={20} fill={isFavorite(office.id) ? "currentColor" : "none"} />
+            </button>
+          )}
         </div>
       </div>
 

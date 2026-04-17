@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, MessageCircle, Share2, MapPin, Globe, Clock, CheckCircle, Wallet, Heart } from 'lucide-react';
 import { GlassCard, Button, Badge } from '../components/GlassUI';
 import { useFavorites } from '../FavoritesContext';
 import { Worker, Office, ServiceCategory } from '../types';
+import { useUserRole } from '../UserRoleContext';
 import { MOCK_OFFICES, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 
@@ -13,6 +13,9 @@ export const WorkerProfile: React.FC = () => {
   const { workerId } = useParams({ strict: false }) as { workerId: string };
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
+  
   const worker = MOCK_WORKERS.find(w => w.id === workerId);
   const office = worker ? MOCK_OFFICES.find(o => o.id === worker.officeId) : null;
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -52,12 +55,14 @@ export const WorkerProfile: React.FC = () => {
             <BackIcon size={20} />
           </button>
           <div className="flex gap-2">
-            <button 
-              onClick={() => toggleFavorite(workerId)} 
-              className={`w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${favorite ? 'text-red-500 hover:bg-black/40' : 'text-white hover:bg-black/40'}`}
-            >
-              <Heart size={20} fill={favorite ? "currentColor" : "none"} />
-            </button>
+            {isSeeker && (
+              <button 
+                onClick={() => toggleFavorite(workerId)} 
+                className={`w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${favorite ? 'text-red-500 hover:bg-black/40' : 'text-white hover:bg-black/40'}`}
+              >
+                <Heart size={20} fill={favorite ? "currentColor" : "none"} />
+              </button>
+            )}
             <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
               <Share2 size={20} />
             </button>

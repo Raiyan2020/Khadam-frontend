@@ -4,6 +4,7 @@ import { Worker, ServiceCategory } from '../types';
 import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
+import { useUserRole } from '../UserRoleContext';
 import { GlassCard, Avatar, Badge } from '../components/GlassUI';
 
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -187,6 +188,8 @@ const FullListingCard: React.FC<{
   const ad = MOCK_ADS.find(a => a.workerId === worker.id);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(worker.id);
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -205,12 +208,14 @@ const FullListingCard: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
-            className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-          >
-            <Heart size={16} fill={favorite ? "currentColor" : "none"} />
-          </button>
+          {isSeeker && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
+              className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+            >
+              <Heart size={16} fill={favorite ? "currentColor" : "none"} />
+            </button>
+          )}
           <div className="text-[10px] text-secondary bg-background/50 px-2 py-1 rounded-md border border-border">
             {t('ref_id')}: {worker.id.toUpperCase()}
           </div>

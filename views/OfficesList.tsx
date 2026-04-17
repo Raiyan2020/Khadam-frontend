@@ -4,13 +4,16 @@ import { GlassCard, Avatar } from '../components/GlassUI';
 import { MOCK_OFFICES } from '../constants';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
+import { useUserRole } from '../UserRoleContext';
 
 import { useNavigate } from '@tanstack/react-router';
 
 export const OfficesList: React.FC = () => {
   const navigate = useNavigate();
-  const { t, language, dir } = useLanguage();
+  const { t, dir, language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
   return (
@@ -39,12 +42,14 @@ export const OfficesList: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleFavorite(office.id); }}
-                className={`p-2 rounded-full transition-colors ${isFavorite(office.id) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-              >
-                <Heart size={18} fill={isFavorite(office.id) ? "currentColor" : "none"} />
-              </button>
+              {isSeeker && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(office.id); }}
+                  className={`p-2 rounded-full transition-colors ${isFavorite(office.id) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                >
+                  <Heart size={18} fill={isFavorite(office.id) ? "currentColor" : "none"} />
+                </button>
+              )}
               <div className="w-8 h-8 rounded-full bg-glass flex items-center justify-center text-secondary group-hover:bg-accent group-hover:text-accent-fg transition-colors">
                 <Icon size={16} />
               </div>

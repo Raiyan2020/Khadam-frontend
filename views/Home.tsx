@@ -1,9 +1,10 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, MapPin, ChevronRight, Filter, ChevronLeft, Bell, Globe, Heart } from 'lucide-react';
+import { Search, MapPin, ChevronRight, Filter, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock } from 'lucide-react';
 import { GlassCard, Badge, Avatar } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
 import { useFavorites } from '../FavoritesContext';
+import { useUserRole } from '../UserRoleContext';
 import { ServiceCategory, Ad, Office, Worker } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
@@ -23,6 +24,36 @@ const handleFlagError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   }
 };
 
+const AnimatedNumber: React.FC<{ value: number; duration?: number }> = ({ value, duration = 1500 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number;
+    let animationFrame: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const percentage = Math.min(progress / duration, 1);
+
+      // OutExpo easing for a smooth deceleration
+      const easeOut = percentage === 1 ? 1 : 1 - Math.pow(2, -10 * percentage);
+      setCount(Math.floor(easeOut * value));
+
+      if (progress < duration) {
+        animationFrame = requestAnimationFrame(animate);
+      } else {
+        setCount(value);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [value, duration]);
+
+  return <>{count}</>;
+};
+
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
@@ -33,25 +64,27 @@ export const Home: React.FC = () => {
 
   const [lastViewedIds, setLastViewedIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('last_viewed_workers');
-    return saved ? JSON.parse(saved) : ['w1', 'w4', 'w8']; 
+    return saved ? JSON.parse(saved) : ['w1', 'w4', 'w8'];
   });
 
   const baseFilter = (worker: Worker) => {
     const matchesCategory = activeCategory === 'All' || worker.category === activeCategory;
     const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = 
-      worker.name[language].toLowerCase().includes(searchLower) || 
+    const matchesSearch =
+      worker.name[language].toLowerCase().includes(searchLower) ||
       worker.nationality[language].toLowerCase().includes(searchLower) ||
       worker.specialty[language].toLowerCase().includes(searchLower);
-      
+
     // Apply advanced filters
     let matchesFilters = true;
     if (filterCriteria.maxSalary !== undefined && worker.salary > filterCriteria.maxSalary) {
       matchesFilters = false;
     }
-    if (filterCriteria.language !== undefined && filterCriteria.language !== 'Any') {
-      const hasLang = worker.languages.some(l => l.en === filterCriteria.language || l.ar === filterCriteria.language);
-      if (!hasLang) matchesFilters = false;
+    if (filterCriteria.nationality !== undefined && filterCriteria.nationality !== 'Any') {
+      const nat = worker.nationality;
+      if (nat.en !== filterCriteria.nationality && nat.ar !== filterCriteria.nationality) {
+        matchesFilters = false;
+      }
     }
     if (filterCriteria.gender !== undefined && filterCriteria.gender !== 'Any' && worker.gender !== filterCriteria.gender) {
       matchesFilters = false;
@@ -62,7 +95,7 @@ export const Home: React.FC = () => {
     if (filterCriteria.maxAge !== undefined && worker.age > filterCriteria.maxAge) {
       matchesFilters = false;
     }
-    
+
     return matchesCategory && matchesSearch && matchesFilters;
   };
 
@@ -119,15 +152,17 @@ export const Home: React.FC = () => {
     navigate({ to: '/worker/$workerId', params: { workerId: id } } as any);
   };
 
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'seeker';
   return (
     <div className="pb-10">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
-              <img 
-                src="https://raiyansoft.com/wp-content/uploads/2026/02/icon-s-d.png" 
-                alt="Logo" 
+              <img
+                src="https://raiyansoft.com/wp-content/uploads/2026/02/icon-s-d.png"
+                alt="Logo"
                 className="h-[40px] w-auto max-w-[135px] object-contain"
               />
             </div>
@@ -136,7 +171,7 @@ export const Home: React.FC = () => {
               <p className="text-[10px] text-secondary">{t('subtitle')}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => navigate({ to: '/notifications' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
             aria-label={t('nav_notifications')}
@@ -147,8 +182,8 @@ export const Home: React.FC = () => {
         </div>
 
         <div className="relative group">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder={t('search_placeholder')}
             className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-4 focus:ring-[var(--focus-ring)] transition-all"
             value={searchQuery}
@@ -160,7 +195,7 @@ export const Home: React.FC = () => {
             }}
           />
           <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
-          <button 
+          <button
             onClick={() => setIsFilterModalOpen(true)}
             className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1 rounded-md hover:bg-brand-300 transition-colors"
           >
@@ -169,57 +204,213 @@ export const Home: React.FC = () => {
         </div>
 
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          <CategoryChip 
-            label={getTranslatedCategory('All')} 
-            isActive={activeCategory === 'All'} 
-            onClick={() => setActiveCategory('All')} 
+          <CategoryChip
+            label={getTranslatedCategory('All')}
+            isActive={activeCategory === 'All'}
+            onClick={() => setActiveCategory('All')}
           />
           {Object.values(ServiceCategory).map(cat => (
-            <CategoryChip 
-              key={cat} 
-              label={getTranslatedCategory(cat)} 
-              isActive={activeCategory === cat} 
-              onClick={() => setActiveCategory(cat)} 
+            <CategoryChip
+              key={cat}
+              label={getTranslatedCategory(cat)}
+              isActive={activeCategory === cat}
+              onClick={() => setActiveCategory(cat)}
             />
           ))}
         </div>
       </div>
+      {!isSeeker && (
+        <div className="px-5 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {/* WhatsApp Redirects */}
+            <GlassCard className="p-4 flex flex-col gap-2 relative overflow-hidden">
+              <div className="absolute -end-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl pointer-events-none" />
+              <div className="w-8 h-8 rounded-xl bg-green-500/20 border border-green-500/30 text-green-500 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+              </div>
+              <div className="mt-1">
+                <h3 className="text-2xl font-bold text-primary tracking-tight"><AnimatedNumber value={142} /></h3>
+                <p className="text-[10px] text-secondary leading-snug mt-1">{t('stat_whatsapp') || 'WhatsApp Redirects'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Status (Active/Inactive) */}
+            <GlassCard className="p-4 flex items-center gap-4 relative overflow-hidden">
+              <div className="absolute -end-4 -top-4 w-16 h-16 bg-brand-500/10 rounded-full blur-xl pointer-events-none" />
+
+              {/* SVG Donut Chart */}
+              <div className="relative w-16 h-16 shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  {/* Background Track (Inactive) */}
+                  <path
+                    className="text-brand-500/20"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  {/* Foreground Track (Active) */}
+                  <path
+                    className="text-brand-500 drop-shadow-sm"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeDasharray={`${(38 / 45) * 100}, 100`}
+                    strokeLinecap="round"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                {/* Center Percentage */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-brand-600 dark:text-brand-400"><AnimatedNumber value={Math.round((38 / 45) * 100)} />%</span>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-brand-500" />
+                    <span className="text-base font-bold text-primary"><AnimatedNumber value={38} /></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 opacity-60">
+                    <div className="w-2 h-2 rounded-full bg-brand-500/40" />
+                    <span className="text-base font-bold text-primary"><AnimatedNumber value={7} /></span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-secondary leading-snug">{t('stat_status') || 'Active / Inactive'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Total Servants */}
+            <GlassCard className="p-4 relative overflow-hidden group">
+              <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-xl group-hover:bg-blue-500/30 transition-all duration-500" />
+              
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10">
+                  <Users size={16} />
+                </div>
+                <div className="bg-blue-500/10 px-2 py-0.5 rounded-md text-[9px] text-blue-400 font-bold border border-blue-500/20">
+                  +12%
+                </div>
+              </div>
+              
+              <div className="relative z-10 mt-1">
+                <h3 className="text-2xl font-black text-primary tracking-tight"><AnimatedNumber value={45} /></h3>
+                <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_servants') || 'Total Workers'}</p>
+              </div>
+
+              {/* Minimal Sparkline */}
+              <div className="absolute bottom-0 inset-x-0 h-10 opacity-40 mt-4 pointer-events-none">
+                <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+                  <path d="M0 20 Q 25 15, 50 18 T 100 5 L 100 20 Z" fill="url(#blue-grad)" />
+                  <path d="M0 20 Q 25 15, 50 18 T 100 5" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-500" />
+                  <defs>
+                    <linearGradient id="blue-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="currentColor" className="text-blue-500" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="currentColor" className="text-blue-500" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </GlassCard>
+
+            {/* Profile Visits */}
+            <GlassCard className="p-4 relative overflow-hidden group">
+              <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-500" />
+              
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+                  <Eye size={16} />
+                </div>
+                <div className="bg-indigo-500/10 px-2 py-0.5 rounded-md text-[9px] text-indigo-400 font-bold border border-indigo-500/20">
+                  +34%
+                </div>
+              </div>
+              
+              <div className="relative z-10 mt-1">
+                <h3 className="text-2xl font-black text-primary tracking-tight"><AnimatedNumber value={893} /></h3>
+                <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_visits') || 'Profile Visits'}</p>
+              </div>
+
+              {/* Minimal Sparkline */}
+              <div className="absolute bottom-0 inset-x-0 h-10 opacity-40 mt-4 pointer-events-none">
+                <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
+                  <path d="M0 15 Q 15 5, 30 15 T 70 10 T 100 5 L 100 20 L 0 20 Z" fill="url(#indigo-grad)" />
+                  <path d="M0 15 Q 15 5, 30 15 T 70 10 T 100 5" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-500" />
+                  <defs>
+                    <linearGradient id="indigo-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="currentColor" className="text-indigo-500" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="currentColor" className="text-indigo-500" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </GlassCard>
+
+
+
+
+            {/* Package Expiry */}
+            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 relative overflow-hidden">
+              <div className="absolute end-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0">
+                  <Clock size={18} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-sm font-bold text-primary">{t('stat_package') || 'Premium Package'}</h3>
+                    <Badge color="accent">14 {t('days') || 'Days'}</Badge>
+                  </div>
+                  <p className="text-[10px] text-secondary mt-0.5">{t('stat_expires') || 'Remaining until your package expires'}</p>
+                </div>
+              </div>
+              <div className="w-full bg-background rounded-full h-1.5 mt-1 overflow-hidden border border-border">
+                <div className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full" style={{ width: '30%' }} />
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-8 mt-6">
         {/* Nationality Section */}
         <section className="space-y-4">
-           <div className="flex items-center justify-between px-5">
-             <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
-           </div>
-           <div className="flex gap-6 overflow-x-auto no-scrollbar px-5 pb-2">
-              {NATIONALITIES.map(nat => (
-                <div 
-                  key={nat.name.en}
-                  onClick={() => navigate({ to: '/country/$nationality', params: { nationality: nat.name.en } } as any)}
-                  className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
-                >
-                  <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
-                    <img 
-                      src={nat.flag} 
-                      alt={nat.name[language]} 
-                      onError={handleFlagError}
-                      className="w-full h-full object-cover" 
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name[language]}</span>
+          <div className="flex items-center justify-between px-5">
+            <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
+          </div>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar px-5 pb-2">
+            {NATIONALITIES.map(nat => (
+              <div
+                key={nat.name.en}
+                onClick={() => navigate({ to: '/country/$nationality', params: { nationality: nat.name.en } } as any)}
+                className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
+              >
+                <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
+                  <img
+                    src={nat.flag}
+                    alt={nat.name[language]}
+                    onError={handleFlagError}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              ))}
-           </div>
+                <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name[language]}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {continueViewed.length > 0 && (
           <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue' } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {continueViewed.map(worker => (
-                <CompactCard 
-                  key={worker.id} 
-                  worker={worker} 
-                  onClick={() => handleWorkerClick(worker.id)} 
+                <CompactCard
+                  key={worker.id}
+                  worker={worker}
+                  onClick={() => handleWorkerClick(worker.id)}
                   language={language}
                 />
               ))}
@@ -231,10 +422,10 @@ export const Home: React.FC = () => {
           <SectionContainer title={t('section_available')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'available' } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {availableNow.map(worker => (
-                <CompactCard 
-                  key={worker.id} 
-                  worker={worker} 
-                  onClick={() => handleWorkerClick(worker.id)} 
+                <CompactCard
+                  key={worker.id}
+                  worker={worker}
+                  onClick={() => handleWorkerClick(worker.id)}
                   language={language}
                 />
               ))}
@@ -245,9 +436,9 @@ export const Home: React.FC = () => {
         <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest' } })}>
           <div className="px-5 space-y-4">
             {newestListings.slice(0, 4).map(worker => (
-              <FullListingCard 
-                key={worker.id} 
-                worker={worker} 
+              <FullListingCard
+                key={worker.id}
+                worker={worker}
                 onSelect={() => handleWorkerClick(worker.id)}
                 onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
@@ -258,7 +449,7 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
 
-        <SectionContainer title={t('section_budget')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'budget' } })}>
+        {/* <SectionContainer title={t('section_budget')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'budget' } })}>
           <div className="px-5 space-y-4">
             {budgetListings.slice(0, 4).map(worker => (
               <FullListingCard 
@@ -272,14 +463,14 @@ export const Home: React.FC = () => {
               />
             ))}
           </div>
-        </SectionContainer>
+        </SectionContainer> */}
 
         <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience' } })}>
           <div className="px-5 space-y-4">
             {experiencedListings.slice(0, 4).map(worker => (
-              <FullListingCard 
-                key={worker.id} 
-                worker={worker} 
+              <FullListingCard
+                key={worker.id}
+                worker={worker}
                 onSelect={() => handleWorkerClick(worker.id)}
                 onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                 language={language}
@@ -292,9 +483,9 @@ export const Home: React.FC = () => {
       </div>
 
       {/* Filter Modal */}
-      <FilterModal 
-        isOpen={isFilterModalOpen} 
-        onClose={() => setIsFilterModalOpen(false)} 
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
         onApply={setFilterCriteria}
         initialCriteria={filterCriteria}
       />
@@ -320,12 +511,12 @@ const SectionContainer: React.FC<{ title: string; children: React.ReactNode; onV
 const CompactCard: React.FC<{ worker: Worker; onClick: () => void; language: string }> = ({ worker, onClick, language }) => (
   <div onClick={onClick} className="flex-shrink-0 w-32 cursor-pointer group">
     <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-border shadow-sm mb-2 bg-glass">
-      <img 
-        src={worker.photo} 
-        alt={worker.name[language]} 
+      <img
+        src={worker.photo}
+        alt={worker.name[language]}
         onError={handleImageError}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-        loading="lazy" 
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
       />
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
         <p className="text-[10px] font-bold text-white truncate">{worker.name[language]}</p>
@@ -335,24 +526,25 @@ const CompactCard: React.FC<{ worker: Worker; onClick: () => void; language: str
   </div>
 );
 
-const FullListingCard: React.FC<{ 
-  worker: Worker; 
-  onSelect: () => void; 
-  onSelectOffice: (id: string) => void; 
-  language: string; 
+const FullListingCard: React.FC<{
+  worker: Worker;
+  onSelect: () => void;
+  onSelectOffice: (id: string) => void;
+  language: string;
   t: (k: any) => string;
   dir: string;
 }> = ({ worker, onSelect, onSelectOffice, language, t, dir }) => {
   const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
   const ad = MOCK_ADS.find(a => a.workerId === worker.id);
   const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(worker.id);
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
       <div className="flex items-center justify-between mb-3">
-        <div 
-          className="flex items-center gap-2 cursor-pointer" 
+        <div
+          className="flex items-center gap-2 cursor-pointer"
           onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
         >
           {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
@@ -365,27 +557,29 @@ const FullListingCard: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
-            className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-          >
-            <Heart size={16} fill={favorite ? "currentColor" : "none"} />
-          </button>
+          {isSeeker && (
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
+              className={`p-1.5 rounded-full transition-colors ${isFavorite(worker.id) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+            >
+              <Heart size={16} fill={isFavorite(worker.id) ? "currentColor" : "none"} />
+            </button>
+          )}
           <Badge color="neutral">{worker.id}</Badge>
         </div>
       </div>
 
       <div className="flex gap-4">
         <div className="relative w-24 h-28 flex-shrink-0 bg-glass rounded-xl overflow-hidden">
-          <img 
-            src={worker.photo} 
-            alt={worker.name[language]} 
+          <img
+            src={worker.photo}
+            alt={worker.name[language]}
             onError={handleImageError}
-            className="w-full h-full object-cover border border-border" 
-            loading="lazy" 
+            className="w-full h-full object-cover border border-border"
+            loading="lazy"
           />
         </div>
-        
+
         <div className="flex-1 flex flex-col justify-between py-0.5">
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-primary line-clamp-1">{ad?.title[language] || worker.name[language]}</h4>
@@ -400,9 +594,9 @@ const FullListingCard: React.FC<{
               <span className="text-[10px] text-secondary leading-none">{t('salary')}</span>
               <span className="text-sm font-bold text-brand-700 dark:text-brand-400">{worker.salary} {t('kwd')}</span>
             </div>
-            
+
             <div className="w-8 h-8 rounded-full bg-accent-subtle flex items-center justify-center text-accent-text group-hover:bg-accent group-hover:text-accent-fg transition-all">
-               {dir === 'rtl' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+              {dir === 'rtl' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </div>
           </div>
         </div>
@@ -412,13 +606,12 @@ const FullListingCard: React.FC<{
 };
 
 const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
-    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
-      isActive 
-        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20' 
-        : 'bg-glass text-secondary border border-border hover:bg-glassHigh'
-    }`}
+    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
+      ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+      : 'bg-glass text-secondary border border-border hover:bg-glassHigh'
+      }`}
   >
     {label}
   </button>

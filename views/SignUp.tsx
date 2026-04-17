@@ -4,6 +4,8 @@ import { useLanguage } from '../i18n';
 import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon } from 'lucide-react';
 
 import { useNavigate } from '@tanstack/react-router';
+import { LocationPicker, KUWAIT_CITIES } from '../components/LocationPicker';
+import type { LatLng } from '../components/LocationPicker';
 
 type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE' | 'OTP' | 'PROFILE_SETUP';
 type AccountType = 'PERSONAL' | 'BUSINESS' | null;
@@ -19,7 +21,10 @@ export const SignUp: React.FC = () => {
   // Profile Setup State
   const [name, setName] = useState('John Doe');
   const [businessName, setBusinessName] = useState('Al-Aman Recruitment');
-  const [location, setLocation] = useState('Kuwait City');
+  const [locationData, setLocationData] = useState<{ cityEn: string; position: LatLng | null }>({
+    cityEn: KUWAIT_CITIES[0].nameEn,
+    position: null,
+  });
   const [website, setWebsite] = useState('https://alaman.com');
   const [contactNumber, setContactNumber] = useState('+965 9876 5432');
   const [description, setDescription] = useState('We provide the best domestic workers in Kuwait.');
@@ -201,22 +206,10 @@ export const SignUp: React.FC = () => {
               </div>
 
               {/* Location */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-primary px-1">{t('location') || 'Location'}</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
-                    <MapPin size={18} />
-                  </div>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder={t('location_placeholder') || 'e.g. Kuwait City'}
-                    className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
-                    required
-                  />
-                </div>
-              </div>
+              <LocationPicker
+                value={locationData}
+                onChange={setLocationData}
+              />
 
               {/* Website */}
               <div className="space-y-1.5">

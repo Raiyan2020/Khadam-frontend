@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './GlassUI';
 import { useLanguage } from '../i18n';
+import { NATIONALITIES } from '../constants';
 
 export interface FilterCriteria {
   maxSalary?: number;
-  language?: string;
+  nationality?: string;
   gender?: 'Female' | 'Male' | 'Any';
   minExperience?: number;
   maxAge?: number;
@@ -19,10 +20,10 @@ interface FilterModalProps {
 }
 
 export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, initialCriteria }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   const [maxSalary, setMaxSalary] = useState<number | ''>(initialCriteria?.maxSalary || '');
-  const [language, setLanguage] = useState<string>(initialCriteria?.language || 'Any');
+  const [nationality, setNationality] = useState<string>(initialCriteria?.nationality || 'Any');
   const [gender, setGender] = useState<'Female' | 'Male' | 'Any'>(initialCriteria?.gender || 'Any');
   const [minExperience, setMinExperience] = useState<number | ''>(initialCriteria?.minExperience || '');
   const [maxAge, setMaxAge] = useState<number | ''>(initialCriteria?.maxAge || '');
@@ -32,7 +33,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   const handleApply = () => {
     onApply({
       maxSalary: maxSalary === '' ? undefined : Number(maxSalary),
-      language: language === 'Any' ? undefined : language,
+      nationality: nationality === 'Any' ? undefined : nationality,
       gender: gender,
       minExperience: minExperience === '' ? undefined : Number(minExperience),
       maxAge: maxAge === '' ? undefined : Number(maxAge),
@@ -42,7 +43,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
 
   const handleReset = () => {
     setMaxSalary('');
-    setLanguage('Any');
+    setNationality('Any');
     setGender('Any');
     setMinExperience('');
     setMaxAge('');
@@ -72,20 +73,27 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
               />
             </div>
 
-            {/* Languages */}
+            {/* Nationality */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-200">{t('filter_languages')}</label>
-              <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full h-11 bg-zinc-900 border border-zinc-800 rounded-xl px-4 text-sm text-white focus:outline-none focus:border-brand-400 focus:bg-zinc-900 appearance-none"
-              >
-                <option value="Any">{t('any')}</option>
-                <option value="English">English</option>
-                <option value="Arabic">Arabic</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Tagalog">Tagalog</option>
-              </select>
+              <label className="text-sm font-medium text-zinc-200">{t('nationality')}</label>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button
+                  onClick={() => setNationality('Any')}
+                  className={`flex-shrink-0 h-10 px-4 rounded-xl text-sm font-medium transition-colors ${nationality === 'Any' ? 'bg-brand-500 text-white' : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'}`}
+                >
+                  {t('any')}
+                </button>
+                {NATIONALITIES.map(nat => (
+                  <button
+                    key={nat.name.en}
+                    onClick={() => setNationality(nat.name.en)}
+                    className={`flex-shrink-0 h-10 px-3 flex items-center gap-2 rounded-xl text-sm font-medium transition-colors ${nationality === nat.name.en ? 'bg-brand-500 text-white' : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'}`}
+                  >
+                    <img src={nat.flag} alt={nat.name[language as 'en' | 'ar'] || nat.name.en} className="w-5 h-5 rounded-full object-cover" />
+                    <span>{nat.name[language as 'en' | 'ar'] || nat.name.en}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Gender */}

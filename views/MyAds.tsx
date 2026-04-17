@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Eye } from 'lucide-react';
-import { GlassCard, Button, Badge } from '../components/GlassUI';
+import { GlassCard, Button, Badge, Switch } from '../components/GlassUI';
 import { MOCK_ADS, MOCK_WORKERS } from '../constants';
 import { useLanguage } from '../i18n';
 
@@ -9,13 +9,17 @@ import { useNavigate } from '@tanstack/react-router';
 export const MyAds: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  
+
   // Simulate logged-in office (ID: o1)
   const myOfficeId = 'o1';
   const [myAds, setMyAds] = useState(MOCK_ADS.filter(ad => ad.officeId === myOfficeId));
 
   const handleDelete = (id: string) => {
     setMyAds(prev => prev.filter(ad => ad.id !== id));
+  };
+
+  const handleToggleActive = (id: string) => {
+    setMyAds(prev => prev.map(ad => ad.id === id ? { ...ad, isActive: ad.isActive === false ? true : false } : ad));
   };
 
   return (
@@ -37,46 +41,56 @@ export const MyAds: React.FC = () => {
           myAds.map(ad => {
             const worker = MOCK_WORKERS.find(w => w.id === ad.workerId);
             if (!worker) return null;
-            
+
             return (
               <GlassCard key={ad.id} className="group">
                 <div className="flex gap-3 mb-3" onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}>
-                   <img 
-                      src={worker.photo} 
-                      alt={worker.name[language]} 
-                      className="w-16 h-16 object-cover rounded-lg bg-surface"
-                    />
-                    <div className="flex-1">
-                       <div className="flex justify-between items-start">
-                         <h3 className="text-sm font-bold text-primary line-clamp-1">{ad.title[language]}</h3>
-                         <Badge color={ad.featured ? 'accent' : 'neutral'}>
-                            {ad.featured ? 'Featured' : 'Active'}
-                         </Badge>
-                       </div>
-                       <p className="text-xs text-secondary mt-1">{worker.name[language]}</p>
-                       <p className="text-[10px] text-secondary mt-0.5">{ad.postedAt}</p>
+                  <img
+                    src={worker.photo}
+                    alt={worker.name[language]}
+                    className="w-16 h-16 object-cover rounded-lg bg-surface"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-sm font-bold text-primary line-clamp-1">{ad.title[language]}</h3>
+                      <Badge color={ad.featured ? 'accent' : 'neutral'}>
+                        {ad.featured ? 'Featured' : 'Active'}
+                      </Badge>
                     </div>
+                    <div className="flex items-end gap-2 justify-between">
+                      <div className="flex gap-2 flex-col">
+                        <p className="text-xs text-secondary mt-1">{worker.name[language]}</p>
+                        <p className="text-[10px] text-secondary mt-0.5">{ad.postedAt}</p>
+                      </div>
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Switch
+                          checked={ad.isActive !== false}
+                          onChange={() => handleToggleActive(ad.id)}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
+
                 <div className="flex gap-2 pt-3 border-t border-border">
-                   <button 
-                     className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
-                   >
-                      <Eye size={14} /> {t('action_view')}
-                   </button>
-                   <button 
-                     className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => navigate({ to: '/edit-ad/$adId', params: { adId: ad.id } } as any)}
-                   >
-                      <Edit2 size={14} /> {t('action_edit')}
-                   </button>
-                   <button 
-                     className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-red-500 hover:bg-glassHigh rounded-lg transition-colors"
-                     onClick={() => handleDelete(ad.id)}
-                   >
-                      <Trash2 size={14} /> {t('action_delete')}
-                   </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
+                    onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
+                  >
+                    <Eye size={14} /> {t('action_view')}
+                  </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
+                    onClick={() => navigate({ to: '/edit-ad/$adId', params: { adId: ad.id } } as any)}
+                  >
+                    <Edit2 size={14} /> {t('action_edit')}
+                  </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-red-500 hover:bg-glassHigh rounded-lg transition-colors"
+                    onClick={() => handleDelete(ad.id)}
+                  >
+                    <Trash2 size={14} /> {t('action_delete')}
+                  </button>
                 </div>
               </GlassCard>
             );

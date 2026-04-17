@@ -5,6 +5,7 @@ import { useFavorites } from '../FavoritesContext';
 import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS } from '../constants';
 import { Worker, Office } from '../types';
 import { GlassCard, Avatar, Badge } from '../components/GlassUI';
+import { useUserRole } from '../UserRoleContext';
 
 import { useNavigate } from '@tanstack/react-router';
 
@@ -12,6 +13,8 @@ export const Favorites: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
   const [activeTab, setActiveTab] = useState<'workers' | 'offices'>('workers');
 
   const favoriteWorkers = MOCK_WORKERS.filter(w => favorites.includes(w.id));
@@ -21,7 +24,7 @@ export const Favorites: React.FC = () => {
     <div className="pb-10 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => navigate({ to: '/' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
           >
@@ -32,7 +35,7 @@ export const Favorites: React.FC = () => {
 
         <div className="relative flex bg-glass p-1 rounded-xl border border-border">
           {/* Sliding Indicator */}
-          <div 
+          <div
             className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-accent rounded-lg shadow-md transition-all duration-300 ease-in-out ${activeTab === 'workers' ? 'start-1' : 'start-[calc(50%+2px)]'}`}
           />
           <button
@@ -55,16 +58,17 @@ export const Favorites: React.FC = () => {
           favoriteWorkers.length > 0 ? (
             <div className="space-y-4">
               {favoriteWorkers.map(worker => (
-                <FullListingCard 
-                  key={worker.id} 
-                  worker={worker} 
+                <FullListingCard
+                  key={worker.id}
+                  worker={worker}
                   onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
                   onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
                   language={language}
                   t={t}
                   dir={dir}
-                  isFavorite={isFavorite(worker.id)}
+                  isFavorite={true}
                   onToggleFavorite={() => toggleFavorite(worker.id)}
+                  isSeeker={isSeeker}
                 />
               ))}
             </div>
@@ -81,14 +85,15 @@ export const Favorites: React.FC = () => {
           favoriteOffices.length > 0 ? (
             <div className="space-y-4">
               {favoriteOffices.map(office => (
-                <FavoriteOfficeCard 
-                  key={office.id} 
-                  office={office} 
+                <FavoriteOfficeCard
+                  key={office.id}
+                  office={office}
                   onSelect={() => navigate({ to: '/office/$officeId', params: { officeId: office.id } } as any)}
                   language={language}
                   dir={dir}
-                  isFavorite={isFavorite(office.id)}
+                  isFavorite={true}
                   onToggleFavorite={() => toggleFavorite(office.id)}
+                  isSeeker={isSeeker}
                 />
               ))}
             </div>
@@ -107,16 +112,17 @@ export const Favorites: React.FC = () => {
   );
 };
 
-const FullListingCard: React.FC<{ 
-  worker: Worker; 
-  onSelect: () => void; 
-  onSelectOffice: (id: string) => void; 
-  language: string; 
+const FullListingCard: React.FC<{
+  worker: Worker;
+  onSelect: () => void;
+  onSelectOffice: (id: string) => void;
+  language: string;
   t: (k: string) => string;
   dir: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-}> = ({ worker, onSelect, onSelectOffice, language, t, dir, isFavorite, onToggleFavorite }) => {
+  isSeeker: boolean;
+}> = ({ worker, onSelect, onSelectOffice, language, t, dir, isFavorite, onToggleFavorite, isSeeker }) => {
   const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
   const ad = MOCK_ADS.find(a => a.workerId === worker.id);
 
@@ -128,8 +134,8 @@ const FullListingCard: React.FC<{
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
       <div className="flex items-center justify-between mb-3">
-        <div 
-          className="flex items-center gap-2 cursor-pointer" 
+        <div
+          className="flex items-center gap-2 cursor-pointer"
           onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
         >
           {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
@@ -141,23 +147,25 @@ const FullListingCard: React.FC<{
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-            className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-          >
-            <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
-          </button>
+          {isSeeker && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+              className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+            >
+              <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
+            </button>
+          )}
           <Badge color="neutral">{worker.id}</Badge>
         </div>
       </div>
 
       <div className="flex gap-3">
         <div className="w-24 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-border relative">
-          <img 
-            src={worker.photo} 
-            alt={worker.name[language]} 
+          <img
+            src={worker.photo}
+            alt={worker.name[language]}
             onError={handleImageError}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
         <div className="flex-1 flex flex-col justify-between py-1">
@@ -170,7 +178,7 @@ const FullListingCard: React.FC<{
             </div>
             <p className="text-xs text-secondary mt-0.5">{worker.specialty[language]}</p>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-2">
             <div className="flex flex-col">
               <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('nationality')}</span>
@@ -187,19 +195,20 @@ const FullListingCard: React.FC<{
   );
 };
 
-const FavoriteOfficeCard: React.FC<{ 
-  office: Office; 
-  onSelect: () => void; 
-  language: string; 
+const FavoriteOfficeCard: React.FC<{
+  office: Office;
+  onSelect: () => void;
+  language: string;
   dir: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-}> = ({ office, onSelect, language, dir, isFavorite, onToggleFavorite }) => {
+  isSeeker: boolean;
+}> = ({ office, onSelect, language, dir, isFavorite, onToggleFavorite, isSeeker }) => {
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
   return (
-    <GlassCard 
-      onClick={onSelect} 
+    <GlassCard
+      onClick={onSelect}
       className="flex items-center justify-between group"
     >
       <div className="flex items-center gap-4">
@@ -218,12 +227,14 @@ const FavoriteOfficeCard: React.FC<{
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-          className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-        >
-          <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
-        </button>
+        {isSeeker && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+            className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+          >
+            <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
+          </button>
+        )}
         <div className="w-8 h-8 rounded-full bg-glass flex items-center justify-center text-secondary group-hover:bg-accent group-hover:text-accent-fg transition-colors">
           <Icon size={16} />
         </div>

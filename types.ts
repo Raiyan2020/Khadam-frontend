@@ -61,4 +61,5 @@ export interface Ad {
   description: LocalizedString;
   postedAt: string;
   featured: boolean;
+  isActive?: boolean;
 }
