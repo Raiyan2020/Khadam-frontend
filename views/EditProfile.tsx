@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Camera, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Save, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
@@ -25,6 +25,7 @@ export const EditProfile: React.FC = () => {
     location: 'Kuwait City, Sharq',
     website: 'www.alnour.com',
     bio: 'Leading recruitment agency in Kuwait with over 10 years of experience.',
+    isVerified: true,
   };
 
   const [formData, setFormData] = useState(initialData);
@@ -78,6 +79,14 @@ export const EditProfile: React.FC = () => {
               size="xl" 
               className="border-4 border-background" 
             />
+            {(!isSeeker && (formData as any).isVerified) && (
+              <div className="absolute top-1 end-1 bg-[#1877F2] text-white rounded-full p-0.5 border-2 border-background shadow-lg animate-in zoom-in duration-500 flex items-center justify-center">
+                <CheckCircle size={12} fill="currentColor" stroke="none" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[6px] h-[3px] border-b-2 border-s-2 border-white rotate-[-45deg] -mt-[1px]"></div>
+                </div>
+              </div>
+            )}
             <button className="absolute bottom-0 end-0 bg-accent text-accent-fg rounded-full p-2 border-4 border-background hover:scale-105 transition-transform shadow-lg">
               <Camera size={18} />
             </button>

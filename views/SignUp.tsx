@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
-import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon, CreditCard, Mail } from 'lucide-react';
+import { ChevronLeft, Phone, Lock, User, Building, MapPin, Globe, FileText, Camera, Image as ImageIcon, CreditCard, Mail, X } from 'lucide-react';
 
 import { useNavigate } from '@tanstack/react-router';
 import { LocationPicker, KUWAIT_CITIES } from '../components/LocationPicker';
@@ -35,18 +35,15 @@ export const SignUp: React.FC = () => {
   const [responsibleNumber, setResponsibleNumber] = useState('');
 
   // File Upload States
-  const [taxIdFrontFile, setTaxIdFrontFile] = useState<File | null>(null);
-  const [taxIdBackFile, setTaxIdBackFile] = useState<File | null>(null);
+  const [taxFiles, setTaxFiles] = useState<File[]>([]);
+  const [taxPreviews, setTaxPreviews] = useState<{ name: string; url: string | null }[]>([]);
   const [responsibleIdFile, setResponsibleIdFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
-  const [taxIdFrontPreview, setTaxIdFrontPreview] = useState<string | null>(null);
-  const [taxIdBackPreview, setTaxIdBackPreview] = useState<string | null>(null);
   const [responsibleIdPreview, setResponsibleIdPreview] = useState<string | null>(null);
 
   // Input Refs
-  const taxIdFrontRef = useRef<HTMLInputElement>(null);
-  const taxIdBackRef = useRef<HTMLInputElement>(null);
+  const taxInputRef = useRef<HTMLInputElement>(null);
   const responsibleIdRef = useRef<HTMLInputElement>(null);
   const profileImageRef = useRef<HTMLInputElement>(null);
   const bannerImageRef = useRef<HTMLInputElement>(null);
@@ -61,6 +58,35 @@ export const SignUp: React.FC = () => {
     if (phoneNumber.length > 5) {
       setStep('OTP');
     }
+  };
+
+  const handleTaxFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    const validFiles = selectedFiles.filter(file => 
+      file.type === 'application/pdf' || 
+      file.type === 'image/png' || 
+      file.type === 'image/jpeg'
+    );
+
+    if (validFiles.length > 0) {
+      setTaxFiles(prev => [...prev, ...validFiles]);
+      
+      const newPreviews = validFiles.map(file => ({
+        name: file.name,
+        url: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+      }));
+      
+      setTaxPreviews(prev => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeTaxFile = (index: number) => {
+    setTaxFiles(prev => prev.filter((_, i) => i !== index));
+    setTaxPreviews(prev => {
+      const removed = prev[index];
+      if (removed.url) URL.revokeObjectURL(removed.url);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handleVerifyOtp = (e: React.FormEvent) => {
@@ -329,71 +355,61 @@ export const SignUp: React.FC = () => {
                 </div>
               </div>
 
-              {/* Company Tax ID Uploads */}
-              <div className="space-y-1.5 pt-2">
-                <label className="text-xs font-bold text-primary px-1">{t('company_tax_id') || 'Company Tax ID (البطاقة الضريبية)'}</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div
-                    onClick={() => taxIdFrontRef.current?.click()}
-                    className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors"
-                  >
-                    <input
-                      type="file"
-                      ref={taxIdFrontRef}
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        setTaxIdFrontFile(file);
-                        if (file && file.type.startsWith('image/')) {
-                          setTaxIdFrontPreview(URL.createObjectURL(file));
-                        } else {
-                          setTaxIdFrontPreview(null);
-                        }
-                      }}
-                      accept="image/*,.pdf"
-                    />
-                    {taxIdFrontPreview ? (
-                      <img src={taxIdFrontPreview} alt="Tax ID Front" className="w-full h-full object-cover" />
-                    ) : (
-                      <>
-                        <ImageIcon size={24} className={`mb-2 transition-colors ${taxIdFrontFile ? 'text-brand-400' : 'group-hover:text-brand-400'}`} />
-                        <span className="text-[10px] font-medium text-center px-2 truncate w-full">
-                          {taxIdFrontFile ? taxIdFrontFile.name : (t('tax_id_front') || 'Front Side')}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div
-                    onClick={() => taxIdBackRef.current?.click()}
-                    className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors relative overflow-hidden"
-                  >
-                    <input
-                      type="file"
-                      ref={taxIdBackRef}
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
-                        setTaxIdBackFile(file);
-                        if (file && file.type.startsWith('image/')) {
-                          setTaxIdBackPreview(URL.createObjectURL(file));
-                        } else {
-                          setTaxIdBackPreview(null);
-                        }
-                      }}
-                      accept="image/*,.pdf"
-                    />
-                    {taxIdBackPreview ? (
-                      <img src={taxIdBackPreview} alt="Tax ID Back" className="w-full h-full object-cover" />
-                    ) : (
-                      <>
-                        <ImageIcon size={24} className={`mb-2 transition-colors ${taxIdBackFile ? 'text-brand-400' : 'group-hover:text-brand-400'}`} />
-                        <span className="text-[10px] font-medium text-center px-2 truncate w-full">
-                          {taxIdBackFile ? taxIdBackFile.name : (t('tax_id_back') || 'Back Side')}
-                        </span>
-                      </>
-                    )}
+              {/* Commercial License File Upload */}
+              <div className="space-y-3 pt-2">
+                <label className="text-xs font-bold text-primary px-1">{t('company_tax_id') || 'Commercial License File'}</label>
+                
+                {/* Upload Area */}
+                <div
+                  onClick={() => taxInputRef.current?.click()}
+                  className="w-full h-32 rounded-xl bg-glass border-2 border-dashed border-border flex flex-col items-center justify-center text-secondary group cursor-pointer hover:border-brand-400 transition-colors"
+                >
+                  <input
+                    type="file"
+                    ref={taxInputRef}
+                    className="hidden"
+                    onChange={handleTaxFilesChange}
+                    accept="image/png, image/jpeg, application/pdf"
+                    multiple
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-colors">
+                      <ImageIcon size={20} />
+                    </div>
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-primary">{t('upload_files') || 'Upload Files'}</span>
+                      <p className="text-[10px] text-secondary mt-0.5">{t('upload_hint') || 'Supports JPG, PNG, PDF'}</p>
+                    </div>
                   </div>
                 </div>
+
+                {/* File List / Previews */}
+                {taxPreviews.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {taxPreviews.map((preview, index) => (
+                      <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-border bg-glass">
+                        {preview.url ? (
+                          <img src={preview.url} alt={preview.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-2">
+                            <FileText size={24} className="text-secondary" />
+                            <span className="text-[8px] text-secondary text-center line-clamp-2 px-1">{preview.name}</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeTaxFile(index);
+                          }}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Responsible Personnel Information */}
