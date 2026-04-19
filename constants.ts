@@ -51,6 +51,7 @@ export const MOCK_OFFICES: Office[] = [
     mapsUrl: 'https://maps.google.com/?q=Sharq+Kuwait+City',
     rating: 4.8,
     reviewCount: 124,
+    isVerified: true,
   },
   {
     id: 'o2',
@@ -68,6 +69,7 @@ export const MOCK_OFFICES: Office[] = [
     mapsUrl: 'https://maps.google.com/?q=Salmiya+Block+4',
     rating: 4.5,
     reviewCount: 89,
+    isVerified: true,
   },
   {
     id: 'o3',
@@ -85,6 +87,7 @@ export const MOCK_OFFICES: Office[] = [
     mapsUrl: 'https://maps.google.com/?q=Hawally+Kuwait',
     rating: 4.9,
     reviewCount: 210,
+    isVerified: false,
   }
 ];
 

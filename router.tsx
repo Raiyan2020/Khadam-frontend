@@ -20,6 +20,7 @@ import { HelpSupport } from './views/HelpSupport';
 import { EditProfile } from './views/EditProfile';
 import { EditAd } from './views/EditAd';
 import { Checkout } from './views/Checkout';
+import { TermsConditions } from './views/TermsConditions';
 import { SplashScreen } from './components/SplashScreen';
 import { useUserRole } from './UserRoleContext';
 
@@ -161,6 +162,12 @@ export const checkoutRoute = createRoute({
   component: Checkout,
 });
 
+export const termsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/terms',
+  component: TermsConditions,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   workerRoute,
@@ -181,6 +188,7 @@ const routeTree = rootRoute.addChildren([
   editProfileRoute,
   editAdRoute,
   checkoutRoute,
+  termsRoute,
 ]);
 
 export const router = createRouter({ routeTree });

@@ -32,6 +32,7 @@ export interface Office {
   mapsUrl?: string;
   rating: number;
   reviewCount: number;
+  isVerified?: boolean;
 }
 
 export interface Worker {

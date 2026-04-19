@@ -7,7 +7,7 @@ import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
 
 import { useNavigate } from '@tanstack/react-router';
-
+import verfied from '@/assets/verified.png';
 export const OfficesList: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
@@ -33,7 +33,10 @@ export const OfficesList: React.FC = () => {
             <div className="flex items-center gap-4">
               <Avatar src={office.avatar} alt={office.name[language]} size="md" />
               <div>
-                <h3 className="text-sm font-bold text-primary group-hover:text-accent transition-colors">{office.name[language]}</h3>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-sm font-bold text-primary group-hover:text-accent transition-colors truncate max-w-[150px]">{office.name[language]}</h3>
+                  {office.isVerified && <img src={verfied} alt="Verified" className="w-3.5 h-3.5 flex-shrink-0" />}
+                </div>
                 <div className="flex items-center text-xs text-secondary mt-1">
                   <MapPin size={12} className="me-1" />
                   {office.location[language]}

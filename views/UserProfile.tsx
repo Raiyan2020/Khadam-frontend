@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw, CheckCircle } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw, CheckCircle, FileText } from 'lucide-react';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
@@ -52,6 +52,7 @@ export const UserProfile: React.FC = () => {
         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={() => navigate({ to: '/edit-profile' })} />
         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={() => navigate({ to: '/settings' })} />
         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => navigate({ to: '/help-support' })} />
+        <MenuButton icon={<FileText size={20} />} label={t('terms_conditions')} onClick={() => navigate({ to: '/terms' })} />
         <div className="pt-4">
           <MenuButton icon={<LogOut size={20} />} label={t('logout')} danger onClick={() => navigate({ to: '/login' })} />
         </div>
