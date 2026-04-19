@@ -45,7 +45,7 @@ export const EditProfile: React.FC = () => {
     <div className="pb-20 min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
-        <button 
+        <button
           onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
@@ -58,9 +58,9 @@ export const EditProfile: React.FC = () => {
         {/* Banner Section (Business Only) */}
         {!isSeeker && (
           <div className="relative w-full h-32 rounded-xl overflow-hidden mb-4 border border-border">
-            <img 
-              src="https://picsum.photos/seed/banner/800/300" 
-              alt="Banner" 
+            <img
+              src="https://picsum.photos/seed/banner/800/300"
+              alt="Banner"
               className="w-full h-full object-cover"
             />
             <button className="absolute bottom-2 end-2 bg-background/80 backdrop-blur-sm text-primary rounded-full p-2 border border-border hover:scale-105 transition-transform shadow-lg flex items-center gap-2 px-3">
@@ -73,11 +73,11 @@ export const EditProfile: React.FC = () => {
         {/* Profile Image Section */}
         <div className={`flex flex-col items-center ${!isSeeker ? '-mt-16 relative z-10' : ''}`}>
           <div className="relative">
-            <Avatar 
-              src={isSeeker ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200"} 
-              alt="Profile" 
-              size="xl" 
-              className="border-4 border-background" 
+            <Avatar
+              src={isSeeker ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200"}
+              alt="Profile"
+              size="xl"
+              className="border-4 border-background"
             />
             {(!isSeeker && (formData as any).isVerified) && (
               <div className="absolute top-1 end-1 bg-[#1877F2] text-white rounded-full p-0.5 border-2 border-background shadow-lg animate-in zoom-in duration-500 flex items-center justify-center">
@@ -98,8 +98,8 @@ export const EditProfile: React.FC = () => {
         <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-primary px-1">{t('full_name') || 'Full Name'}</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -109,8 +109,8 @@ export const EditProfile: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-primary px-1">{t('phone_number') || 'Phone Number'}</label>
-            <input 
-              type="tel" 
+            <input
+              type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
@@ -121,8 +121,8 @@ export const EditProfile: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-primary px-1">{t('email') || 'Email'}</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
@@ -136,8 +136,8 @@ export const EditProfile: React.FC = () => {
             <>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-primary px-1">{t('location') || 'Location'}</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="location"
                   value={(formData as any).location || ''}
                   onChange={handleChange}
@@ -147,8 +147,8 @@ export const EditProfile: React.FC = () => {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-primary px-1">{t('website') || 'Website'}</label>
-                <input 
-                  type="url" 
+                <input
+                  type="url"
                   name="website"
                   value={(formData as any).website || ''}
                   onChange={handleChange}
@@ -159,7 +159,7 @@ export const EditProfile: React.FC = () => {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-primary px-1">{t('bio') || 'Bio / Description'}</label>
-                <textarea 
+                <textarea
                   name="bio"
                   value={(formData as any).bio || ''}
                   onChange={handleChange}
@@ -173,9 +173,9 @@ export const EditProfile: React.FC = () => {
 
         {/* Save Button */}
         <div className="pt-6">
-          <Button 
-            variant="primary" 
-            fullWidth 
+          <Button
+            variant="primary"
+            fullWidth
             className="py-4 text-lg font-bold shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
             onClick={handleSave}
           >
