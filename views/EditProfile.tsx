@@ -112,12 +112,14 @@ export const EditProfile: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-primary px-1">{t('email') || 'Email'}</label>
-            <div 
-              className="w-full bg-glass/50 border border-border rounded-xl px-4 py-3 text-secondary opacity-70 cursor-not-allowed transition-all"
+            <input 
+              type="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full bg-glass border border-border rounded-xl px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all"
               dir="ltr"
-            >
-              {formData.email}
-            </div>
+            />
           </div>
 
           {/* Business Specific Fields */}

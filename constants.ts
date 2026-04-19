@@ -15,6 +15,16 @@ export const NATIONALITIES: NationalityInfo[] = [
   { name: { en: 'Bangladesh', ar: 'بنغلاديش' }, flag: 'https://flagcdn.com/w160/bd.png' }
 ];
 
+export const LANGUAGES: LocalizedString[] = [
+  { en: 'Arabic', ar: 'عربي' },
+  { en: 'English', ar: 'إنجليزي' },
+  { en: 'Hindi', ar: 'هندي' },
+  { en: 'Tagalog', ar: 'تاغالوغ' },
+  { en: 'Sinhala', ar: 'سنهالي' },
+  { en: 'Bengali', ar: 'بنغالي' },
+  { en: 'Urdu', ar: 'أوردو' },
+];
+
 export const CITIES: LocalizedString[] = [
   { en: 'Kuwait City', ar: 'مدينة الكويت' },
   { en: 'Hawally', ar: 'حولي' },

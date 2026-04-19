@@ -95,6 +95,11 @@ export const Home: React.FC = () => {
     if (filterCriteria.maxAge !== undefined && worker.age > filterCriteria.maxAge) {
       matchesFilters = false;
     }
+    if (filterCriteria.languages && filterCriteria.languages.length > 0) {
+      const workerLangs = worker.languages.map(l => l.en);
+      const hasMatch = filterCriteria.languages.some(lang => workerLangs.includes(lang));
+      if (!hasMatch) matchesFilters = false;
+    }
 
     return matchesCategory && matchesSearch && matchesFilters;
   };
@@ -155,8 +160,6 @@ export const Home: React.FC = () => {
   const { userRole } = useUserRole();
 
   const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
-  console.log(isSeeker);
-
   return (
     <div className="pb-10">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">

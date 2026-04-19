@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './GlassUI';
 import { useLanguage } from '../i18n';
-import { NATIONALITIES } from '../constants';
+import { NATIONALITIES, LANGUAGES } from '../constants';
 
 export interface FilterCriteria {
   maxSalary?: number;
@@ -10,6 +10,7 @@ export interface FilterCriteria {
   gender?: 'Female' | 'Male' | 'Any';
   minExperience?: number;
   maxAge?: number;
+  languages?: string[];
 }
 
 interface FilterModalProps {
@@ -27,6 +28,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   const [gender, setGender] = useState<'Female' | 'Male' | 'Any'>(initialCriteria?.gender || 'Any');
   const [minExperience, setMinExperience] = useState<number | ''>(initialCriteria?.minExperience || '');
   const [maxAge, setMaxAge] = useState<number | ''>(initialCriteria?.maxAge || '');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(initialCriteria?.languages || []);
 
   if (!isOpen) return null;
 
@@ -37,6 +39,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
       gender: gender,
       minExperience: minExperience === '' ? undefined : Number(minExperience),
       maxAge: maxAge === '' ? undefined : Number(maxAge),
+      languages: selectedLanguages.length > 0 ? selectedLanguages : undefined,
     });
     onClose();
   };
@@ -47,6 +50,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
     setGender('Any');
     setMinExperience('');
     setMaxAge('');
+    setSelectedLanguages([]);
   };
 
   return (
@@ -93,6 +97,33 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
                     <span>{nat.name[language as 'en' | 'ar'] || nat.name.en}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Languages */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-200">{t('filter_languages')}</label>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {LANGUAGES.map(lang => {
+                  const isSelected = selectedLanguages.includes(lang.en);
+                  return (
+                    <button
+                      key={lang.en}
+                      onClick={() => {
+                        setSelectedLanguages(prev => 
+                          isSelected ? prev.filter(l => l !== lang.en) : [...prev, lang.en]
+                        );
+                      }}
+                      className={`flex-shrink-0 h-10 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        isSelected 
+                          ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20' 
+                          : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'
+                      }`}
+                    >
+                      {lang[language as 'en' | 'ar'] || lang.en}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
