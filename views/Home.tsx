@@ -298,9 +298,7 @@ export const Home: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10">
                   <Users size={16} />
                 </div>
-                <div className="bg-blue-500/10 px-2 py-0.5 rounded-md text-[9px] text-blue-400 font-bold border border-blue-500/20">
-                  +12%
-                </div>
+
               </div>
 
               <div className="relative z-10 mt-1">
@@ -330,9 +328,6 @@ export const Home: React.FC = () => {
               <div className="flex justify-between items-start mb-2 relative z-10">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/10">
                   <Eye size={16} />
-                </div>
-                <div className="bg-indigo-500/10 px-2 py-0.5 rounded-md text-[9px] text-indigo-400 font-bold border border-indigo-500/20">
-                  +34%
                 </div>
               </div>
 
