@@ -19,6 +19,7 @@ import { Favorites } from './views/Favorites';
 import { HelpSupport } from './views/HelpSupport';
 import { EditProfile } from './views/EditProfile';
 import { EditAd } from './views/EditAd';
+import { Checkout } from './views/Checkout';
 import { SplashScreen } from './components/SplashScreen';
 import { useUserRole } from './UserRoleContext';
 
@@ -154,6 +155,12 @@ export const editAdRoute = createRoute({
   component: EditAd,
 });
 
+export const checkoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/checkout',
+  component: Checkout,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   workerRoute,
@@ -173,6 +180,7 @@ const routeTree = rootRoute.addChildren([
   helpSupportRoute,
   editProfileRoute,
   editAdRoute,
+  checkoutRoute,
 ]);
 
 export const router = createRouter({ routeTree });

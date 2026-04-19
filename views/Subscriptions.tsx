@@ -113,7 +113,10 @@ export const Subscriptions: React.FC = () => {
               </ul>
 
               {isSelected && (
-                <button className="w-full mt-6 py-3.5 rounded-xl bg-brand-500 text-white font-bold tracking-wide shadow-lg shadow-brand-500/20 active:scale-95 transition-all text-sm">
+                <button 
+                  onClick={() => navigate({ to: '/checkout', search: { planId: plan.id } as any })}
+                  className="w-full mt-6 py-3.5 rounded-xl bg-brand-500 text-white font-bold tracking-wide shadow-lg shadow-brand-500/20 active:scale-95 transition-all text-sm"
+                >
                   {t('subscribe_now') || 'Subscribe Now'}
                 </button>
               )}

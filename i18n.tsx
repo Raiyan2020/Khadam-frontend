@@ -208,7 +208,16 @@ export const translations = {
     adv_premium_2: "Full data reports",
     adv_premium_3: "24/7 dedicated support",
     adv_premium_4: "Verified office checkmark",
-    adv_premium_5: "Pushed to top of search"
+    adv_premium_5: "Pushed to top of search",
+    checkout_title: "Checkout",
+    order_summary: "Order Summary",
+    coupon_code: "Coupon Code",
+    apply_coupon: "Apply",
+    payment_method: "Payment Method",
+    pay_now: "Pay Now",
+    total_amount: "Total Amount",
+    visa: "Visa / Master",
+    knet: "KNET"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -414,7 +423,16 @@ export const translations = {
     adv_premium_2: "تقارير بيانات كاملة",
     adv_premium_3: "دعم فني مخصص على مدار الساعة",
     adv_premium_4: "علامة توثيق وتأكيد",
-    adv_premium_5: "الظهور في أول نتائج البحث"
+    adv_premium_5: "الظهور في أول نتائج البحث",
+    checkout_title: "الدفع",
+    order_summary: "ملخص الطلب",
+    coupon_code: "كود الخصم",
+    apply_coupon: "تطبيق",
+    payment_method: "طريقة الدفع",
+    pay_now: "ادفع الآن",
+    total_amount: "المبلغ الإجمالي",
+    visa: "فيزا / ماستر",
+    knet: "كي نت"
   }
 };
 
