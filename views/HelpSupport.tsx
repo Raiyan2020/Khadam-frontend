@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Twitter, Facebook, MessageCircle } from 'lucide-react';
 import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
+import { toast } from 'sonner';
 
 import { useNavigate } from '@tanstack/react-router';
 
@@ -20,7 +21,7 @@ export const HelpSupport: React.FC = () => {
     setName('');
     setEmail('');
     setMessage('');
-    alert('Message sent successfully!'); // Simple feedback for now
+    toast.success('Message sent successfully!'); // Simple feedback for now
   };
 
   return (

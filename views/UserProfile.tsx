@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw, CheckCircle, FileText } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw, CheckCircle, FileText, Loader2 } from 'lucide-react';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
@@ -7,12 +7,14 @@ import { UserRole } from '../types';
 import { useNavigate } from '@tanstack/react-router';
 import { useUserRole } from '../UserRoleContext';
 import verified from '@/assets/verified.png'
+import { useLogout } from '../features/auth/hooks/useLogout';
 
 export const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { userRole, handleToggleRole } = useUserRole();
   const { t } = useLanguage();
   const isSeeker = userRole === UserRole.SEEKER;
+  const logoutMutation = useLogout();
 
   return (
     <div className="pb-10">
@@ -38,7 +40,7 @@ export const UserProfile: React.FC = () => {
 
       <div className="px-5 space-y-3">
         {/* Role Switcher Demo */}
-        <GlassCard onClick={handleToggleRole} className="flex items-center gap-4 !py-4 hover:bg-glassHigh active:scale-[0.99] transition-all bg-accent/5 border-accent/20">
+        {/* <GlassCard onClick={handleToggleRole} className="flex items-center gap-4 !py-4 hover:bg-glassHigh active:scale-[0.99] transition-all bg-accent/5 border-accent/20">
           <div className="text-accent">
             <RefreshCw size={20} />
           </div>
@@ -46,7 +48,7 @@ export const UserProfile: React.FC = () => {
             <span className="block font-bold text-sm text-primary">{t('switch_role')}</span>
             <span className="text-xs text-secondary">{t(isSeeker ? 'role_seeker' : 'role_office')}</span>
           </div>
-        </GlassCard>
+        </GlassCard> */}
 
 
         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={() => navigate({ to: '/edit-profile' })} />
@@ -54,7 +56,12 @@ export const UserProfile: React.FC = () => {
         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => navigate({ to: '/help-support' })} />
         <MenuButton icon={<FileText size={20} />} label={t('terms_conditions')} onClick={() => navigate({ to: '/terms' })} />
         <div className="pt-4">
-          <MenuButton icon={<LogOut size={20} />} label={t('logout')} danger onClick={() => navigate({ to: '/login' })} />
+          <MenuButton 
+            icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />} 
+            label={logoutMutation.isPending ? t('loading') || 'Loading...' : t('logout')} 
+            danger 
+            onClick={() => logoutMutation.mutate()} 
+          />
         </div>
       </div>
     </div>

@@ -218,7 +218,17 @@ export const translations = {
     pay_now: "Pay Now",
     total_amount: "Total Amount",
     visa: "Visa / Master",
-    knet: "KNET"
+    knet: "KNET",
+    resend_otp_in: "Resend code in",
+    resend_otp: "Resend OTP",
+    sending: "Sending...",
+    loading: "Loading...",
+    profile_image_required: "Profile image is required",
+    all_fields_required: "Please fill in all required company fields including images and location.",
+    map_desc: "Address Details",
+    whatsapp: "WhatsApp (Optional)",
+    state: "State",
+    select_state: "Select State"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -434,7 +444,17 @@ export const translations = {
     pay_now: "ادفع الآن",
     total_amount: "المبلغ الإجمالي",
     visa: "فيزا / ماستر",
-    knet: "كي نت"
+    knet: "كي نت",
+    resend_otp_in: "إعادة إرسال الرمز خلال",
+    resend_otp: "إعادة إرسال الرمز",
+    sending: "جاري الإرسال...",
+    loading: "جاري التحميل...",
+    profile_image_required: "صورة الملف الشخصي مطلوبة",
+    all_fields_required: "يرجى تعبئة جميع حقول الشركة المطلوبة بما في ذلك الصور والموقع.",
+    map_desc: "تفاصيل العنوان",
+    whatsapp: "واتساب (اختياري)",
+    state: "المحافظة",
+    select_state: "اختر المحافظة"
   }
 };
 

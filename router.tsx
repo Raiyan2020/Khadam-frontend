@@ -13,8 +13,10 @@ import { Subscriptions } from './views/Subscriptions';
 import { Notifications } from './views/Notifications';
 import { CountryResults } from './views/CountryResults';
 import { SearchResults } from './views/SearchResults';
-import { Login } from './views/Login';
-import { SignUp } from './views/SignUp';
+import { Login } from './features/auth/components/Login';
+import { VerifyOtp } from './features/auth/components/VerifyOtp';
+import { SignUp } from './features/auth/components/SignUp';
+import { CompleteProfile } from './features/auth/components/CompleteProfile';
 import { Favorites } from './views/Favorites';
 import { HelpSupport } from './views/HelpSupport';
 import { EditProfile } from './views/EditProfile';
@@ -26,7 +28,7 @@ import { useUserRole } from './UserRoleContext';
 
 const AppLayout = () => {
   const [showSplash, setShowSplash] = React.useState(true);
-  
+
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
@@ -46,6 +48,23 @@ const AppLayout = () => {
 
 export const rootRoute = createRootRoute({
   component: AppLayout,
+  beforeLoad: ({ location }) => {
+    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile'];
+    const isPublic = publicPaths.includes(location.pathname);
+    const token = localStorage.getItem('token');
+
+    if (!token && !isPublic) {
+      throw redirect({
+        to: '/login',
+      });
+    }
+
+    if (token && isPublic) {
+      throw redirect({
+        to: '/',
+      });
+    }
+  },
 });
 
 export const indexRoute = createRoute({
@@ -126,10 +145,27 @@ export const loginRoute = createRoute({
   component: Login,
 });
 
+export const verifyOtpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/verify-otp',
+  component: VerifyOtp,
+  validateSearch: (search: Record<string, unknown>): { phone?: string } => {
+    return {
+      phone: typeof search.phone === 'string' ? search.phone : undefined,
+    };
+  },
+});
+
 export const signUpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-up',
   component: SignUp,
+});
+
+export const completeProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/complete-profile',
+  component: CompleteProfile,
 });
 
 export const favoritesRoute = createRoute({
@@ -182,7 +218,9 @@ const routeTree = rootRoute.addChildren([
   countryResultsRoute,
   searchResultsRoute,
   loginRoute,
+  verifyOtpRoute,
   signUpRoute,
+  completeProfileRoute,
   favoritesRoute,
   helpSupportRoute,
   editProfileRoute,

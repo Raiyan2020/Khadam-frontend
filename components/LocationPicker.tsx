@@ -25,7 +25,7 @@ export interface KuwaitCity {
 }
 
 export const KUWAIT_CITIES: KuwaitCity[] = [
-  { nameEn: 'Kuwait City', nameAr: 'مدينة الكويت', center: { lat: 29.3759, lng: 47.9774 } },
+  { nameEn: 'Kuwait City', nameAr: 'العاصمة', center: { lat: 29.3759, lng: 47.9774 } },
   { nameEn: 'Hawalli', nameAr: 'حولي', center: { lat: 29.3320, lng: 48.0290 } },
   { nameEn: 'Salmiya', nameAr: 'السالمية', center: { lat: 29.3366, lng: 48.0741 } },
   { nameEn: 'Farwaniya', nameAr: 'الفروانية', center: { lat: 29.2767, lng: 47.9596 } },
@@ -57,23 +57,21 @@ const MarkerPlacer: React.FC<{ onPlace: (pos: LatLng) => void }> = ({ onPlace })
 };
 
 interface LocationPickerProps {
-  value: { cityEn: string; position: LatLng | null };
-  onChange: (val: { cityEn: string; position: LatLng | null }) => void;
+  value: { position: LatLng | null };
+  onChange: (val: { position: LatLng | null }) => void;
+  selectedStateName?: string;
 }
 
-export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange }) => {
+export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange, selectedStateName }) => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
 
-  const selectedCity = KUWAIT_CITIES.find(c => c.nameEn === value.cityEn) ?? KUWAIT_CITIES[0];
-
-  const handleCityChange = (cityEn: string) => {
-    const city = KUWAIT_CITIES.find(c => c.nameEn === cityEn)!;
-    onChange({ cityEn, position: city.center });
-  };
+  const selectedCity = KUWAIT_CITIES.find(c => 
+    selectedStateName && (c.nameAr === selectedStateName || c.nameEn === selectedStateName)
+  ) ?? KUWAIT_CITIES[0];
 
   const handleMapClick = (pos: LatLng) => {
-    onChange({ cityEn: value.cityEn, position: pos });
+    onChange({ position: pos });
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,7 +88,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange 
         if (data && data.length > 0) {
           const result = data[0];
           const newPos = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
-          onChange({ cityEn: value.cityEn, position: newPos });
+          onChange({ position: newPos });
         }
       } catch (error) {
         console.error(error);
@@ -110,34 +108,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange 
 
   return (
     <div className="space-y-3">
-      {/* City selector */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold text-primary px-1">
-          {isAr ? 'المنطقة' : 'Area / City'}
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
-            <MapPin size={18} />
-          </div>
-          <select
-            value={value.cityEn}
-            onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all appearance-none cursor-pointer"
-            required
-          >
-            {KUWAIT_CITIES.map(city => (
-              <option key={city.nameEn} value={city.nameEn}>
-                {isAr ? city.nameAr : city.nameEn}
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none text-secondary">
-            <ChevronDown size={16} />
-          </div>
-        </div>
-      </div>
-
-      {/* Search Input */}
+      {/* Search Input and Leaflet map */}
 
       {/* Leaflet map */}
       <div className="space-y-1.5">
