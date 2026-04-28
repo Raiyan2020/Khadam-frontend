@@ -23,10 +23,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="h-screen w-full flex justify-center bg-[var(--bg-app)] transition-colors duration-300 overflow-hidden" dir={dir}>
-      {/* App Shell Container */}
-      <div className="w-full max-w-[430px] bg-background relative flex flex-col h-[100dvh] sm:h-[calc(100vh-32px)] shadow-2xl overflow-hidden sm:rounded-[28px] sm:my-4 sm:border sm:border-border transition-colors duration-300">
-
-        {/* Main Scrollable Content */}
+      <div className="w-full max-w-[991px] bg-background relative flex flex-col h-screen shadow-2xl overflow-hidden sm:rounded-[28px] sm:border sm:border-border transition-colors duration-300">
         <main className="flex-1 overflow-y-auto no-scrollbar relative pb-[calc(80px+env(safe-area-inset-bottom)+20px)]">
           <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 to-transparent pointer-events-none h-64" />
           {children}
