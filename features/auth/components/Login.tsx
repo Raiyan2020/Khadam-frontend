@@ -9,9 +9,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('');
-
   const loginMutation = useLogin();
-
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (phoneNumber.length > 5) {

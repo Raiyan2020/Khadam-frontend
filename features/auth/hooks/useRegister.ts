@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../../config';
 
 interface RegisterResponse {
   status: boolean;
@@ -13,12 +14,12 @@ export const useRegister = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async (data: { type: string; phone: string }) => {
+    mutationFn: async (data: { type: '1' | '2'; phone: string }) => {
       const formData = new FormData();
       formData.append('type', data.type);
       formData.append('phone', data.phone);
 
-      const response = await fetch('https://portal.khdm.net/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         body: formData,
       });

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { useUserRole } from '../../../UserRoleContext';
 import { UserRole } from '../../../types';
+import { API_BASE_URL } from '../../../config';
 
 export interface VerifyOtpResponse {
   status: boolean;
@@ -28,7 +29,7 @@ export const useVerifyOtp = () => {
 
   return useMutation({
     mutationFn: async (verifyData: FormData) => {
-      const response = await fetch('https://portal.khdm.net/api/auth/verify-otp', {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         body: verifyData,
       });

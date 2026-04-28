@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../../config';
 
 interface ResendOtpResponse {
   status: boolean;
@@ -14,7 +15,7 @@ export const useResendOtp = () => {
       const formData = new FormData();
       formData.append('phone', phone);
 
-      const response = await fetch('https://portal.khdm.net/api/auth/resend-otp', {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
         method: 'POST',
         body: formData,
       });

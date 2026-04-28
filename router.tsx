@@ -24,7 +24,6 @@ import { EditAd } from './views/EditAd';
 import { Checkout } from './views/Checkout';
 import { TermsConditions } from './views/TermsConditions';
 import { SplashScreen } from './components/SplashScreen';
-import { useUserRole } from './UserRoleContext';
 
 const AppLayout = () => {
   const [showSplash, setShowSplash] = React.useState(true);
@@ -32,7 +31,7 @@ const AppLayout = () => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 3000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 

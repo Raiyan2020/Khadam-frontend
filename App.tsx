@@ -7,6 +7,7 @@ import { ThemeProvider } from './theme';
 import { FavoritesProvider } from './FavoritesContext';
 import { UserRoleProvider } from './UserRoleContext';
 import { Toaster } from 'sonner';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const queryClient = new QueryClient();
 
@@ -18,8 +19,8 @@ const App: React.FC = () => {
           <UserRoleProvider>
             <FavoritesProvider>
               <RouterProvider router={router} />
-              <Toaster 
-                position="top-center" 
+              <Toaster
+                position="top-center"
                 toastOptions={{
                   classNames: {
                     toast: 'bg-background border border-border text-primary shadow-lg rounded-xl',
@@ -33,6 +34,7 @@ const App: React.FC = () => {
           </UserRoleProvider>
         </LanguageProvider>
       </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 };

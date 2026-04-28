@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../../../config';
 
 interface LoginResponse {
   status: boolean;
@@ -17,7 +18,7 @@ export const useLogin = () => {
       const formData = new FormData();
       formData.append('phone', phone);
 
-      const response = await fetch('https://portal.khdm.net/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         body: formData,
       });
