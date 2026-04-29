@@ -19,6 +19,17 @@ export enum ServiceCategory {
   DOMESTIC_WORKER = 'DOMESTIC_WORKER'
 }
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface Country {
+  id: number;
+  name: string;
+  image: string;
+}
+
 export interface Office {
   id: string;
   name: LocalizedString;

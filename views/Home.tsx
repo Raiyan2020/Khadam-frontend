@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, MapPin, ChevronRight, Filter, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock } from 'lucide-react';
-import { GlassCard, Badge, Avatar } from '../components/GlassUI';
+import { MapPin, ChevronRight, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock } from 'lucide-react';
+import { GlassCard, Badge, Avatar, Skeleton, SearchInput } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
 import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
@@ -10,6 +10,9 @@ import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constant
 import { useLanguage } from '../i18n';
 
 import { useNavigate } from '@tanstack/react-router';
+import { useCategories } from '../features/auth/hooks/useCategories';
+import { useCountries } from '../features/auth/hooks/useCountries';
+import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -56,7 +59,10 @@ const AnimatedNumber: React.FC<{ value: number; duration?: number }> = ({ value,
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: countries, isLoading: isLoadingCountries } = useCountries();
+  const { data: homeData, isLoading: isLoadingHome } = useHomeData();
+  const [activeCategory, setActiveCategory] = useState<any>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
@@ -160,6 +166,9 @@ export const Home: React.FC = () => {
   const { userRole } = useUserRole();
 
   const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
+
+  console.log(homeData?.history);
+
   return (
     <div className="pb-10">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">
@@ -187,42 +196,62 @@ export const Home: React.FC = () => {
           </button>
         </div>
 
-        <div className="relative group">
-          <input
-            type="text"
-            placeholder={t('search_placeholder')}
-            className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-4 focus:ring-[var(--focus-ring)] transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                navigate({ to: '/search', search: { query: searchQuery, category: activeCategory !== 'All' ? activeCategory : undefined } });
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t('search_placeholder')}
+          onSearch={() => navigate({
+            to: '/search',
+            search: {
+              query: searchQuery || undefined,
+              category_id: activeCategory !== 'All' ? activeCategory : undefined,
+            }
+          } as any)}
+          onFilterClick={() => setIsFilterModalOpen(true)}
+        />
+
+        {/* FilterModal triggers navigation on apply */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={(criteria) => {
+            setFilterCriteria(criteria);
+            navigate({
+              to: '/search',
+              search: {
+                query: searchQuery || undefined,
+                category_id: criteria.category,
+                country_id: undefined,
+                gender: criteria.gender !== 'Any' ? criteria.gender?.toLowerCase() : undefined,
+                salary: criteria.maxSalary,
+                age: criteria.maxAge,
+                years_experience: criteria.minExperience,
+                languages: criteria.languages as number[] | undefined,
               }
-            }}
-          />
-          <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1 rounded-md hover:bg-brand-300 transition-colors"
-          >
-            <Filter size={14} />
-          </button>
-        </div>
+            } as any);
+          }}
+          initialCriteria={filterCriteria}
+        />
 
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          <CategoryChip
-            label={getTranslatedCategory('All')}
-            isActive={activeCategory === 'All'}
-            onClick={() => setActiveCategory('All')}
-          />
-          {Object.values(ServiceCategory).map(cat => (
-            <CategoryChip
-              key={cat}
-              label={getTranslatedCategory(cat)}
-              isActive={activeCategory === cat}
-              onClick={() => setActiveCategory(cat)}
-            />
-          ))}
+
+          {isLoadingCategories ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+            ))
+          ) : (
+            categories?.map(cat => (
+              <CategoryChip
+                key={cat.id}
+                label={cat.name}
+                isActive={activeCategory === cat.id}
+                onClick={() => navigate({
+                  to: '/search',
+                  search: { category_id: cat.id }
+                } as any)}
+              />
+            ))
+          )}
         </div>
       </div>
       {!isSeeker && (
@@ -384,123 +413,144 @@ export const Home: React.FC = () => {
             <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
           </div>
           <div className="flex gap-6 overflow-x-auto no-scrollbar px-5 pb-2">
-            {NATIONALITIES.map(nat => (
-              <div
-                key={nat.name.en}
-                onClick={() => navigate({ to: '/country/$nationality', params: { nationality: nat.name.en } } as any)}
-                className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
-              >
-                <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
-                  <img
-                    src={nat.flag}
-                    alt={nat.name[language]}
-                    onError={handleFlagError}
-                    className="w-full h-full object-cover"
-                  />
+            {isLoadingCountries ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 shrink-0">
+                  <Skeleton className="w-14 h-14 rounded-full" />
+                  <Skeleton className="h-3 w-10 rounded" />
                 </div>
-                <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name[language]}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              countries?.map(nat => (
+                <div
+                  key={nat.id}
+                  onClick={() => navigate({
+                    to: '/search',
+                    search: {
+                      country_id: nat.id,
+                      country_name: nat.name,
+                      country_image: nat.image,
+                    }
+                  } as any)}
+                  className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
+                >
+                  <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
+                    <img
+                      src={nat.image}
+                      alt={nat.name}
+                      onError={handleFlagError}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name}</span>
+                </div>
+              ))
+            )}
           </div>
         </section>
 
-        {continueViewed.length > 0 && (
+        {homeData?.history && homeData.history.length > 0 && (
+
           <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue' } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
-              {continueViewed.map(worker => (
+              {homeData.history.map(worker => (
                 <CompactCard
                   key={worker.id}
-                  worker={worker}
-                  onClick={() => handleWorkerClick(worker.id)}
-                  language={language}
+                  name={worker.worker_name}
+                  image={worker.image}
+                  subtitle={worker.country_name}
+                  onClick={() => handleWorkerClick(worker.id.toString())}
                 />
               ))}
             </div>
           </SectionContainer>
         )}
 
-        {availableNow.length > 0 && (
-          <SectionContainer title={t('section_available')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'available' } })}>
+        {isLoadingHome ? (
+          <SectionContainer title={t('section_available')} canShowAll={false}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
-              {availableNow.map(worker => (
-                <CompactCard
-                  key={worker.id}
-                  worker={worker}
-                  onClick={() => handleWorkerClick(worker.id)}
-                  language={language}
-                />
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
               ))}
             </div>
           </SectionContainer>
+        ) : (
+          homeData?.available_ads && homeData.available_ads.length > 0 && (
+            <SectionContainer title={t('section_available')} canShowAll={false}>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+                {homeData.available_ads.map(worker => (
+                  <CompactCard
+                    key={worker.id}
+                    name={worker.worker_name}
+                    image={worker.image}
+                    subtitle={worker.category_name}
+                    onClick={() => handleWorkerClick(worker.id.toString())}
+                  />
+                ))}
+              </div>
+            </SectionContainer>
+          )
         )}
 
-        <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest' } })}>
+        <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest', latest: 1 } } as any)}>
           <div className="px-5 space-y-4">
-            {newestListings.slice(0, 4).map(worker => (
-              <FullListingCard
-                key={worker.id}
-                worker={worker}
-                onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                language={language}
-                t={t}
-                dir={dir}
-              />
-            ))}
+            {isLoadingHome ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
+              ))
+            ) : (
+              homeData?.latest_ads.slice(0, 4).map(ad => (
+                <FullListingCard
+                  key={ad.id}
+                  ad={ad}
+                  onSelect={() => handleWorkerClick(ad.id.toString())}
+                  onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
+                  t={t}
+                  dir={dir}
+                />
+              ))
+            )}
           </div>
         </SectionContainer>
 
-        {/* <SectionContainer title={t('section_budget')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'budget' } })}>
+        <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience', experience: 1 } } as any)}>
           <div className="px-5 space-y-4">
-            {budgetListings.slice(0, 4).map(worker => (
-              <FullListingCard 
-                key={worker.id} 
-                worker={worker} 
-                onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                language={language}
-                t={t}
-                dir={dir}
-              />
-            ))}
-          </div>
-        </SectionContainer> */}
-
-        <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience' } })}>
-          <div className="px-5 space-y-4">
-            {experiencedListings.slice(0, 4).map(worker => (
-              <FullListingCard
-                key={worker.id}
-                worker={worker}
-                onSelect={() => handleWorkerClick(worker.id)}
-                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                language={language}
-                t={t}
-                dir={dir}
-              />
-            ))}
+            {isLoadingHome ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
+              ))
+            ) : (
+              homeData?.most_experience_ads.slice(0, 4).map(ad => (
+                <FullListingCard
+                  key={ad.id}
+                  ad={ad}
+                  onSelect={() => handleWorkerClick(ad.id.toString())}
+                  onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
+                  t={t}
+                  dir={dir}
+                />
+              ))
+            )}
           </div>
         </SectionContainer>
       </div>
 
-      {/* Filter Modal */}
-      <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={setFilterCriteria}
-        initialCriteria={filterCriteria}
-      />
     </div>
   );
 };
 
-const SectionContainer: React.FC<{ title: string; children: React.ReactNode; onViewAll?: () => void }> = ({ title, children, onViewAll }) => {
+const SectionContainer: React.FC<{
+  title: string;
+  children: React.ReactNode;
+  onViewAll?: () => void;
+  canShowAll?: boolean;
+}> = ({ title, children, onViewAll, canShowAll = true }) => {
   const { t } = useLanguage();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-5">
         <h2 className="text-lg font-bold text-primary">{title}</h2>
-        {onViewAll && (
+        {canShowAll && onViewAll && (
           <button onClick={onViewAll} className="text-xs font-semibold text-accent-text hover:underline">{t('view_all')}</button>
         )}
       </div>
@@ -509,34 +559,36 @@ const SectionContainer: React.FC<{ title: string; children: React.ReactNode; onV
   );
 };
 
-const CompactCard: React.FC<{ worker: Worker; onClick: () => void; language: string }> = ({ worker, onClick, language }) => (
+const CompactCard: React.FC<{
+  name: string;
+  image: string | null;
+  subtitle: string;
+  onClick: () => void;
+}> = ({ name, image, subtitle, onClick }) => (
   <div onClick={onClick} className="flex-shrink-0 w-32 cursor-pointer group">
     <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-border shadow-sm mb-2 bg-glass">
       <img
-        src={worker.photo}
-        alt={worker.name[language]}
+        src={image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+        alt={name}
         onError={handleImageError}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-        <p className="text-[10px] font-bold text-white truncate">{worker.name[language]}</p>
-        <p className="text-[8px] text-white/70">{worker.specialty[language]}</p>
+        <p className="text-[10px] font-bold text-white truncate">{name}</p>
+        <p className="text-[8px] text-white/70">{subtitle}</p>
       </div>
     </div>
   </div>
 );
 
 const FullListingCard: React.FC<{
-  worker: Worker;
+  ad: HomeAdFull;
   onSelect: () => void;
   onSelectOffice: (id: string) => void;
-  language: string;
   t: (k: any) => string;
   dir: string;
-}> = ({ worker, onSelect, onSelectOffice, language, t, dir }) => {
-  const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
-  const ad = MOCK_ADS.find(a => a.workerId === worker.id);
+}> = ({ ad, onSelect, onSelectOffice, t, dir }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
@@ -546,35 +598,35 @@ const FullListingCard: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <div
           className="flex items-center gap-2 cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
+          onClick={(e) => { e.stopPropagation(); onSelectOffice(ad.office.id.toString()); }}
         >
-          {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
+          <Avatar src={ad.office.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'} alt={ad.office.name} size="sm" />
           <div>
-            <h3 className="text-[10px] font-bold text-primary">{office?.name[language]}</h3>
+            <h3 className="text-[10px] font-bold text-primary">{ad.office.name}</h3>
             <div className="flex items-center text-[8px] text-secondary">
               <MapPin size={8} className="me-0.5" />
-              {office?.location[language]}
+              {ad.office.state}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {isSeeker && (
             <button
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
-              className={`p-1.5 rounded-full transition-colors ${isFavorite(worker.id) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+              onClick={(e) => { e.stopPropagation(); toggleFavorite(ad.id.toString()); }}
+              className={`p-1.5 rounded-full transition-colors ${isFavorite(ad.id.toString()) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
             >
-              <Heart size={16} fill={isFavorite(worker.id) ? "currentColor" : "none"} />
+              <Heart size={16} fill={isFavorite(ad.id.toString()) ? "currentColor" : "none"} />
             </button>
           )}
-          <Badge color="neutral">{worker.id}</Badge>
+          <Badge color="neutral">{ad.code}</Badge>
         </div>
       </div>
 
       <div className="flex gap-4">
         <div className="relative w-24 h-28 flex-shrink-0 bg-glass rounded-xl overflow-hidden">
           <img
-            src={worker.photo}
-            alt={worker.name[language]}
+            src={ad.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+            alt={ad.worker_name}
             onError={handleImageError}
             className="w-full h-full object-cover border border-border"
             loading="lazy"
@@ -583,17 +635,17 @@ const FullListingCard: React.FC<{
 
         <div className="flex-1 flex flex-col justify-between py-0.5">
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-primary line-clamp-1">{ad?.title[language] || worker.name[language]}</h4>
+            <h4 className="text-sm font-bold text-primary line-clamp-1">{ad.worker_name}</h4>
             <div className="flex flex-wrap gap-1.5">
-              <Badge color="accent">{worker.specialty[language]}</Badge>
-              <Badge color="neutral">{worker.nationality[language]}</Badge>
+              <Badge color="accent">{ad.category_name}</Badge>
+              <Badge color="neutral">{ad.country_name}</Badge>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-[10px] text-secondary leading-none">{t('salary')}</span>
-              <span className="text-sm font-bold text-brand-700 dark:text-brand-400">{worker.salary} {t('kwd')}</span>
+              <span className="text-sm font-bold text-brand-700 dark:text-brand-400">{ad.salary} {t('kwd')}</span>
             </div>
 
             <div className="w-8 h-8 rounded-full bg-accent-subtle flex items-center justify-center text-accent-text group-hover:bg-accent group-hover:text-accent-fg transition-all">

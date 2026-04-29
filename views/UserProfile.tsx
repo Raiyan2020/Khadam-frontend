@@ -8,13 +8,24 @@ import { useNavigate } from '@tanstack/react-router';
 import { useUserRole } from '../UserRoleContext';
 import verified from '@/assets/verified.png'
 import { useLogout } from '../features/auth/hooks/useLogout';
+import { useProfile } from '../features/auth/hooks/useProfile';
 
 export const UserProfile: React.FC = () => {
   const navigate = useNavigate();
-  const { userRole, handleToggleRole } = useUserRole();
+  const { userRole } = useUserRole();
   const { t } = useLanguage();
-  const isSeeker = userRole === UserRole.SEEKER;
+  const { data: profile, isLoading } = useProfile();
   const logoutMutation = useLogout();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  const isCompany = profile?.type === '2';
 
   return (
     <div className="pb-10">
@@ -22,8 +33,13 @@ export const UserProfile: React.FC = () => {
       <div className="relative pt-10 px-5 mb-8">
         <div className="flex flex-col items-center">
           <div className="relative">
-            <Avatar src={isSeeker ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200"} alt="User" size="xl" className="border-4 border-background" />
-            {!isSeeker && (
+            <Avatar 
+              src={profile?.image || (userRole === UserRole.SEEKER ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200")} 
+              alt={profile?.name || "User"} 
+              size="xl" 
+              className="border-4 border-background" 
+            />
+            {isCompany && (
               <img src={verified} alt="Verified" className="absolute bottom-1 start-1 w-6 h-6" />
             )}
             <button
@@ -33,24 +49,12 @@ export const UserProfile: React.FC = () => {
               <Edit size={14} />
             </button>
           </div>
-          <h1 className="text-xl font-bold text-primary mt-4">{isSeeker ? "Guest User" : "Al-Nour Recruitment"}</h1>
-          <p className="text-sm text-secondary">{isSeeker ? "+965 1234 5678" : "+965 9876 5432"}</p>
+          <h1 className="text-xl font-bold text-primary mt-4">{profile?.name || (userRole === UserRole.SEEKER ? "Guest User" : "Al-Nour Recruitment")}</h1>
+          <p className="text-sm text-secondary" dir="ltr">{profile?.phone}</p>
         </div>
       </div>
 
       <div className="px-5 space-y-3">
-        {/* Role Switcher Demo */}
-        {/* <GlassCard onClick={handleToggleRole} className="flex items-center gap-4 !py-4 hover:bg-glassHigh active:scale-[0.99] transition-all bg-accent/5 border-accent/20">
-          <div className="text-accent">
-            <RefreshCw size={20} />
-          </div>
-          <div className="flex-1">
-            <span className="block font-bold text-sm text-primary">{t('switch_role')}</span>
-            <span className="text-xs text-secondary">{t(isSeeker ? 'role_seeker' : 'role_office')}</span>
-          </div>
-        </GlassCard> */}
-
-
         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={() => navigate({ to: '/edit-profile' })} />
         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={() => navigate({ to: '/settings' })} />
         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => navigate({ to: '/help-support' })} />

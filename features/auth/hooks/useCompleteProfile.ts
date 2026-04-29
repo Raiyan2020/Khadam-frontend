@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../../../config';
+import { apiFetch } from '../../../lib/apiFetch';
 
 export interface CompleteProfileResponse {
   status: boolean;
@@ -16,7 +17,7 @@ export const useCompleteProfile = () => {
   return useMutation({
     mutationFn: async (formData: FormData) => {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/complete-profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../../../config';
+import { apiFetch } from '../../../lib/apiFetch';
 
 interface RegisterResponse {
   status: boolean;
@@ -19,7 +20,7 @@ export const useRegister = () => {
       formData.append('type', data.type);
       formData.append('phone', data.phone);
 
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         body: formData,
       });

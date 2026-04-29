@@ -25,6 +25,23 @@ import { Checkout } from './views/Checkout';
 import { TermsConditions } from './views/TermsConditions';
 import { SplashScreen } from './components/SplashScreen';
 
+export interface SearchParams {
+  query?: string;
+  filterType?: string;
+  category?: string;
+  category_id?: number;
+  country_id?: number;
+  country_name?: string;
+  country_image?: string;
+  gender?: string;
+  salary?: number;
+  age?: number;
+  years_experience?: number;
+  languages?: number[];
+  latest?: 1 | 0;
+  experience?: 1 | 0;
+}
+
 const AppLayout = () => {
   const [showSplash, setShowSplash] = React.useState(true);
 
@@ -48,7 +65,7 @@ const AppLayout = () => {
 export const rootRoute = createRootRoute({
   component: AppLayout,
   beforeLoad: ({ location }) => {
-    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile'];
+    const publicPaths = ['/login', '/sign-up', '/verify-otp'];
     const isPublic = publicPaths.includes(location.pathname);
     const token = localStorage.getItem('token');
 
@@ -136,6 +153,24 @@ export const searchResultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/search',
   component: SearchResults,
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
+    return {
+      query: typeof search.query === 'string' ? search.query : undefined,
+      filterType: typeof search.filterType === 'string' ? search.filterType : undefined,
+      category: typeof search.category === 'string' ? search.category : undefined,
+      category_id: typeof search.category_id === 'number' ? search.category_id : undefined,
+      country_id: typeof search.country_id === 'number' ? search.country_id : undefined,
+      country_name: typeof search.country_name === 'string' ? search.country_name : undefined,
+      country_image: typeof search.country_image === 'string' ? search.country_image : undefined,
+      gender: typeof search.gender === 'string' ? search.gender : undefined,
+      salary: typeof search.salary === 'number' ? search.salary : undefined,
+      age: typeof search.age === 'number' ? search.age : undefined,
+      years_experience: typeof search.years_experience === 'number' ? search.years_experience : undefined,
+      languages: Array.isArray(search.languages) ? search.languages as number[] : undefined,
+      latest: search.latest === 1 || search.latest === 0 ? search.latest as 1 | 0 : undefined,
+      experience: search.experience === 1 || search.experience === 0 ? search.experience as 1 | 0 : undefined,
+    };
+  },
 });
 
 export const loginRoute = createRoute({
@@ -203,6 +238,12 @@ export const termsRoute = createRoute({
   component: TermsConditions,
 });
 
+export const categoryResultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/category/$category',
+  component: SearchResults,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   workerRoute,
@@ -215,6 +256,7 @@ const routeTree = rootRoute.addChildren([
   subscriptionsRoute,
   notificationsRoute,
   countryResultsRoute,
+  categoryResultsRoute,
   searchResultsRoute,
   loginRoute,
   verifyOtpRoute,

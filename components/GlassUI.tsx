@@ -1,4 +1,6 @@
 import React from 'react';
+import { Search, Filter } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -24,11 +26,8 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', f
   const baseStyle = "h-[44px] rounded-[14px] font-medium text-sm flex items-center justify-center transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed px-6 focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]";
   
   const variants = {
-    // Primary: Brand 500 background, Dark text for contrast
     primary: "bg-accent text-accent-fg shadow-lg shadow-brand-500/20 hover:bg-accent-hover",
-    // Secondary: Surface background, Primary text
     secondary: "bg-surface border border-border text-primary hover:bg-glassHigh",
-    // Glass: Glass background
     glass: "bg-glass border border-border text-primary hover:bg-glassHigh"
   };
   
@@ -44,7 +43,6 @@ export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', f
 
 export const Badge: React.FC<{ children: React.ReactNode; color?: 'accent' | 'green' | 'red' | 'neutral' }> = ({ children, color = 'neutral' }) => {
   const colors = {
-    // Accent: Brand 200 bg, Brand 900 text
     accent: "bg-accent-subtle text-accent-text border-brand-300 dark:border-brand-700",
     green: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20",
     red: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
@@ -80,6 +78,44 @@ export const Switch: React.FC<{ checked?: boolean; onChange?: (checked: boolean)
       className={`relative w-10 h-6 flex shrink-0 items-center rounded-full transition-colors cursor-pointer ${checked !== false ? 'bg-brand-500' : 'bg-surface border border-border'}`}
     >
       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${checked !== false ? 'end-1' : 'start-1'}`} />
+    </div>
+  );
+};
+
+export const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`animate-pulse bg-zinc-200 dark:bg-zinc-800 rounded-lg ${className}`} />
+);
+
+export const SearchInput: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  onSearch?: () => void;
+  onFilterClick?: () => void;
+  placeholder?: string;
+  className?: string;
+}> = ({ value, onChange, onSearch, onFilterClick, placeholder, className = '' }) => {
+  const { t } = useLanguage();
+  return (
+    <div className={`relative group ${className}`}>
+      <input
+        type="text"
+        placeholder={placeholder || t('search_placeholder')}
+        className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-4 focus:ring-[var(--focus-ring)] transition-all"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && onSearch) onSearch();
+        }}
+      />
+      <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
+      {onFilterClick && (
+        <button
+          onClick={onFilterClick}
+          className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1.5 rounded-md hover:bg-brand-300 transition-colors"
+        >
+          <Filter size={14} />
+        </button>
+      )}
     </div>
   );
 };

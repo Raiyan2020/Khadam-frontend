@@ -1,161 +1,281 @@
-import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, MapPin, Filter, Search, Heart } from 'lucide-react';
-import { Worker, ServiceCategory } from '../types';
-import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS, NATIONALITIES } from '../constants';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Heart, Clock, X } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
-import { GlassCard, Avatar, Badge } from '../components/GlassUI';
+import { GlassCard, Badge, SearchInput, Skeleton } from '../components/GlassUI';
+import { FilterModal, FilterCriteria } from '../components/FilterModal';
+import { useAdFilter, AdFilterParams, AdFilterResult } from '../features/auth/hooks/useAdFilter';
+import { useCategories } from '../features/auth/hooks/useCategories';
 
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
+import { SearchParams } from '../router';
+import { useLanguages } from '../features/auth/hooks/useLanguages';
 
 export const SearchResults: React.FC = () => {
-  const { filterType, category, query } = useSearch({ strict: false }) as { filterType?: string, category?: string, query?: string };
+  const { category: paramCategory } = useParams({ strict: false }) as { category?: string };
+  const searchParams = useSearch({ strict: false }) as SearchParams;
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
-  
-  const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>(
-    (category as ServiceCategory) || 'All'
-  );
-  const [searchQuery, setSearchQuery] = useState(query || '');
 
-  const results = useMemo(() => {
-    let filtered = [...MOCK_WORKERS];
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { mutate: fetchResults, data: apiResponse, isPending } = useAdFilter();
 
-    // Apply base filters
-    if (activeCategory !== 'All') {
-      filtered = filtered.filter(w => w.category === activeCategory);
+  const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
+  const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterCriteria>({
+    category: searchParams.category_id,
+    nationality: undefined,
+    gender: searchParams.gender as FilterCriteria['gender'],
+    maxSalary: searchParams.salary,
+    maxAge: searchParams.age,
+    minExperience: searchParams.years_experience,
+    languages: searchParams.languages,
+  });
+
+  // Build API params from current state and fire request
+  const doSearch = useCallback((overrides?: Partial<AdFilterParams>) => {
+    const params: AdFilterParams = {
+      worker_name: searchQuery || undefined,
+      category_id: activeCategory !== 'All' ? activeCategory : filters.category,
+      country_id: filters.country_id ?? searchParams.country_id,
+      gender: (filters.gender && filters.gender !== 'Any')
+        ? (filters.gender.toLowerCase() as 'male' | 'female' | 'all')
+        : undefined,
+      salary: filters.maxSalary,
+      age: filters.maxAge,
+      years_experience: filters.minExperience,
+      languages: filters.languages as number[] | undefined,
+      latest: searchParams.latest,
+      experience: searchParams.experience,
+      ...overrides,
+    };
+    fetchResults(params);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeCategory, filters.category, filters.country_id, filters.gender,
+      filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
+      searchParams.country_id, searchParams.latest, fetchResults]);
+
+  // Single effect: fires on mount AND when activeCategory changes
+  const hasMounted = React.useRef(false);
+  useEffect(() => {
+    if (!hasMounted.current) {
+      // Initial load — fire once
+      hasMounted.current = true;
+      doSearch();
+      return;
     }
+    // Subsequent fires — only when activeCategory changes
+    doSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCategory]);
 
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      filtered = filtered.filter(w => 
-        w.name[language].toLowerCase().includes(searchLower) || 
-        w.nationality[language].toLowerCase().includes(searchLower) ||
-        w.specialty[language].toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply specific filterType sorting/filtering
-    switch (filterType) {
-      case 'available':
-        filtered = filtered.filter(w => w.availability === 'Available');
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'budget':
-        filtered.sort((a, b) => a.salary - b.salary);
-        break;
-      case 'experience':
-        filtered.sort((a, b) => b.experienceYears - a.experienceYears);
-        break;
-      case 'continue':
-        const saved = localStorage.getItem('last_viewed_workers');
-        const lastViewedIds: string[] = saved ? JSON.parse(saved) : [];
-        filtered = filtered.filter(w => lastViewedIds.includes(w.id));
-        filtered.sort((a, b) => lastViewedIds.indexOf(a.id) - lastViewedIds.indexOf(b.id));
-        break;
-      default:
-        // Default sorting (newest)
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
-
-    return filtered;
-  }, [activeCategory, searchQuery, filterType, language]);
-
-  const getTitle = () => {
-    switch (filterType) {
-      case 'available': return t('section_available');
-      case 'newest': return t('section_newest');
-      case 'budget': return t('section_budget');
-      case 'experience': return t('section_experience');
-      case 'continue': return t('section_continue');
-      default: return t('search_results') || 'Search Results';
-    }
+  const handleApplyFilters = (newFilters: FilterCriteria) => {
+    setFilters(newFilters);
+    const params: AdFilterParams = {
+      worker_name: searchQuery || undefined,
+      category_id: activeCategory !== 'All' ? activeCategory : newFilters.category,
+      country_id: newFilters.country_id,
+      gender: (newFilters.gender && newFilters.gender !== 'Any')
+        ? (newFilters.gender.toLowerCase() as 'male' | 'female' | 'all')
+        : undefined,
+      salary: newFilters.maxSalary,
+      age: newFilters.maxAge,
+      years_experience: newFilters.minExperience,
+      languages: newFilters.languages as number[] | undefined,
+    };
+    fetchResults(params);
   };
 
-  const getTranslatedCategory = (cat: ServiceCategory | 'All') => {
-    if (cat === 'All') return t('cat_all');
-    switch (cat) {
-      case ServiceCategory.BABYSITTER: return t('cat_babysitter');
-      case ServiceCategory.COOK_FEMALE: return t('cat_cook_female');
-      case ServiceCategory.NURSE: return t('cat_nurse');
-      case ServiceCategory.DRIVER: return t('cat_driver');
-      case ServiceCategory.COOK_MALE: return t('cat_cook_male');
-      case ServiceCategory.DOMESTIC_WORKER: return t('cat_domestic_worker');
-      default: return cat;
+  const { data: languagesData } = useLanguages();
+  const { data: categoriesData } = useCategories();
+
+  // Remove a single filter key and re-fire search
+  const removeFilter = (key: keyof FilterCriteria) => {
+    const updated = { ...filters, [key]: undefined };
+    if (key === 'nationality') updated.country_id = undefined;
+    setFilters(updated);
+    const params: AdFilterParams = {
+      worker_name: searchQuery || undefined,
+      category_id: activeCategory !== 'All' ? activeCategory : updated.category,
+      country_id: updated.country_id,
+      gender: (updated.gender && updated.gender !== 'Any')
+        ? (updated.gender.toLowerCase() as 'male' | 'female' | 'all')
+        : undefined,
+      salary: updated.maxSalary,
+      age: updated.maxAge,
+      years_experience: updated.minExperience,
+      languages: updated.languages as number[] | undefined,
+    };
+    fetchResults(params);
+  };
+
+  const results: AdFilterResult[] = apiResponse?.data || [];
+  const total = apiResponse?.pagination.total ?? 0;
+
+  // Build active filter chips
+  const activeChips: { label: string; key: keyof FilterCriteria }[] = [];
+  if (filters.maxSalary) activeChips.push({ label: `${t('salary')}: ${filters.maxSalary}`, key: 'maxSalary' });
+  if (filters.category) {
+    const catName = categoriesData?.find(c => c.id === filters.category)?.name;
+    if (catName) activeChips.push({ label: catName, key: 'category' });
+  }
+  if (filters.nationality && filters.nationality !== 'Any') activeChips.push({ label: filters.nationality, key: 'nationality' });
+  if (filters.gender && filters.gender !== 'Any') activeChips.push({ label: t(`gender_${filters.gender.toLowerCase()}`), key: 'gender' });
+  if (filters.minExperience) activeChips.push({ label: `${t('experience')}: ${filters.minExperience}+`, key: 'minExperience' });
+  if (filters.maxAge) activeChips.push({ label: `${t('age')}: ≤${filters.maxAge}`, key: 'maxAge' });
+  if (filters.languages && filters.languages.length > 0) {
+    filters.languages.forEach((lid) => {
+      const langName = languagesData?.find(l => l.id === lid)?.name;
+      if (langName) activeChips.push({ label: langName, key: 'languages' });
+    });
+  }
+
+  const isCountryView = !!searchParams.country_id && !!searchParams.country_name;
+
+  const getTitle = () => {
+    switch (searchParams.filterType) {
+      case 'available': return t('section_available');
+      case 'newest': return t('section_newest');
+      case 'experience': return t('section_experience');
+      default: return t('search_results') || 'نتائج البحث';
     }
   };
 
   return (
     <div className="pb-10 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
-        <div className="flex items-center gap-4">
-          <button 
+        {/* Header row */}
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => navigate({ to: '/' })}
-            className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
+            className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
           >
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
-          <h1 className="text-xl font-bold text-primary">{getTitle()}</h1>
+
+          {isCountryView ? (
+            /* Country header: flag + name */
+            <div className="flex items-center gap-2.5">
+              {searchParams.country_image && (
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
+                  <img
+                    src={searchParams.country_image}
+                    alt={searchParams.country_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+              <h1 className="text-xl font-bold text-primary">{searchParams.country_name}</h1>
+            </div>
+          ) : (
+            <h1 className="text-xl font-bold text-primary">{getTitle()}</h1>
+          )}
         </div>
 
-        <div className="relative group">
-          <input 
-            type="text" 
-            placeholder={t('search_placeholder')}
-            className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-4 focus:ring-[var(--focus-ring)] transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
-          <button className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1 rounded-md hover:bg-brand-300 transition-colors">
-            <Filter size={14} />
-          </button>
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onSearch={() => doSearch()}
+          onFilterClick={() => setIsFilterModalOpen(true)}
+        />
 
+        {/* Active filter chips */}
+        {activeChips.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {activeChips.map((chip, i) => (
+              <div
+                key={`${chip.key}-${i}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex-shrink-0"
+              >
+                <span>{chip.label}</span>
+                <button
+                  onClick={() => {
+                    if (chip.key === 'languages') {
+                      // Remove all language filters at once
+                      const updated = { ...filters, languages: undefined };
+                      setFilters(updated);
+                      fetchResults({
+                        worker_name: searchQuery || undefined,
+                        category_id: activeCategory !== 'All' ? activeCategory : updated.category,
+                        country_id: updated.country_id ?? searchParams.country_id,
+                        gender: (updated.gender && updated.gender !== 'Any') ? updated.gender.toLowerCase() as any : undefined,
+                        salary: updated.maxSalary,
+                        age: updated.maxAge,
+                        years_experience: updated.minExperience,
+                      });
+                    } else {
+                      removeFilter(chip.key);
+                    }
+                  }}
+                  className="hover:text-red-500 transition-colors ml-0.5"
+                  aria-label="remove filter"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={handleApplyFilters}
+          initialCriteria={filters}
+        />
+
+        {/* Category chips from API */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          <CategoryChip 
-            label={getTranslatedCategory('All')} 
-            isActive={activeCategory === 'All'} 
-            onClick={() => setActiveCategory('All')} 
-          />
-          {Object.values(ServiceCategory).map(cat => (
-            <CategoryChip 
-              key={cat} 
-              label={getTranslatedCategory(cat)} 
-              isActive={activeCategory === cat} 
-              onClick={() => setActiveCategory(cat)} 
-            />
-          ))}
+
+          {isLoadingCategories ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+            ))
+          ) : (
+            categories?.map(cat => (
+              <CategoryChip
+                key={cat.id}
+                label={cat.name}
+                isActive={activeCategory === cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+              />
+            ))
+          )}
         </div>
       </div>
 
       <div className="p-5 space-y-4">
-        <p className="text-sm text-secondary">
-          {results.length} {t('results_found')}
-        </p>
+        {/* Results count */}
+        {!isPending && (
+          <p className="text-sm text-secondary">
+            {total} {t('results_found')}
+          </p>
+        )}
 
-        {results.length > 0 ? (
+        {isPending ? (
           <div className="space-y-4">
-            {results.map(worker => (
-              <FullListingCard 
-                key={worker.id} 
-                worker={worker} 
-                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
-                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                language={language}
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="w-full h-36 rounded-[18px]" />
+            ))}
+          </div>
+        ) : results.length > 0 ? (
+          <div className="space-y-4">
+            {results.map(ad => (
+              <AdCard
+                key={ad.id}
+                ad={ad}
+                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
                 t={t}
-                dir={dir}
               />
             ))}
           </div>
         ) : (
-          <div className="text-center py-10 text-secondary">
-            {t('no_results')}
+          <div className="text-center py-16 text-secondary">
+            <div className="text-4xl mb-3">🔍</div>
+            <p className="font-medium">{t('no_results')}</p>
           </div>
         )}
       </div>
@@ -163,105 +283,75 @@ export const SearchResults: React.FC = () => {
   );
 };
 
+// ─── Category Chip ───────────────────────────────────────────────────────────
 const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
-    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
-      isActive 
-        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20' 
+    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
+        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
         : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
-    }`}
+      }`}
   >
     {label}
   </button>
 );
 
-const FullListingCard: React.FC<{ 
-  worker: Worker; 
-  onSelect: () => void; 
-  onSelectOffice: (id: string) => void; 
-  language: string; 
+// ─── Ad Card (matches API response shape) ────────────────────────────────────
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
+  e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
+};
+
+const AdCard: React.FC<{
+  ad: AdFilterResult;
+  onSelect: () => void;
   t: (k: string) => string;
-  dir: string;
-}> = ({ worker, onSelect, onSelectOffice, language, t, dir }) => {
-  const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
-  const ad = MOCK_ADS.find(a => a.workerId === worker.id);
+}> = ({ ad, onSelect, t }) => {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(worker.id);
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
+  const favorite = isFavorite(ad.id.toString());
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
-      <div className="flex items-center justify-between mb-3">
-        <div 
-          className="flex items-center gap-2 cursor-pointer" 
-          onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
-        >
-          {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
-          <div>
-            <h3 className="text-[10px] font-bold text-primary">{office?.name[language]}</h3>
-            <div className="flex items-center text-[8px] text-secondary">
-              <MapPin size={8} className="me-0.5" />
-              <span>{office?.location[language]}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isSeeker && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
-              className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-            >
-              <Heart size={16} fill={favorite ? "currentColor" : "none"} />
-            </button>
-          )}
-          <div className="text-[10px] text-secondary bg-background/50 px-2 py-1 rounded-md border border-border">
-            {t('ref_id')}: {worker.id.toUpperCase()}
-          </div>
-        </div>
-      </div>
-
       <div className="flex gap-3">
-        <div className="w-24 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-border relative">
-          <img 
-            src={worker.photo} 
-            alt={worker.name[language]} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+        {/* Image */}
+        <div className="w-24 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-border bg-glass">
+          <img
+            src={ad.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+            alt={ad.worker_name}
+            onError={handleImageError}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
           />
-          {ad?.featured && (
-            <div className="absolute top-1 start-1 bg-accent-subtle text-accent-text text-[8px] font-bold px-1.5 py-0.5 rounded">
-              Featured
-            </div>
-          )}
         </div>
+
+        {/* Details */}
         <div className="flex-1 flex flex-col justify-between py-1">
           <div>
-            <div className="flex items-start justify-between">
-              <h4 className="font-bold text-primary leading-tight">{worker.name[language]}</h4>
-              <span className="font-bold text-brand-500 text-sm whitespace-nowrap ms-2">
-                {worker.salary} {t('kwd')}
-              </span>
+            <div className="flex items-start justify-between gap-2">
+              <h4 className="font-bold text-primary leading-tight line-clamp-1">{ad.worker_name}</h4>
+              {isSeeker && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(ad.id.toString()); }}
+                  className={`p-1.5 rounded-full flex-shrink-0 transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                >
+                  <Heart size={15} fill={favorite ? 'currentColor' : 'none'} />
+                </button>
+              )}
             </div>
-            <p className="text-xs text-secondary mt-0.5">{worker.specialty[language]}</p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <Badge color="accent">{ad.category_name}</Badge>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-2">
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('nationality')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.nationality[language]}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('experience')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.experienceYears} {t('exp_years')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('age')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.age} {t('years_old')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('gender')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.gender === 'Female' ? t('gender_female') : t('gender_male')}</span>
+
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm font-bold text-brand-500">
+              {ad.salary} {t('kwd')}
+            </span>
+            <div className="flex items-center gap-1 text-[10px] text-secondary">
+              <Clock size={10} />
+              <span>{ad.created_at}</span>
             </div>
           </div>
         </div>
