@@ -6,6 +6,7 @@ import { useUserRole } from '../UserRoleContext';
 import { useLanguage } from '../i18n';
 import { useAdDetails } from '../features/auth/hooks/useAdDetails';
 import { useNavigate, useParams } from '@tanstack/react-router';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 export const WorkerProfile: React.FC = () => {
   const { workerId } = useParams({ strict: false }) as { workerId: string };
@@ -17,6 +18,15 @@ export const WorkerProfile: React.FC = () => {
   const { data: worker, isLoading, error } = useAdDetails(workerId);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(workerId);
+  const { mutate: toggleLike } = useToggleLike();
+
+  const handleToggleLike = () => {
+    const id = parseInt(workerId);
+    if (!isNaN(id)) {
+      toggleLike({ type: 'ad', id });
+      toggleFavorite(workerId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -78,7 +88,7 @@ export const WorkerProfile: React.FC = () => {
           <div className="flex gap-2">
             {isSeeker && (
               <button
-                onClick={() => toggleFavorite(workerId)}
+                onClick={handleToggleLike}
                 className={`w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${favorite ? 'text-red-500 hover:bg-black/40' : 'text-white hover:bg-black/40'}`}
               >
                 <Heart size={20} fill={favorite ? "currentColor" : "none"} />

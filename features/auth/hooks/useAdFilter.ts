@@ -14,6 +14,8 @@ export interface AdFilterParams {
   languages?: number[];
   latest?: 1 | 0;
   experience?: 1 | 0;
+  history?: 1 | 0;
+  page?: number;
 }
 
 export interface AdFilterResult {
@@ -61,6 +63,8 @@ export const useAdFilter = () => {
       }
       if (params.latest !== undefined) formData.append('latest', String(params.latest));
       if (params.experience !== undefined) formData.append('experience', String(params.experience));
+      if (params.history !== undefined) formData.append('history', String(params.history));
+      if (params.page !== undefined) formData.append('page', String(params.page));
 
       const response = await apiFetch(`${API_BASE_URL}/ad-filter`, {
         method: 'POST',

@@ -9,6 +9,7 @@ import { GlassCard, Badge, Avatar, SearchInput } from '../components/GlassUI';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
 import { useCategories } from '../features/auth/hooks/useCategories';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
   e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
@@ -175,8 +176,8 @@ const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => 
   <button
     onClick={onClick}
     className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
-        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
-        : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
+      ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+      : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
       }`}
   >
     {label}
@@ -195,6 +196,14 @@ const FullListingCard: React.FC<{
   const ad = MOCK_ADS.find(a => a.workerId === worker.id);
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(worker.id);
+  const { mutate: toggleLike } = useToggleLike();
+
+  const handleToggleLike = (id: string) => {
+    // Assuming worker.id maps to ad.id for this mock context
+    const numericId = parseInt(id.replace(/\D/g, '')) || 1;
+    toggleLike({ type: 'ad', id: numericId });
+    toggleFavorite(id);
+  };
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -214,7 +223,7 @@ const FullListingCard: React.FC<{
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={(e) => { e.stopPropagation(); toggleFavorite(worker.id); }}
+            onClick={(e) => { e.stopPropagation(); handleToggleLike(worker.id); }}
             className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
           >
             <Heart size={16} fill={favorite ? "currentColor" : "none"} />

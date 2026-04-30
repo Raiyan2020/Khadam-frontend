@@ -40,6 +40,8 @@ export interface SearchParams {
   languages?: number[];
   latest?: 1 | 0;
   experience?: 1 | 0;
+  history?: 1 | 0;
+  page?: number;
 }
 
 const AppLayout = () => {
@@ -169,6 +171,8 @@ export const searchResultsRoute = createRoute({
       languages: Array.isArray(search.languages) ? search.languages as number[] : undefined,
       latest: search.latest === 1 || search.latest === 0 ? search.latest as 1 | 0 : undefined,
       experience: search.experience === 1 || search.experience === 0 ? search.experience as 1 | 0 : undefined,
+      history: search.history === 1 || search.history === 0 ? search.history as 1 | 0 : undefined,
+      page: typeof search.page === 'number' ? search.page : undefined,
     };
   },
 });

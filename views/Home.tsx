@@ -13,6 +13,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCategories } from '../features/auth/hooks/useCategories';
 import { useCountries } from '../features/auth/hooks/useCountries';
 import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -166,8 +167,6 @@ export const Home: React.FC = () => {
   const { userRole } = useUserRole();
 
   const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
-
-  console.log(homeData?.history);
 
   return (
     <div className="pb-10">
@@ -380,9 +379,6 @@ export const Home: React.FC = () => {
               </div>
             </GlassCard>
 
-
-
-
             {/* Package Expiry */}
             <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 relative overflow-hidden">
               <div className="absolute end-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
@@ -450,8 +446,7 @@ export const Home: React.FC = () => {
         </section>
 
         {homeData?.history && homeData.history.length > 0 && (
-
-          <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue' } })}>
+          <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
             <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
               {homeData.history.map(worker => (
                 <CompactCard
@@ -592,6 +587,12 @@ const FullListingCard: React.FC<{
   const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
+  const { mutate: toggleLike } = useToggleLike();
+
+  const handleToggleLike = (id: number) => {
+    toggleLike({ type: 'ad', id });
+    toggleFavorite(id.toString());
+  };
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -612,7 +613,7 @@ const FullListingCard: React.FC<{
         <div className="flex items-center gap-2">
           {isSeeker && (
             <button
-              onClick={(e) => { e.stopPropagation(); toggleFavorite(ad.id.toString()); }}
+              onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
               className={`p-1.5 rounded-full transition-colors ${isFavorite(ad.id.toString()) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
             >
               <Heart size={16} fill={isFavorite(ad.id.toString()) ? "currentColor" : "none"} />

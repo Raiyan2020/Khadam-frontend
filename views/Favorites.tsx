@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
-import { Heart, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, MapPin, Star, Clock } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { useFavorites } from '../FavoritesContext';
-import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS } from '../constants';
-import { Worker, Office } from '../types';
-import { GlassCard, Avatar, Badge } from '../components/GlassUI';
+import { GlassCard, Avatar, Badge, Skeleton } from '../components/GlassUI';
 import { useUserRole } from '../UserRoleContext';
 
 import { useNavigate } from '@tanstack/react-router';
+import { useMyLikes, FavoriteAd, FavoriteOffice } from '../features/auth/hooks/useMyLikes';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 export const Favorites: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
-  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite: toggleFavoriteLocal } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const [activeTab, setActiveTab] = useState<'workers' | 'offices'>('workers');
 
-  const favoriteWorkers = MOCK_WORKERS.filter(w => favorites.includes(w.id));
-  const favoriteOffices = MOCK_OFFICES.filter(o => favorites.includes(o.id));
+  const { data: favoriteAds, isLoading: isLoadingAds } = useMyLikes('ad');
+  const { data: favoriteOffices, isLoading: isLoadingOffices } = useMyLikes('office');
+  const { mutate: toggleLike } = useToggleLike();
+
+  const handleToggleLike = (id: number, type: 'ad' | 'office') => {
+    toggleLike({ type, id });
+    toggleFavoriteLocal(id.toString());
+  };
+
+  const isLoading = activeTab === 'workers' ? isLoadingAds : isLoadingOffices;
+  const ads = (favoriteAds || []) as FavoriteAd[];
+  const offices = (favoriteOffices || []) as FavoriteOffice[];
 
   return (
     <div className="pb-10 min-h-screen bg-background">
@@ -54,20 +64,23 @@ export const Favorites: React.FC = () => {
       </div>
 
       <div className="p-5 space-y-4">
-        {activeTab === 'workers' ? (
-          favoriteWorkers.length > 0 ? (
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="w-full h-28 rounded-2xl" />
+            ))}
+          </div>
+        ) : activeTab === 'workers' ? (
+          ads.length > 0 ? (
             <div className="space-y-4">
-              {favoriteWorkers.map(worker => (
-                <FullListingCard
-                  key={worker.id}
-                  worker={worker}
-                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
-                  onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                  language={language}
+              {ads.map(ad => (
+                <FavoriteAdCard
+                  key={ad.id}
+                  ad={ad}
+                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
                   t={t}
-                  dir={dir}
-                  isFavorite={true}
-                  onToggleFavorite={() => toggleFavorite(worker.id)}
+                  isFavorite={isFavorite(ad.id.toString()) || true}
+                  onToggleFavorite={() => handleToggleLike(ad.id, 'ad')}
                   isSeeker={isSeeker}
                 />
               ))}
@@ -82,17 +95,16 @@ export const Favorites: React.FC = () => {
             </div>
           )
         ) : (
-          favoriteOffices.length > 0 ? (
+          offices.length > 0 ? (
             <div className="space-y-4">
-              {favoriteOffices.map(office => (
+              {offices.map(office => (
                 <FavoriteOfficeCard
                   key={office.id}
                   office={office}
-                  onSelect={() => navigate({ to: '/office/$officeId', params: { officeId: office.id } } as any)}
-                  language={language}
+                  onSelect={() => navigate({ to: '/office/$officeId', params: { officeId: office.id.toString() } } as any)}
                   dir={dir}
-                  isFavorite={true}
-                  onToggleFavorite={() => toggleFavorite(office.id)}
+                  isFavorite={isFavorite(office.id.toString()) || true}
+                  onToggleFavorite={() => handleToggleLike(office.id, 'office')}
                   isSeeker={isSeeker}
                 />
               ))}
@@ -112,20 +124,14 @@ export const Favorites: React.FC = () => {
   );
 };
 
-const FullListingCard: React.FC<{
-  worker: Worker;
+const FavoriteAdCard: React.FC<{
+  ad: FavoriteAd;
   onSelect: () => void;
-  onSelectOffice: (id: string) => void;
-  language: string;
   t: (k: string) => string;
-  dir: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   isSeeker: boolean;
-}> = ({ worker, onSelect, onSelectOffice, language, t, dir, isFavorite, onToggleFavorite, isSeeker }) => {
-  const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
-  const ad = MOCK_ADS.find(a => a.workerId === worker.id);
-
+}> = ({ ad, onSelect, t, isFavorite, onToggleFavorite, isSeeker }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
     e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
@@ -133,37 +139,11 @@ const FullListingCard: React.FC<{
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
-        >
-          {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
-          <div>
-            <h3 className="text-[10px] font-bold text-primary">{office?.name[language]}</h3>
-            <div className="flex items-center text-[8px] text-secondary">
-              <span>{office?.location[language]}</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isSeeker && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-              className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-            >
-              <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
-            </button>
-          )}
-          <Badge color="neutral">{worker.id}</Badge>
-        </div>
-      </div>
-
       <div className="flex gap-3">
-        <div className="w-24 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-border relative">
+        <div className="w-24 h-28 rounded-xl overflow-hidden flex-shrink-0 border border-border relative bg-glass">
           <img
-            src={worker.photo}
-            alt={worker.name[language]}
+            src={ad.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+            alt={ad.worker_name}
             onError={handleImageError}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -171,22 +151,28 @@ const FullListingCard: React.FC<{
         <div className="flex-1 flex flex-col justify-between py-1">
           <div>
             <div className="flex items-start justify-between">
-              <h4 className="font-bold text-primary leading-tight">{worker.name[language]}</h4>
-              <span className="font-bold text-brand-500 text-sm whitespace-nowrap ms-2">
-                {worker.salary} {t('kwd')}
-              </span>
+              <h4 className="font-bold text-primary leading-tight line-clamp-1">{ad.worker_name}</h4>
+              {isSeeker && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+                  className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                >
+                  <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
+                </button>
+              )}
             </div>
-            <p className="text-xs text-secondary mt-0.5">{worker.specialty[language]}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge color="accent">{ad.category_name}</Badge>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-2">
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('nationality')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.nationality[language]}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] text-secondary/70 uppercase tracking-wider">{t('experience')}</span>
-              <span className="text-[11px] font-semibold text-primary">{worker.experienceYears} {t('exp_years')}</span>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm font-bold text-brand-500">
+              {ad.salary} {t('kwd')}
+            </span>
+            <div className="flex items-center gap-1 text-[10px] text-secondary">
+              <Clock size={10} />
+              <span>{ad.created_at}</span>
             </div>
           </div>
         </div>
@@ -196,14 +182,13 @@ const FullListingCard: React.FC<{
 };
 
 const FavoriteOfficeCard: React.FC<{
-  office: Office;
+  office: FavoriteOffice;
   onSelect: () => void;
-  language: string;
   dir: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
   isSeeker: boolean;
-}> = ({ office, onSelect, language, dir, isFavorite, onToggleFavorite, isSeeker }) => {
+}> = ({ office, onSelect, dir, isFavorite, onToggleFavorite, isSeeker }) => {
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
   return (
@@ -212,17 +197,12 @@ const FavoriteOfficeCard: React.FC<{
       className="flex items-center justify-between group"
     >
       <div className="flex items-center gap-4">
-        <Avatar src={office.avatar} alt={office.name[language]} size="md" />
+        <Avatar src={office.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'} alt={office.name} size="md" />
         <div>
-          <h3 className="text-sm font-bold text-primary group-hover:text-accent transition-colors">{office.name[language]}</h3>
+          <h3 className="text-sm font-bold text-primary group-hover:text-accent transition-colors">{office.name}</h3>
           <div className="flex items-center text-xs text-secondary mt-1">
             <MapPin size={12} className="me-1" />
-            {office.location[language]}
-          </div>
-          <div className="flex items-center text-xs text-secondary mt-0.5">
-            <Star size={12} className="me-1 text-yellow-400 fill-yellow-400" />
-            <span className="font-medium text-primary me-1">{office.rating}</span>
-            <span>({office.reviewCount})</span>
+            {office.state_name}
           </div>
         </div>
       </div>

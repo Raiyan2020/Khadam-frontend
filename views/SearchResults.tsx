@@ -11,6 +11,7 @@ import { useCategories } from '../features/auth/hooks/useCategories';
 import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { SearchParams } from '../router';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 export const SearchResults: React.FC = () => {
   const { category: paramCategory } = useParams({ strict: false }) as { category?: string };
@@ -23,6 +24,8 @@ export const SearchResults: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
+
   const [filters, setFilters] = useState<FilterCriteria>({
     category: searchParams.category_id,
     nationality: undefined,
@@ -36,6 +39,7 @@ export const SearchResults: React.FC = () => {
   const activeCategory = filters.category || 'All';
   const setActiveCategory = (catId: number | 'All') => {
     setFilters(prev => ({ ...prev, category: catId === 'All' ? undefined : catId }));
+    setCurrentPage(1); // Reset to page 1 on category change
   };
 
   // Build API params from current state and fire request
@@ -53,43 +57,63 @@ export const SearchResults: React.FC = () => {
       languages: filters.languages as number[] | undefined,
       latest: searchParams.latest,
       experience: searchParams.experience,
+      history: searchParams.history,
+      page: overrides?.page ?? currentPage,
       ...overrides,
     };
     fetchResults(params);
+
+    // Update URL
+    navigate({
+      to: '/search',
+      search: (prev: any) => ({
+        ...prev,
+        ...params,
+        query: params.worker_name,
+        category_id: params.category_id,
+        page: params.page,
+      }),
+      replace: true,
+    } as any);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.category, filters.country_id, filters.gender,
-  filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
-  searchParams.country_id, searchParams.latest, fetchResults]);
+    filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
+    searchParams.country_id, searchParams.latest, searchParams.experience, searchParams.history, currentPage, fetchResults]);
 
-  // Single effect: fires on mount AND when activeCategory changes
-  const hasMounted = React.useRef(false);
+  // Initial load
   useEffect(() => {
-    if (!hasMounted.current) {
-      // Initial load — fire once
-      hasMounted.current = true;
-      doSearch();
-      return;
-    }
-    // Subsequent fires — only when category changes
     doSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync on category change
+  useEffect(() => {
+    if (hasMounted.current) {
+      doSearch({ page: 1 });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.category]);
 
+  const hasMounted = React.useRef(false);
+  useEffect(() => {
+    hasMounted.current = true;
+  }, []);
+
   const handleApplyFilters = (newFilters: FilterCriteria) => {
     setFilters(newFilters);
-    const params: AdFilterParams = {
+    setCurrentPage(1);
+    doSearch({
+      ...newFilters,
       worker_name: searchQuery || undefined,
-      category_id: newFilters.category,
-      country_id: newFilters.country_id,
-      gender: (newFilters.gender && newFilters.gender !== 'Any')
-        ? (newFilters.gender.toLowerCase() as 'male' | 'female' | 'all')
-        : undefined,
-      salary: newFilters.maxSalary,
-      age: newFilters.maxAge,
-      years_experience: newFilters.minExperience,
-      languages: newFilters.languages as number[] | undefined,
-    };
-    fetchResults(params);
+      page: 1,
+    } as any);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    doSearch({ page: newPage });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const { data: languagesData } = useLanguages();
@@ -100,23 +124,13 @@ export const SearchResults: React.FC = () => {
     const updated = { ...filters, [key]: undefined };
     if (key === 'nationality') updated.country_id = undefined;
     setFilters(updated);
-    const params: AdFilterParams = {
-      worker_name: searchQuery || undefined,
-      category_id: updated.category,
-      country_id: updated.country_id,
-      gender: (updated.gender && updated.gender !== 'Any')
-        ? (updated.gender.toLowerCase() as 'male' | 'female' | 'all')
-        : undefined,
-      salary: updated.maxSalary,
-      age: updated.maxAge,
-      years_experience: updated.minExperience,
-      languages: updated.languages as number[] | undefined,
-    };
-    fetchResults(params);
+    setCurrentPage(1);
+    doSearch({ ...updated, page: 1 } as any);
   };
 
   const results: AdFilterResult[] = apiResponse?.data || [];
-  const total = apiResponse?.pagination.total ?? 0;
+  const pagination = apiResponse?.pagination;
+  const total = pagination?.total ?? 0;
 
   // Build active filter chips
   const activeChips: { label: string; key: keyof FilterCriteria }[] = [];
@@ -143,6 +157,7 @@ export const SearchResults: React.FC = () => {
       case 'available': return t('section_available');
       case 'newest': return t('section_newest');
       case 'experience': return t('section_experience');
+      case 'continue': return t('section_continue');
       default: return t('search_results') || 'نتائج البحث';
     }
   };
@@ -182,7 +197,7 @@ export const SearchResults: React.FC = () => {
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          onSearch={() => doSearch()}
+          onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
           onFilterClick={() => setIsFilterModalOpen(true)}
         />
 
@@ -201,15 +216,15 @@ export const SearchResults: React.FC = () => {
                       // Remove all language filters at once
                       const updated = { ...filters, languages: undefined };
                       setFilters(updated);
-                      fetchResults({
+                      setCurrentPage(1);
+                      doSearch({
+                        ...updated,
+                        page: 1,
                         worker_name: searchQuery || undefined,
-                        category_id: updated.category,
-                        country_id: updated.country_id ?? searchParams.country_id,
-                        gender: (updated.gender && updated.gender !== 'Any') ? updated.gender.toLowerCase() as any : undefined,
-                        salary: updated.maxSalary,
-                        age: updated.maxAge,
-                        years_experience: updated.minExperience,
-                      });
+                        history: searchParams.history,
+                        latest: searchParams.latest,
+                        experience: searchParams.experience,
+                      } as any);
                     } else {
                       removeFilter(chip.key);
                     }
@@ -272,16 +287,64 @@ export const SearchResults: React.FC = () => {
             ))}
           </div>
         ) : results.length > 0 ? (
-          <div className="space-y-4">
-            {results.map(ad => (
-              <AdCard
-                key={ad.id}
-                ad={ad}
-                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
-                t={t}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-4">
+              {results.map(ad => (
+                <AdCard
+                  key={ad.id}
+                  ad={ad}
+                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
+                  t={t}
+                />
+              ))}
+            </div>
+
+            {/* Pagination UI */}
+            {pagination && pagination.last_page > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8 py-4">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="w-10 h-10 rounded-xl bg-glass border border-border flex items-center justify-center text-primary disabled:opacity-30 transition-all hover:bg-glassHigh"
+                >
+                  {dir === 'rtl' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, pagination.last_page) }).map((_, i) => {
+                    // Simple pagination logic to show current +/- 2 pages
+                    let pageNum = currentPage;
+                    if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= pagination.last_page - 2) pageNum = pagination.last_page - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+
+                    if (pageNum <= 0 || pageNum > pagination.last_page) return null;
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${currentPage === pageNum
+                            ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                            : 'bg-glass border border-border text-secondary hover:bg-glassHigh'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  disabled={currentPage === pagination.last_page}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="w-10 h-10 rounded-xl bg-glass border border-border flex items-center justify-center text-primary disabled:opacity-30 transition-all hover:bg-glassHigh"
+                >
+                  {dir === 'rtl' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-16 text-secondary">
             <div className="text-4xl mb-3">🔍</div>
@@ -321,6 +384,12 @@ const AdCard: React.FC<{
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const favorite = isFavorite(ad.id.toString());
+  const { mutate: toggleLike } = useToggleLike();
+
+  const handleToggleLike = (id: number) => {
+    toggleLike({ type: 'ad', id });
+    toggleFavorite(id.toString());
+  };
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -343,7 +412,7 @@ const AdCard: React.FC<{
               <h4 className="font-bold text-primary leading-tight line-clamp-1">{ad.worker_name}</h4>
               {isSeeker && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); toggleFavorite(ad.id.toString()); }}
+                  onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
                   className={`p-1.5 rounded-full flex-shrink-0 transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
                 >
                   <Heart size={15} fill={favorite ? 'currentColor' : 'none'} />
