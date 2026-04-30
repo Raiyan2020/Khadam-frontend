@@ -21,7 +21,6 @@ export const SearchResults: React.FC = () => {
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { mutate: fetchResults, data: apiResponse, isPending } = useAdFilter();
 
-  const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<FilterCriteria>({
@@ -34,11 +33,16 @@ export const SearchResults: React.FC = () => {
     languages: searchParams.languages,
   });
 
+  const activeCategory = filters.category || 'All';
+  const setActiveCategory = (catId: number | 'All') => {
+    setFilters(prev => ({ ...prev, category: catId === 'All' ? undefined : catId }));
+  };
+
   // Build API params from current state and fire request
   const doSearch = useCallback((overrides?: Partial<AdFilterParams>) => {
     const params: AdFilterParams = {
       worker_name: searchQuery || undefined,
-      category_id: activeCategory !== 'All' ? activeCategory : filters.category,
+      category_id: filters.category,
       country_id: filters.country_id ?? searchParams.country_id,
       gender: (filters.gender && filters.gender !== 'Any')
         ? (filters.gender.toLowerCase() as 'male' | 'female' | 'all')
@@ -52,10 +56,10 @@ export const SearchResults: React.FC = () => {
       ...overrides,
     };
     fetchResults(params);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, activeCategory, filters.category, filters.country_id, filters.gender,
-      filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
-      searchParams.country_id, searchParams.latest, fetchResults]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters.category, filters.country_id, filters.gender,
+  filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
+  searchParams.country_id, searchParams.latest, fetchResults]);
 
   // Single effect: fires on mount AND when activeCategory changes
   const hasMounted = React.useRef(false);
@@ -66,16 +70,16 @@ export const SearchResults: React.FC = () => {
       doSearch();
       return;
     }
-    // Subsequent fires — only when activeCategory changes
+    // Subsequent fires — only when category changes
     doSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCategory]);
+  }, [filters.category]);
 
   const handleApplyFilters = (newFilters: FilterCriteria) => {
     setFilters(newFilters);
     const params: AdFilterParams = {
       worker_name: searchQuery || undefined,
-      category_id: activeCategory !== 'All' ? activeCategory : newFilters.category,
+      category_id: newFilters.category,
       country_id: newFilters.country_id,
       gender: (newFilters.gender && newFilters.gender !== 'Any')
         ? (newFilters.gender.toLowerCase() as 'male' | 'female' | 'all')
@@ -98,7 +102,7 @@ export const SearchResults: React.FC = () => {
     setFilters(updated);
     const params: AdFilterParams = {
       worker_name: searchQuery || undefined,
-      category_id: activeCategory !== 'All' ? activeCategory : updated.category,
+      category_id: updated.category,
       country_id: updated.country_id,
       gender: (updated.gender && updated.gender !== 'Any')
         ? (updated.gender.toLowerCase() as 'male' | 'female' | 'all')
@@ -199,7 +203,7 @@ export const SearchResults: React.FC = () => {
                       setFilters(updated);
                       fetchResults({
                         worker_name: searchQuery || undefined,
-                        category_id: activeCategory !== 'All' ? activeCategory : updated.category,
+                        category_id: updated.category,
                         country_id: updated.country_id ?? searchParams.country_id,
                         gender: (updated.gender && updated.gender !== 'Any') ? updated.gender.toLowerCase() as any : undefined,
                         salary: updated.maxSalary,
@@ -229,20 +233,26 @@ export const SearchResults: React.FC = () => {
 
         {/* Category chips from API */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-
           {isLoadingCategories ? (
             Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
             ))
           ) : (
-            categories?.map(cat => (
+            <>
               <CategoryChip
-                key={cat.id}
-                label={cat.name}
-                isActive={activeCategory === cat.id}
-                onClick={() => setActiveCategory(cat.id)}
+                label={t('cat_all')}
+                isActive={activeCategory === 'All'}
+                onClick={() => setActiveCategory('All')}
               />
-            ))
+              {categories?.map(cat => (
+                <CategoryChip
+                  key={cat.id}
+                  label={cat.name}
+                  isActive={activeCategory === cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                />
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -288,8 +298,8 @@ const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => 
   <button
     onClick={onClick}
     className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
-        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
-        : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
+      ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+      : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
       }`}
   >
     {label}

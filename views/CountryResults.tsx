@@ -31,6 +31,8 @@ export const CountryResults: React.FC = () => {
     if (activeCategory !== 'All' && categories) {
       const catObj = categories.find(c => c.name === activeCategory);
       if (catObj) setFilters(prev => ({ ...prev, category: catObj.id }));
+    } else if (activeCategory === 'All') {
+      setFilters(prev => ({ ...prev, category: undefined }));
     }
   }, [activeCategory, categories]);
 
@@ -124,7 +126,11 @@ export const CountryResults: React.FC = () => {
         />
 
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-
+          <CategoryChip
+            label={t('cat_all')}
+            isActive={activeCategory === 'All'}
+            onClick={() => setActiveCategory('All')}
+          />
           {Object.values(ServiceCategory).map(cat => (
             <CategoryChip
               key={cat}
