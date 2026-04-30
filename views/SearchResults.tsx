@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Heart, Clock, X } from 'lucide-react';
 import { useLanguage } from '../i18n';
-import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
 import { GlassCard, Badge, SearchInput, Skeleton } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
@@ -325,8 +324,8 @@ export const SearchResults: React.FC = () => {
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
                         className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${currentPage === pageNum
-                            ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
-                            : 'bg-glass border border-border text-secondary hover:bg-glassHigh'
+                          ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                          : 'bg-glass border border-border text-secondary hover:bg-glassHigh'
                           }`}
                       >
                         {pageNum}
@@ -380,15 +379,13 @@ const AdCard: React.FC<{
   onSelect: () => void;
   t: (k: string) => string;
 }> = ({ ad, onSelect, t }) => {
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
-  const favorite = isFavorite(ad.id.toString());
+  const favorite = ad.is_liked;
   const { mutate: toggleLike } = useToggleLike();
 
   const handleToggleLike = (id: number) => {
     toggleLike({ type: 'ad', id });
-    toggleFavorite(id.toString());
   };
 
   return (

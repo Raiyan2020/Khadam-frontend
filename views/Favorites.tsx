@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, ChevronLeft, ChevronRight, MapPin, Star, Clock } from 'lucide-react';
 import { useLanguage } from '../i18n';
-import { useFavorites } from '../FavoritesContext';
 import { GlassCard, Avatar, Badge, Skeleton } from '../components/GlassUI';
 import { useUserRole } from '../UserRoleContext';
 
@@ -12,7 +11,6 @@ import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 export const Favorites: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
-  const { isFavorite, toggleFavorite: toggleFavoriteLocal } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const [activeTab, setActiveTab] = useState<'workers' | 'offices'>('workers');
@@ -23,7 +21,6 @@ export const Favorites: React.FC = () => {
 
   const handleToggleLike = (id: number, type: 'ad' | 'office') => {
     toggleLike({ type, id });
-    toggleFavoriteLocal(id.toString());
   };
 
   const isLoading = activeTab === 'workers' ? isLoadingAds : isLoadingOffices;
@@ -79,7 +76,7 @@ export const Favorites: React.FC = () => {
                   ad={ad}
                   onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
                   t={t}
-                  isFavorite={isFavorite(ad.id.toString()) || true}
+                  isFavorite={true}
                   onToggleFavorite={() => handleToggleLike(ad.id, 'ad')}
                   isSeeker={isSeeker}
                 />
@@ -103,7 +100,7 @@ export const Favorites: React.FC = () => {
                   office={office}
                   onSelect={() => navigate({ to: '/office/$officeId', params: { officeId: office.id.toString() } } as any)}
                   dir={dir}
-                  isFavorite={isFavorite(office.id.toString()) || true}
+                  isFavorite={true}
                   onToggleFavorite={() => handleToggleLike(office.id, 'office')}
                   isSeeker={isSeeker}
                 />

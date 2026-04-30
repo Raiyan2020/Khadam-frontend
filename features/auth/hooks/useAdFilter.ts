@@ -26,6 +26,7 @@ export interface AdFilterResult {
   category_name: string;
   salary: string;
   created_at: string;
+  is_liked: boolean;
 }
 
 export interface AdFilterResponse {

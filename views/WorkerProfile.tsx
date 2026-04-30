@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, MessageCircle, Share2, MapPin, Globe, Clock, CheckCircle, Wallet, Heart } from 'lucide-react';
 import { GlassCard, Button, Skeleton } from '../components/GlassUI';
-import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
 import { useLanguage } from '../i18n';
 import { useAdDetails } from '../features/auth/hooks/useAdDetails';
@@ -16,15 +15,12 @@ export const WorkerProfile: React.FC = () => {
   const isSeeker = userRole === 'SEEKER';
 
   const { data: worker, isLoading, error } = useAdDetails(workerId);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(workerId);
   const { mutate: toggleLike } = useToggleLike();
 
   const handleToggleLike = () => {
     const id = parseInt(workerId);
     if (!isNaN(id)) {
       toggleLike({ type: 'ad', id });
-      toggleFavorite(workerId);
     }
   };
 
@@ -53,6 +49,7 @@ export const WorkerProfile: React.FC = () => {
   );
 
   const office = worker.office;
+  const favorite = worker.is_liked;
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';

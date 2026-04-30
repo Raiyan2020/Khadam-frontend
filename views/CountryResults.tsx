@@ -1,97 +1,73 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, MapPin, Heart } from 'lucide-react';
-import { Worker, Ad, ServiceCategory } from '../types';
-import { MOCK_WORKERS, MOCK_OFFICES, MOCK_ADS, NATIONALITIES } from '../constants';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Heart, MapPin, Search, Filter, X } from 'lucide-react';
 import { useLanguage } from '../i18n';
-import { useFavorites } from '../FavoritesContext';
-import { GlassCard, Badge, Avatar, SearchInput } from '../components/GlassUI';
-
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useUserRole } from '../UserRoleContext';
+import { GlassCard, Badge, SearchInput, Skeleton } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
+import { useAdFilter, AdFilterParams, AdFilterResult } from '../features/auth/hooks/useAdFilter';
 import { useCategories } from '../features/auth/hooks/useCategories';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { SearchParams } from '../router';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
-  e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
-};
-
 export const CountryResults: React.FC = () => {
-  const { nationality } = useParams({ strict: false }) as { nationality: string };
+  const { category: paramCategory } = useParams({ strict: false }) as { category?: string };
+  const searchParams = useSearch({ strict: false }) as SearchParams;
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
 
-  const { data: categories } = useCategories();
-  const [activeCategory, setActiveCategory] = useState<ServiceCategory | 'All'>('All');
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { mutate: fetchResults, data: apiResponse, isPending } = useAdFilter();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterCriteria>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
 
-  // Sync category filter if activeCategory changes
+  const [filters, setFilters] = useState<FilterCriteria>({
+    category: undefined,
+    nationality: undefined,
+    gender: 'Any',
+    maxSalary: undefined,
+    maxAge: undefined,
+    minExperience: undefined,
+    languages: undefined,
+  });
+
+  const doSearch = useCallback((overrides?: Partial<AdFilterParams>) => {
+    const params: AdFilterParams = {
+      worker_name: searchQuery || undefined,
+      category_id: activeCategory === 'All' ? undefined : activeCategory,
+      country_id: searchParams.country_id,
+      gender: (filters.gender && filters.gender !== 'Any')
+        ? (filters.gender.toLowerCase() as 'male' | 'female' | 'all')
+        : undefined,
+      salary: filters.maxSalary,
+      age: filters.maxAge,
+      years_experience: filters.minExperience,
+      languages: filters.languages as number[] | undefined,
+      page: overrides?.page ?? currentPage,
+      ...overrides,
+    };
+    fetchResults(params);
+  }, [searchQuery, activeCategory, searchParams.country_id, filters, currentPage, fetchResults]);
+
   useEffect(() => {
-    if (activeCategory !== 'All' && categories) {
-      const catObj = categories.find(c => c.name === activeCategory);
-      if (catObj) setFilters(prev => ({ ...prev, category: catObj.id }));
-    } else if (activeCategory === 'All') {
-      setFilters(prev => ({ ...prev, category: undefined }));
-    }
-  }, [activeCategory, categories]);
+    doSearch();
+  }, [doSearch]);
 
-  const results = useMemo(() => {
-    let filtered = MOCK_WORKERS.filter(w => w.nationality.en === nationality);
-
-    if (activeCategory !== 'All') {
-      filtered = filtered.filter(w => w.category === activeCategory);
-    }
-
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      filtered = filtered.filter(w =>
-        w.name[language].toLowerCase().includes(searchLower) ||
-        w.specialty[language].toLowerCase().includes(searchLower)
-      );
-    }
-
-    // Apply Modal Filters
-    if (filters.maxSalary) {
-      filtered = filtered.filter(w => w.salary <= filters.maxSalary!);
-    }
-    if (filters.gender && filters.gender !== 'Any') {
-      filtered = filtered.filter(w => w.gender === filters.gender);
-    }
-    if (filters.minExperience) {
-      filtered = filtered.filter(w => w.experienceYears >= filters.minExperience!);
-    }
-    if (filters.maxAge) {
-      filtered = filtered.filter(w => w.age <= filters.maxAge!);
-    }
-    if (filters.nationality && filters.nationality !== 'Any') {
-      filtered = filtered.filter(w => w.nationality[language] === filters.nationality);
-    }
-    if (filters.languages && filters.languages.length > 0) {
-      filtered = filtered.filter(w =>
-        filters.languages!.every(lang => w.languages.some(l => l.en === lang))
-      );
-    }
-
-    return filtered;
-  }, [nationality, activeCategory, searchQuery, language, filters]);
-
-  const nationalityObj = NATIONALITIES.find(n => n.name.en === nationality);
-  const title = nationalityObj ? nationalityObj.name[language] : nationality;
-
-  const getTranslatedCategory = (cat: ServiceCategory | 'All') => {
-    if (cat === 'All') return t('cat_all');
-    switch (cat) {
-      case ServiceCategory.BABYSITTER: return t('cat_babysitter');
-      case ServiceCategory.COOK_FEMALE: return t('cat_cook_female');
-      case ServiceCategory.NURSE: return t('cat_nurse');
-      case ServiceCategory.DRIVER: return t('cat_driver');
-      case ServiceCategory.COOK_MALE: return t('cat_cook_male');
-      case ServiceCategory.DOMESTIC_WORKER: return t('cat_domestic_worker');
-      default: return cat;
-    }
+  const handleApplyFilters = (newFilters: FilterCriteria) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
   };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const results: AdFilterResult[] = apiResponse?.data || [];
+  const pagination = apiResponse?.pagination;
 
   return (
     <div className="pb-10 min-h-screen bg-background">
@@ -104,70 +80,125 @@ export const CountryResults: React.FC = () => {
             {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
           <div className="flex items-center gap-3">
-            {nationalityObj && (
+            {searchParams.country_image && (
               <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
-                <img src={nationalityObj.flag} alt={title} className="w-full h-full object-cover" />
+                <img src={searchParams.country_image} alt="" className="w-full h-full object-cover" />
               </div>
             )}
-            <h1 className="text-xl font-bold text-primary">{title}</h1>
+            <h1 className="text-xl font-bold text-primary">{searchParams.country_name || t('search_results')}</h1>
           </div>
         </div>
 
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
+          onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
           onFilterClick={() => setIsFilterModalOpen(true)}
         />
 
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(newFilters) => setFilters(newFilters)}
-          initialCriteria={filters}
-        />
-
         <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          <CategoryChip
-            label={t('cat_all')}
-            isActive={activeCategory === 'All'}
-            onClick={() => setActiveCategory('All')}
-          />
-          {Object.values(ServiceCategory).map(cat => (
-            <CategoryChip
-              key={cat}
-              label={getTranslatedCategory(cat)}
-              isActive={activeCategory === cat}
-              onClick={() => setActiveCategory(cat)}
-            />
-          ))}
+          {isLoadingCategories ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+            ))
+          ) : (
+            <>
+              <CategoryChip
+                label={t('cat_all')}
+                isActive={activeCategory === 'All'}
+                onClick={() => { setActiveCategory('All'); setCurrentPage(1); }}
+              />
+              {categories?.map(cat => (
+                <CategoryChip
+                  key={cat.id}
+                  label={cat.name}
+                  isActive={activeCategory === cat.id}
+                  onClick={() => { setActiveCategory(cat.id); setCurrentPage(1); }}
+                />
+              ))}
+            </>
+          )}
         </div>
       </div>
 
       <div className="p-5 space-y-4">
-        <p className="text-sm text-secondary">
-          {results.length} {t('results_found')}
-        </p>
-
-        {results.length > 0 ? (
+        {isPending ? (
           <div className="space-y-4">
-            {results.map(worker => (
-              <FullListingCard
-                key={worker.id}
-                worker={worker}
-                onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: worker.id } } as any)}
-                onSelectOffice={(id) => navigate({ to: '/office/$officeId', params: { officeId: id } } as any)}
-                language={language}
-                t={t}
-                dir={dir}
-              />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
             ))}
           </div>
+        ) : results.length > 0 ? (
+          <>
+            <div className="space-y-4">
+              {results.map(ad => (
+                <ListingCard
+                  key={ad.id}
+                  ad={ad}
+                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
+                  t={t}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {pagination && pagination.last_page > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8 py-4">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  className="w-10 h-10 rounded-xl bg-glass border border-border flex items-center justify-center text-primary disabled:opacity-30 transition-all hover:bg-glassHigh"
+                >
+                  {dir === 'rtl' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, pagination.last_page) }).map((_, i) => {
+                    let pageNum = currentPage;
+                    if (currentPage <= 3) pageNum = i + 1;
+                    else if (currentPage >= pagination.last_page - 2) pageNum = pagination.last_page - 4 + i;
+                    else pageNum = currentPage - 2 + i;
+
+                    if (pageNum <= 0 || pageNum > pagination.last_page) return null;
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${currentPage === pageNum
+                          ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                          : 'bg-glass border border-border text-secondary hover:bg-glassHigh'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  disabled={currentPage === pagination.last_page}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  className="w-10 h-10 rounded-xl bg-glass border border-border flex items-center justify-center text-primary disabled:opacity-30 transition-all hover:bg-glassHigh"
+                >
+                  {dir === 'rtl' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="text-center py-10 text-secondary">
-            {t('no_results')}
+          <div className="text-center py-20 text-secondary">
+            <p>{t('no_results')}</p>
           </div>
         )}
       </div>
+
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={handleApplyFilters}
+        initialCriteria={filters}
+      />
     </div>
   );
 };
@@ -177,89 +208,61 @@ const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => 
     onClick={onClick}
     className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
       ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
-      : 'bg-glass border border-border text-secondary hover:bg-glassHigh hover:text-primary'
+      : 'bg-glass border border-border text-secondary hover:bg-glassHigh'
       }`}
   >
     {label}
   </button>
 );
 
-const FullListingCard: React.FC<{
-  worker: Worker;
+const ListingCard: React.FC<{
+  ad: AdFilterResult;
   onSelect: () => void;
-  onSelectOffice: (id: string) => void;
-  language: string;
   t: (k: string) => string;
-  dir: string;
-}> = ({ worker, onSelect, onSelectOffice, language, t, dir }) => {
-  const office = MOCK_OFFICES.find(o => o.id === worker.officeId);
-  const ad = MOCK_ADS.find(a => a.workerId === worker.id);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const favorite = isFavorite(worker.id);
+}> = ({ ad, onSelect, t }) => {
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'SEEKER';
   const { mutate: toggleLike } = useToggleLike();
 
-  const handleToggleLike = (id: string) => {
-    // Assuming worker.id maps to ad.id for this mock context
-    const numericId = parseInt(id.replace(/\D/g, '')) || 1;
-    toggleLike({ type: 'ad', id: numericId });
-    toggleFavorite(id);
+  const handleToggleLike = (id: number) => {
+    toggleLike({ type: 'ad', id });
   };
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
-      <div className="flex items-center justify-between mb-3">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={(e) => { e.stopPropagation(); if (office) onSelectOffice(office.id); }}
-        >
-          {office && <Avatar src={office.avatar} alt={office.name[language]} size="sm" />}
-          <div>
-            <h3 className="text-[10px] font-bold text-primary">{office?.name[language]}</h3>
-            <div className="flex items-center text-[8px] text-secondary">
-              <MapPin size={8} className="me-0.5" />
-              {office?.location[language]}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={(e) => { e.stopPropagation(); handleToggleLike(worker.id); }}
-            className={`p-1.5 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
-          >
-            <Heart size={16} fill={favorite ? "currentColor" : "none"} />
-          </button>
-          <Badge color="neutral">{worker.id}</Badge>
-        </div>
-      </div>
-
       <div className="flex gap-4">
-        <div className="relative w-24 h-28 flex-shrink-0 bg-glass rounded-xl overflow-hidden">
+        <div className="w-28 h-32 rounded-2xl overflow-hidden flex-shrink-0 border border-border bg-glass">
           <img
-            src={worker.photo}
-            alt={worker.name[language]}
-            onError={handleImageError}
-            className="w-full h-full object-cover border border-border"
-            loading="lazy"
+            src={ad.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+            alt={ad.worker_name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => { e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'; }}
           />
         </div>
-
-        <div className="flex-1 flex flex-col justify-between py-0.5">
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-primary line-clamp-1">{ad?.title[language] || worker.name[language]}</h4>
-            <div className="flex flex-wrap gap-1.5">
-              <Badge color="accent">{worker.specialty[language]}</Badge>
-              <Badge color="neutral">{worker.nationality[language]}</Badge>
+        <div className="flex-1 flex flex-col justify-between py-1">
+          <div>
+            <div className="flex items-start justify-between">
+              <h4 className="font-bold text-primary text-base line-clamp-1">{ad.worker_name}</h4>
+              {isSeeker && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
+                  className={`p-2 rounded-full transition-colors ${ad.is_liked ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                >
+                  <Heart size={18} fill={ad.is_liked ? 'currentColor' : 'none'} />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge color="accent">{ad.category_name}</Badge>
             </div>
           </div>
-
-          <div className="flex items-center justify-between">
+          <div className="flex items-end justify-between">
             <div className="flex flex-col">
-              <span className="text-[10px] text-secondary leading-none">{t('salary')}</span>
-              <span className="text-sm font-bold text-brand-700 dark:text-brand-400">{worker.salary} {t('kwd')}</span>
+              <span className="text-[10px] text-secondary leading-none uppercase tracking-wider">{t('salary')}</span>
+              <span className="text-lg font-black text-brand-500">{ad.salary} <span className="text-xs font-bold uppercase">{t('kwd')}</span></span>
             </div>
-
-            <div className="w-8 h-8 rounded-full bg-accent-subtle flex items-center justify-center text-accent-text group-hover:bg-accent group-hover:text-accent-fg transition-all">
-              {dir === 'rtl' ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+            <div className="text-[10px] text-secondary font-medium bg-glass px-2 py-1 rounded-lg border border-border">
+              {ad.created_at}
             </div>
           </div>
         </div>

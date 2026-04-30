@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { GlassCard, Avatar, Skeleton } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
-import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
 import { useNavigate } from '@tanstack/react-router';
 import { useOffices } from '../features/auth/hooks/useOffices';
+import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 export const OfficesList: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
+  const { mutate: toggleLike } = useToggleLike();
 
   const [page, setPage] = useState(1);
   const { data: officesResponse, isLoading } = useOffices(page);
@@ -24,6 +24,10 @@ export const OfficesList: React.FC = () => {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleLike = (id: number) => {
+    toggleLike({ type: 'office', id });
   };
 
   return (
@@ -41,7 +45,7 @@ export const OfficesList: React.FC = () => {
         ) : offices.length > 0 ? (
           <>
             {offices.map(office => {
-              const favorite = isFavorite(office.id.toString()) || office.is_favourite;
+              const favorite = office.is_favourite;
               return (
                 <GlassCard
                   key={office.id}
@@ -60,7 +64,7 @@ export const OfficesList: React.FC = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(office.id.toString());
+                          handleToggleLike(office.id);
                         }}
                         className={`p-2 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
                       >

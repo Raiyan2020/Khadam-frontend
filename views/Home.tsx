@@ -1,9 +1,7 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { MapPin, ChevronRight, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock } from 'lucide-react';
 import { GlassCard, Badge, Avatar, Skeleton, SearchInput } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
-import { useFavorites } from '../FavoritesContext';
 import { useUserRole } from '../UserRoleContext';
 import { ServiceCategory, Ad, Office, Worker } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
@@ -584,14 +582,12 @@ const FullListingCard: React.FC<{
   t: (k: any) => string;
   dir: string;
 }> = ({ ad, onSelect, onSelectOffice, t, dir }) => {
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const { mutate: toggleLike } = useToggleLike();
 
   const handleToggleLike = (id: number) => {
     toggleLike({ type: 'ad', id });
-    toggleFavorite(id.toString());
   };
 
   return (
@@ -614,9 +610,9 @@ const FullListingCard: React.FC<{
           {isSeeker && (
             <button
               onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
-              className={`p-1.5 rounded-full transition-colors ${isFavorite(ad.id.toString()) ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+              className={`p-1.5 rounded-full transition-colors ${ad.is_liked ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
             >
-              <Heart size={16} fill={isFavorite(ad.id.toString()) ? "currentColor" : "none"} />
+              <Heart size={16} fill={ad.is_liked ? "currentColor" : "none"} />
             </button>
           )}
           <Badge color="neutral">{ad.code}</Badge>

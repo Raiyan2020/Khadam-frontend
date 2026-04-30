@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, MapPin, MessageCircle, Phone, Globe, Heart, Chev
 import { GlassCard, Avatar, Skeleton } from '../components/GlassUI';
 import { useUserRole } from '../UserRoleContext';
 import { useLanguage } from '../i18n';
-import { useFavorites } from '../FavoritesContext';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useOfficeDetails, useOfficeAds } from '../features/auth/hooks/useOfficeDetails';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
@@ -12,7 +11,6 @@ export const OfficeProfile: React.FC = () => {
   const { officeId } = useParams({ strict: false }) as { officeId: string };
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
 
@@ -87,10 +85,9 @@ export const OfficeProfile: React.FC = () => {
 
   const handleToggleLike = () => {
     toggleLike({ type: 'office', id: office.id });
-    toggleFavorite(office.id.toString());
   };
 
-  const isFavorited = isFavorite(office.id.toString()) || office.is_liked;
+  const isFavorited = office.is_liked;
 
   return (
     <div className="pb-20">
