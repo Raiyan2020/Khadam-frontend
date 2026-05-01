@@ -9,6 +9,7 @@ import { useStates, StateOption } from '../hooks/useStates';
 import { toast } from 'sonner';
 import { useLanguage } from '@/i18n';
 import imageCompression from 'browser-image-compression';
+import { z } from 'zod';
 
 
 export const CompleteProfile: React.FC = () => {
@@ -65,6 +66,30 @@ export const CompleteProfile: React.FC = () => {
   const completeProfileMutation = useCompleteProfile();
   const [isCompressing, setIsCompressing] = useState(false);
 
+  // Seeker Schema (User Type 1)
+  const seekerSchema = z.object({
+    name: z.string().min(3, t('name_required')),
+    profileImage: z.any().refine((file) => file !== null, t('profile_image_required')),
+  });
+
+  // Company Schema (User Type 2)
+  const companySchema = z.object({
+    name: z.string().min(3, t('name_required')),
+    profileImage: z.any().refine((file) => file !== null, t('profile_image_required')),
+    coverImage: z.any().refine((file) => file !== null, t('cover_image_required')),
+    stateId: z.string().min(1, t('state_required')),
+    location: z.any().refine((loc) => loc?.position !== null, t('location_required')),
+    mapDesc: z.string().min(1, t('address_required')),
+    website: z.string().url(t('invalid_url')).optional().or(z.literal('')),
+    whatsapp: z.string().min(1, t('whatsapp_required') || 'WhatsApp is required'),
+    email: z.string().email(t('invalid_email')).optional().or(z.literal('')),
+    commercialLicense: z.any().refine((file) => file !== null, t('commercial_license_required')),
+    nationalNumberManager: z.string().min(1, t('manager_id_required')),
+    phoneManager: z.string().min(1, t('manager_phone_required')),
+    managerIdImage: z.any().refine((file) => file !== null, t('manager_id_image_required')),
+    description: z.string().min(1, t('description_required')),
+  });
+
   const compressFile = async (file: File) => {
     if (!file.type.startsWith('image/')) return file;
     const options = {
@@ -83,9 +108,38 @@ export const CompleteProfile: React.FC = () => {
   const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!profileImageFile) {
-      toast.error(t('profile_image_required') || 'Profile image is required');
-      return;
+    // Prepare data for validation
+    const dataToValidate = {
+      name,
+      profileImage: profileImageFile,
+      ...(userType === '2' && {
+        coverImage: coverImageFile,
+        stateId,
+        location: locationData,
+        mapDesc,
+        website,
+        whatsapp,
+        email,
+        commercialLicense: commercialLicenseFile,
+        nationalNumberManager,
+        phoneManager,
+        managerIdImage: managerIdImageFile,
+        description,
+      }),
+    };
+
+    // Perform validation according to user type
+    try {
+      if (userType === '2') {
+        companySchema.parse(dataToValidate);
+      } else {
+        seekerSchema.parse(dataToValidate);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+        return;
+      }
     }
 
     setIsCompressing(true);
@@ -93,26 +147,20 @@ export const CompleteProfile: React.FC = () => {
     formData.append('name', name);
 
     try {
-      const compressedProfileImage = await compressFile(profileImageFile);
+      const compressedProfileImage = await compressFile(profileImageFile!);
       formData.append('image', compressedProfileImage);
 
       if (userType === '2') {
-        if (!coverImageFile || !stateId || !locationData.position || !commercialLicenseFile || !managerIdImageFile) {
-          toast.error(t('all_fields_required') || 'Please fill in all required company fields including images and location.');
-          setIsCompressing(false);
-          return;
-        }
-
         const [compressedCover, compressedLicense, compressedManagerId] = await Promise.all([
-          compressFile(coverImageFile),
-          compressFile(commercialLicenseFile),
-          compressFile(managerIdImageFile)
+          compressFile(coverImageFile!),
+          compressFile(commercialLicenseFile!),
+          compressFile(managerIdImageFile!)
         ]);
 
         formData.append('cover_image', compressedCover);
         formData.append('state_id', stateId);
-        formData.append('lat', locationData.position.lat.toString());
-        formData.append('lng', locationData.position.lng.toString());
+        formData.append('lat', locationData.position!.lat.toString());
+        formData.append('lng', locationData.position!.lng.toString());
         formData.append('map_desc', mapDesc);
         if (website) formData.append('website', website);
         if (whatsapp) formData.append('whatsapp', whatsapp);

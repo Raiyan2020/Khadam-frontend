@@ -4,6 +4,8 @@ import { useLanguage } from '../../../i18n';
 import { ChevronLeft, Phone, User, Building, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useRegister } from '../hooks/useRegister';
+import { z } from 'zod';
+import { toast } from 'sonner';
 
 type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE';
 
@@ -17,6 +19,11 @@ export const SignUp: React.FC = () => {
 
   const registerMutation = useRegister();
 
+  const signUpSchema = z.object({
+    phoneNumber: z.string().min(8, t('phone_min_length') || 'Phone number must be at least 8 digits'),
+    accountType: z.enum(['1', '2'], { required_error: t('account_type_required') || 'Account type is required' }),
+  });
+
   const handleSelectAccountType = (type: '1' | '2') => {
     setAccountType(type);
     setStep('PHONE');
@@ -24,8 +31,14 @@ export const SignUp: React.FC = () => {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (accountType && phoneNumber.length > 5) {
-      registerMutation.mutate({ type: accountType, phone: phoneNumber });
+    
+    try {
+      signUpSchema.parse({ phoneNumber, accountType });
+      registerMutation.mutate({ type: accountType!, phone: phoneNumber });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+      }
     }
   };
 
@@ -85,7 +98,6 @@ export const SignUp: React.FC = () => {
                 placeholder="XXXX XXXX"
                 className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
                 dir="ltr"
-                required
               />
             </div>
           </div>

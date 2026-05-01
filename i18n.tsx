@@ -245,7 +245,8 @@ export const translations = {
     manager_id_image_required: "Manager ID photo is required",
     description_required: "Office description is required",
     invalid_email: "Please enter a valid email address",
-    invalid_url: "Please enter a valid URL (e.g. https://...)"
+    invalid_url: "Please enter a valid URL (e.g. https://...)",
+    phone_min_length: "Phone number must be at least 8 digits"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -488,7 +489,8 @@ export const translations = {
     manager_id_image_required: "صورة هوية المسؤول مطلوبة",
     description_required: "وصف المكتب مطلوب",
     invalid_email: "يرجى إدخال بريد إلكتروني صحيح",
-    invalid_url: "يرجى إدخال رابط صحيح (مثال: https://...)"
+    invalid_url: "يرجى إدخال رابط صحيح (مثال: https://...)",
+    phone_min_length: "يجب أن يتكون رقم الهاتف من 8 أرقام على الأقل"
   }
 };
 

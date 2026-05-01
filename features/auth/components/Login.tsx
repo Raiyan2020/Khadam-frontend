@@ -4,16 +4,29 @@ import { useLanguage } from '../../../i18n';
 import { Phone, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useLogin } from '../hooks/useLogin';
+import { z } from 'zod';
+import { toast } from 'sonner';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('');
   const loginMutation = useLogin();
+
+  const loginSchema = z.object({
+    phoneNumber: z.string().min(8, t('phone_min_length') || 'Phone number must be at least 8 digits'),
+  });
+
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phoneNumber.length > 5) {
+
+    try {
+      loginSchema.parse({ phoneNumber });
       loginMutation.mutate(phoneNumber);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.issues[0].message);
+      }
     }
   };
 
@@ -54,7 +67,6 @@ export const Login: React.FC = () => {
                   placeholder="XXXX XXXX"
                   className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
                   dir="ltr"
-                  required
                 />
               </div>
             </div>
