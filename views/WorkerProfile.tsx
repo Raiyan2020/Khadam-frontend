@@ -6,6 +6,7 @@ import { useLanguage } from '../i18n';
 import { useAdDetails } from '../features/auth/hooks/useAdDetails';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
+import { useWhatsappTransfer } from '../features/auth/hooks/useWhatsappTransfer';
 
 export const WorkerProfile: React.FC = () => {
   const { workerId } = useParams({ strict: false }) as { workerId: string };
@@ -16,12 +17,23 @@ export const WorkerProfile: React.FC = () => {
 
   const { data: worker, isLoading, error } = useAdDetails(workerId);
   const { mutate: toggleLike } = useToggleLike();
+  const { mutate: recordTransfer, isPending: isRecordingTransfer } = useWhatsappTransfer();
 
   const handleToggleLike = () => {
     const id = parseInt(workerId);
     if (!isNaN(id)) {
       toggleLike({ type: 'ad', id });
     }
+  };
+
+  const handleWhatsappContact = () => {
+    if (!worker) return;
+    recordTransfer({
+      company_id: worker.office.id,
+      ad_id: worker.id
+    });
+    const whatsappLink = `https://wa.me/${worker.office.whatsapp}?text=${encodeURIComponent(`Hi, I am interested in ${worker.worker_name} (ID: ${worker.id}) from your listings.`)}`;
+    window.open(whatsappLink, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {
@@ -55,8 +67,6 @@ export const WorkerProfile: React.FC = () => {
     e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
     e.currentTarget.className += ' grayscale opacity-20 object-contain p-10';
   };
-
-  const whatsappLink = `https://wa.me/${office.whatsapp}?text=${encodeURIComponent(`Hi, I am interested in ${worker.worker_name} (ID: ${worker.id}) from your listings.`)}`;
 
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft;
 
@@ -162,12 +172,16 @@ export const WorkerProfile: React.FC = () => {
 
       <div className="fixed bottom-[85px] sm:absolute sm:bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent pointer-events-none flex justify-center w-full max-w-[430px] mx-auto z-30">
         <div className="w-full pointer-events-auto">
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-            <Button fullWidth variant="primary" className="gap-2">
-              <MessageCircle size={20} />
-              {t('contact_whatsapp')}
-            </Button>
-          </a>
+          <Button
+            fullWidth
+            variant="primary"
+            className="gap-2"
+            onClick={handleWhatsappContact}
+            disabled={isRecordingTransfer}
+          >
+            <MessageCircle size={20} />
+            {t('contact_whatsapp')}
+          </Button>
         </div>
       </div>
     </div>
