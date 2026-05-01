@@ -37,11 +37,12 @@ export interface HomeResponse {
   errors: any[];
 }
 
-export const useHomeData = () => {
+export const useHomeData = (enabled = true) => {
   const { language } = useLanguage();
 
   return useQuery({
     queryKey: ['homeData', language],
+    enabled,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/home`, {

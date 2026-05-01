@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Heart, User, Building2, LayoutList, Inbox, Award } from 'lucide-react';
+import { Home, Heart, User, Building2, LayoutList, Inbox, Award, Plus } from 'lucide-react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { UserRole } from '../types';
 import { useLanguage } from '../i18n';
@@ -32,7 +32,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Bottom Navigation */}
         {!hideNav && (
           <div className="absolute bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
-            <div className="grid grid-cols-4 h-[80px] items-start pt-3">
+            <div className={`grid ${isSeeker ? 'grid-cols-4' : 'grid-cols-5'} h-[80px] items-start pt-3 relative`}>
               <NavItem
                 icon={<Home size={22} />}
                 label={t('nav_home')}
@@ -63,6 +63,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     isActive={location.pathname === '/my-ads'}
                     onClick={() => navigate({ to: '/my-ads' })}
                   />
+
+                  {/* Central Add Ad Button */}
+                  <div className="relative -top-7 flex justify-center">
+                    <button
+                      onClick={() => navigate({ to: '/publish-ad' } as any)}
+                      className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white shadow-lg shadow-brand-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 border-4 border-background"
+                    >
+                      <Plus size={28} strokeWidth={3} />
+                    </button>
+                  </div>
+
                   <NavItem
                     icon={<Award size={22} />}
                     label={t('nav_subscriptions') || 'Subscriptions'}

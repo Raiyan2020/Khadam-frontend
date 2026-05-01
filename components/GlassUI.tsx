@@ -68,14 +68,14 @@ export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | '
   );
 };
 
-export const Switch: React.FC<{ checked?: boolean; onChange?: (checked: boolean) => void }> = ({ checked = false, onChange }) => {
+export const Switch: React.FC<{ checked?: boolean; onChange?: (checked: boolean) => void; disabled?: boolean }> = ({ checked = false, onChange, disabled }) => {
   return (
     <div 
       onClick={(e) => {
         e.stopPropagation();
-        if (onChange) onChange(!checked);
+        if (!disabled && onChange) onChange(!checked);
       }}
-      className={`relative w-10 h-6 flex shrink-0 items-center rounded-full transition-colors cursor-pointer ${checked !== false ? 'bg-brand-500' : 'bg-surface border border-border'}`}
+      className={`relative w-10 h-6 flex shrink-0 items-center rounded-full transition-colors cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${checked !== false ? 'bg-brand-500' : 'bg-surface border border-border'}`}
     >
       <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${checked !== false ? 'end-1' : 'start-1'}`} />
     </div>
@@ -116,6 +116,41 @@ export const SearchInput: React.FC<{
           <Filter size={14} />
         </button>
       )}
+    </div>
+  );
+};
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description?: string;
+  children?: React.ReactNode;
+  variant?: 'danger' | 'info';
+}
+
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, description, children, variant = 'info' }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-[320px] bg-white dark:bg-zinc-900 border border-border rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+        <div className="p-6">
+          <h3 className={`text-lg font-bold mb-2 ${variant === 'danger' ? 'text-red-500' : 'text-primary'}`}>
+            {title}
+          </h3>
+          {description && (
+            <p className="text-sm text-secondary leading-relaxed mb-6">
+              {description}
+            </p>
+          )}
+          {children}
+        </div>
+      </div>
     </div>
   );
 };

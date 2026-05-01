@@ -20,9 +20,9 @@ const App: React.FC = () => {
               toastOptions={{
                 classNames: {
                   toast: '!bg-background !border-border !text-primary !shadow-lg !rounded-xl',
-                  success: '!bg-brand-500/10 !border-brand-500 !text-brand-500 [&_svg]:!text-brand-500',
-                  error: '!bg-red-500/10 !border-red-500 !text-red-500 [&_svg]:!text-red-500',
-                  warning: '!bg-yellow-500/10 !border-yellow-500 !text-yellow-500 [&_svg]:!text-yellow-500',
+                  success: '!bg-white/90 !border-brand-500 !text-brand-500 [&_svg]:!text-brand-500',
+                  error: '!bg-white/90 !border-red-500 !text-red-500 [&_svg]:!text-red-500',
+                  warning: '!bg-white/90 !border-yellow-500 !text-yellow-500 [&_svg]:!text-yellow-500',
                 }
               }}
             />

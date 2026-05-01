@@ -11,6 +11,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCategories } from '../features/auth/hooks/useCategories';
 import { useCountries } from '../features/auth/hooks/useCountries';
 import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
+import { useCompanyHomeData } from '../features/auth/hooks/useCompanyHomeData';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 
 // Global Image Fallback Handler
@@ -60,12 +61,19 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { data: countries, isLoading: isLoadingCountries } = useCountries();
-  const { data: homeData, isLoading: isLoadingHome } = useHomeData();
   const [activeCategory, setActiveCategory] = useState<any>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
   const { t, dir, language } = useLanguage();
+  const { userRole } = useUserRole();
+  const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
+
+  const userType = localStorage.getItem('user_type');
+  const isCompany = userType === '2';
+
+  const { data: homeData, isLoading: isLoadingHome } = useHomeData(!isCompany);
+  const { data: companyHomeData, isLoading: isLoadingCompanyHome } = useCompanyHomeData(isCompany);
 
   const [lastViewedIds, setLastViewedIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('last_viewed_workers');
@@ -162,10 +170,6 @@ export const Home: React.FC = () => {
     navigate({ to: '/worker/$workerId', params: { workerId: id } } as any);
   };
 
-  const { userRole } = useUserRole();
-
-  const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
-
   return (
     <div className="pb-10">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">
@@ -251,7 +255,127 @@ export const Home: React.FC = () => {
           )}
         </div>
       </div>
-      {!isSeeker && (
+      {/* Company Dashboard */}
+      {isCompany && (
+        <div className="px-5 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {/* WhatsApp Redirects */}
+            <GlassCard className="p-4 flex flex-col gap-2 relative overflow-hidden">
+              <div className="absolute -end-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl pointer-events-none" />
+              <div className="w-8 h-8 rounded-xl bg-green-500/20 border border-green-500/30 text-green-500 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+              </div>
+              <div className="mt-1">
+                <h3 className="text-2xl font-bold text-primary tracking-tight">
+                  {isLoadingCompanyHome ? <Skeleton className="h-7 w-12" /> : <AnimatedNumber value={companyHomeData?.whatsapp_transfers_count ?? 0} />}
+                </h3>
+                <p className="text-[10px] text-secondary leading-snug mt-1">{t('stat_whatsapp') || 'WhatsApp Redirects'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Active / Inactive Ads */}
+            <GlassCard className="p-4 flex items-center gap-4 relative overflow-hidden">
+              <div className="absolute -end-4 -top-4 w-16 h-16 bg-brand-500/10 rounded-full blur-xl pointer-events-none" />
+              <div className="relative w-16 h-16 shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path className="text-brand-500/20" stroke="currentColor" strokeWidth="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path
+                    className="text-brand-500 drop-shadow-sm"
+                    stroke="currentColor" strokeWidth="4"
+                    strokeDasharray={`${companyHomeData?.available_ads_percentage ?? 0}, 100`}
+                    strokeLinecap="round" fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
+                    <AnimatedNumber value={companyHomeData?.available_ads_percentage ?? 0} />%
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-brand-500" />
+                    <span className="text-base font-bold text-primary"><AnimatedNumber value={companyHomeData?.available_ads_count ?? 0} /></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 opacity-60">
+                    <div className="w-2 h-2 rounded-full bg-brand-500/40" />
+                    <span className="text-base font-bold text-primary"><AnimatedNumber value={companyHomeData?.unavailable_ads_count ?? 0} /></span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-secondary leading-snug">{t('stat_status') || 'Active / Inactive'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Total Ads */}
+            <GlassCard className="p-4 relative overflow-hidden group">
+              <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-xl group-hover:bg-blue-500/30 transition-all duration-500" />
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20 text-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/10">
+                  <Users size={16} />
+                </div>
+              </div>
+              <div className="relative z-10 mt-1">
+                <h3 className="text-2xl font-black text-primary tracking-tight">
+                  {isLoadingCompanyHome ? <Skeleton className="h-7 w-12" /> : <AnimatedNumber value={companyHomeData?.total_ads_count ?? 0} />}
+                </h3>
+                <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_servants') || 'Total Ads'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Profile Visits */}
+            <GlassCard className="p-4 relative overflow-hidden group">
+              <div className="absolute -end-8 -top-8 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-500" />
+              <div className="flex justify-between items-start mb-2 relative z-10">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+                  <Eye size={16} />
+                </div>
+              </div>
+              <div className="relative z-10 mt-1">
+                <h3 className="text-2xl font-black text-primary tracking-tight">
+                  {isLoadingCompanyHome ? <Skeleton className="h-7 w-12" /> : <AnimatedNumber value={companyHomeData?.profile_views_count ?? 0} />}
+                </h3>
+                <p className="text-[9px] text-secondary font-medium tracking-wide mt-0.5">{t('stat_visits') || 'Profile Visits'}</p>
+              </div>
+            </GlassCard>
+
+            {/* Subscription */}
+            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 relative overflow-hidden">
+              <div className="absolute end-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0">
+                  <Clock size={18} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-sm font-bold text-primary">{t('stat_package') || 'Subscription'}</h3>
+                    <Badge color={companyHomeData?.subscription ? 'accent' : 'neutral'}>
+                      {companyHomeData?.subscription ? (t('active') || 'Active') : (t('no_subscription') || 'No Plan')}
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] text-secondary mt-0.5">
+                    {companyHomeData?.subscription
+                      ? (t('stat_expires') || 'Remaining until your package expires')
+                      : (t('subscribe_to_unlock') || 'Subscribe to unlock premium features')}
+                  </p>
+                </div>
+              </div>
+              {companyHomeData?.subscription && (
+                <div className="w-full bg-background rounded-full h-1.5 mt-1 overflow-hidden border border-border">
+                  <div className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full" style={{ width: '60%' }} />
+                </div>
+              )}
+            </GlassCard>
+          </div>
+        </div>
+      )}
+
+      {/* Seeker-only static analytics (kept as-is) */}
+      {!isSeeker && !isCompany && (
         <div className="px-5 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -443,56 +567,66 @@ export const Home: React.FC = () => {
           </div>
         </section>
 
-        {homeData?.history && homeData.history.length > 0 && (
-          <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
-              {homeData.history.map(worker => (
-                <CompactCard
-                  key={worker.id}
-                  name={worker.worker_name}
-                  image={worker.image}
-                  subtitle={worker.country_name}
-                  onClick={() => handleWorkerClick(worker.id.toString())}
-                />
-              ))}
-            </div>
-          </SectionContainer>
-        )}
-
-        {isLoadingHome ? (
-          <SectionContainer title={t('section_available')} canShowAll={false}>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
-              ))}
-            </div>
-          </SectionContainer>
-        ) : (
-          homeData?.available_ads && homeData.available_ads.length > 0 && (
-            <SectionContainer title={t('section_available')} canShowAll={false}>
+        {/* Continue watching / history */}
+        {(() => {
+          const historyData = isCompany ? companyHomeData?.history : homeData?.history;
+          return historyData && historyData.length > 0 && (
+            <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
               <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
-                {homeData.available_ads.map(worker => (
+                {historyData.map((worker: any) => (
                   <CompactCard
                     key={worker.id}
                     name={worker.worker_name}
                     image={worker.image}
-                    subtitle={worker.category_name}
+                    subtitle={worker.country_name}
                     onClick={() => handleWorkerClick(worker.id.toString())}
                   />
                 ))}
               </div>
             </SectionContainer>
-          )
-        )}
+          );
+        })()}
 
+        {/* Available ads */}
+        {(() => {
+          const isLoading = isCompany ? isLoadingCompanyHome : isLoadingHome;
+          const availableAds = isCompany ? companyHomeData?.available_ads : homeData?.available_ads;
+          return isLoading ? (
+            <SectionContainer title={t('section_available')} canShowAll={false}>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
+                ))}
+              </div>
+            </SectionContainer>
+          ) : (
+            availableAds && availableAds.length > 0 && (
+              <SectionContainer title={t('section_available')} canShowAll={false}>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+                  {availableAds.map((worker: any) => (
+                    <CompactCard
+                      key={worker.id}
+                      name={worker.worker_name}
+                      image={worker.image}
+                      subtitle={worker.category_name}
+                      onClick={() => handleWorkerClick(worker.id.toString())}
+                    />
+                  ))}
+                </div>
+              </SectionContainer>
+            )
+          );
+        })()}
+
+        {/* Latest ads */}
         <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest', latest: 1 } } as any)}>
           <div className="px-5 space-y-4">
-            {isLoadingHome ? (
+            {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
               ))
             ) : (
-              homeData?.latest_ads.slice(0, 4).map(ad => (
+              (isCompany ? companyHomeData?.latest_ads : homeData?.latest_ads)?.slice(0, 4).map(ad => (
                 <FullListingCard
                   key={ad.id}
                   ad={ad}
@@ -506,14 +640,15 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
 
+        {/* Most experienced ads */}
         <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience', experience: 1 } } as any)}>
           <div className="px-5 space-y-4">
-            {isLoadingHome ? (
+            {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
               ))
             ) : (
-              homeData?.most_experience_ads.slice(0, 4).map(ad => (
+              (isCompany ? companyHomeData?.most_experience_ads : homeData?.most_experience_ads)?.slice(0, 4).map(ad => (
                 <FullListingCard
                   key={ad.id}
                   ad={ad}
