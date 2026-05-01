@@ -8,6 +8,7 @@ import { useCompleteProfile } from '../hooks/useCompleteProfile';
 import { useStates, StateOption } from '../hooks/useStates';
 import { toast } from 'sonner';
 import { useLanguage } from '@/i18n';
+import imageCompression from 'browser-image-compression';
 
 
 export const CompleteProfile: React.FC = () => {
@@ -62,8 +63,24 @@ export const CompleteProfile: React.FC = () => {
   const [description, setDescription] = useState('');
 
   const completeProfileMutation = useCompleteProfile();
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const handleCompleteProfile = (e: React.FormEvent) => {
+  const compressFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) return file;
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1024,
+      useWebWorker: true,
+    };
+    try {
+      return await imageCompression(file, options);
+    } catch (error) {
+      console.error('Image compression error:', error);
+      return file;
+    }
+  };
+
+  const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!profileImageFile) {
@@ -71,34 +88,53 @@ export const CompleteProfile: React.FC = () => {
       return;
     }
 
+    setIsCompressing(true);
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('image', profileImageFile);
 
-    if (userType === '2') {
-      if (!coverImageFile || !stateId || !locationData.position || !commercialLicenseFile || !managerIdImageFile) {
-        toast.error(t('all_fields_required') || 'Please fill in all required company fields including images and location.');
-        return;
+    try {
+      const compressedProfileImage = await compressFile(profileImageFile);
+      formData.append('image', compressedProfileImage);
+
+      if (userType === '2') {
+        if (!coverImageFile || !stateId || !locationData.position || !commercialLicenseFile || !managerIdImageFile) {
+          toast.error(t('all_fields_required') || 'Please fill in all required company fields including images and location.');
+          setIsCompressing(false);
+          return;
+        }
+
+        const [compressedCover, compressedLicense, compressedManagerId] = await Promise.all([
+          compressFile(coverImageFile),
+          compressFile(commercialLicenseFile),
+          compressFile(managerIdImageFile)
+        ]);
+
+        formData.append('cover_image', compressedCover);
+        formData.append('state_id', stateId);
+        formData.append('lat', locationData.position.lat.toString());
+        formData.append('lng', locationData.position.lng.toString());
+        formData.append('map_desc', mapDesc);
+        if (website) formData.append('website', website);
+        if (whatsapp) formData.append('whatsapp', whatsapp);
+        if (email) formData.append('email', email);
+        formData.append('commercial_license', compressedLicense);
+        formData.append('national_number_manager', nationalNumberManager);
+        formData.append('phone_manager', phoneManager);
+        formData.append('manager_id_image', compressedManagerId);
+        formData.append('description', description);
       }
-      formData.append('cover_image', coverImageFile);
-      formData.append('state_id', stateId);
-      formData.append('lat', locationData.position.lat.toString());
-      formData.append('lng', locationData.position.lng.toString());
-      formData.append('map_desc', mapDesc);
-      if (website) formData.append('website', website);
-      if (whatsapp) formData.append('whatsapp', whatsapp);
-      if (email) formData.append('email', email);
-      formData.append('commercial_license', commercialLicenseFile);
-      formData.append('national_number_manager', nationalNumberManager);
-      formData.append('phone_manager', phoneManager);
-      formData.append('manager_id_image', managerIdImageFile);
-      formData.append('description', description);
-    }
 
-    completeProfileMutation.mutate(formData);
+      completeProfileMutation.mutate(formData);
+    } catch (error) {
+      toast.error(t('error_processing_images') || 'Error processing images. Please try again.');
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   if (!userType) return null;
+
+  const isPending = completeProfileMutation.isPending || isCompressing;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden pb-20">
@@ -414,9 +450,16 @@ export const CompleteProfile: React.FC = () => {
               type="submit"
               variant="primary"
               className="w-full h-12 text-sm mt-6"
-              disabled={completeProfileMutation.isPending}
+              disabled={isPending}
             >
-              {completeProfileMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (t('complete_signup') || 'Complete Profile')}
+              {isPending ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>{isCompressing ? t('processing') : t('saving')}</span>
+                </div>
+              ) : (
+                t('complete_signup') || 'Complete Profile'
+              )}
             </Button>
           </form>
         </GlassCard>

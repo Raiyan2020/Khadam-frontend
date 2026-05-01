@@ -229,7 +229,23 @@ export const translations = {
     map_desc: "Address Details",
     whatsapp: "WhatsApp (Optional)",
     state: "State",
-    select_state: "Select State"
+    select_state: "Select State",
+    processing: "Processing...",
+    saving: "Saving...",
+    error_processing_images: "Error processing images. Please try again.",
+    validation_error: "Validation Error",
+    name_required: "Name is required (min 3 chars)",
+    cover_image_required: "Cover image is required",
+    state_required: "Please select a state",
+    location_required: "Please pin your office location on the map",
+    address_required: "Address details are required",
+    commercial_license_required: "Commercial license file is required",
+    manager_id_required: "Manager national ID is required",
+    manager_phone_required: "Manager phone is required",
+    manager_id_image_required: "Manager ID photo is required",
+    description_required: "Office description is required",
+    invalid_email: "Please enter a valid email address",
+    invalid_url: "Please enter a valid URL (e.g. https://...)"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -456,7 +472,23 @@ export const translations = {
     map_desc: "تفاصيل العنوان",
     whatsapp: "واتساب (اختياري)",
     state: "المحافظة",
-    select_state: "اختر المحافظة"
+    select_state: "اختر المحافظة",
+    processing: "جاري المعالجة...",
+    saving: "جاري الحفظ...",
+    error_processing_images: "خطأ في معالجة الصور. يرجى المحاولة مرة أخرى.",
+    validation_error: "خطأ في البيانات",
+    name_required: "الاسم مطلوب (3 أحرف على الأقل)",
+    cover_image_required: "صورة الغلاف مطلوبة",
+    state_required: "يرجى اختيار المحافظة",
+    location_required: "يرجى تحديد موقع المكتب على الخريطة",
+    address_required: "تفاصيل العنوان مطلوبة",
+    commercial_license_required: "ملف الرخصة التجارية مطلوب",
+    manager_id_required: "الرقم المدني للمدير مطلوب",
+    manager_phone_required: "رقم هاتف المسؤول مطلوب",
+    manager_id_image_required: "صورة هوية المسؤول مطلوبة",
+    description_required: "وصف المكتب مطلوب",
+    invalid_email: "يرجى إدخال بريد إلكتروني صحيح",
+    invalid_url: "يرجى إدخال رابط صحيح (مثال: https://...)"
   }
 };
 
