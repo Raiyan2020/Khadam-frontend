@@ -27,7 +27,12 @@ export interface CompanyHomeData {
   available_ads_percentage: number;
   total_ads_count: number;
   profile_views_count: number;
-  subscription: any | null;
+  subscription: {
+    name: string;
+    image: string | null;
+    total_days: number;
+    remaining_days: number;
+  } | null;
   available_ads: CompanyAd[];
   history: CompanyHistoryAd[];
   latest_ads: HomeAdFull[];

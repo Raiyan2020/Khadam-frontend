@@ -1,70 +1,79 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, CreditCard, Ticket, ShieldCheck, Wallet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, CreditCard, Ticket, ShieldCheck, Wallet, Loader2 } from 'lucide-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useLanguage } from '../i18n';
 import { GlassCard, Button } from '../components/GlassUI';
-
-interface SubscriptionPlan {
-  id: string;
-  nameKey: string;
-  durationKey: string;
-  priceKey: string;
-  price: number;
-}
-
-const PLANS: SubscriptionPlan[] = [
-  {
-    id: 'basic',
-    nameKey: 'plan_basic_name',
-    durationKey: 'plan_basic_duration',
-    priceKey: 'plan_basic_price',
-    price: 25
-  },
-  {
-    id: 'pro',
-    nameKey: 'plan_pro_name',
-    durationKey: 'plan_pro_duration',
-    priceKey: 'plan_pro_price',
-    price: 45
-  },
-  {
-    id: 'premium',
-    nameKey: 'plan_premium_name',
-    durationKey: 'plan_premium_duration',
-    priceKey: 'plan_premium_price',
-    price: 75
-  }
-];
+import { usePackageDetail, useCheckCoupon, useSubscribe, CouponResponse } from '../features/auth/hooks/usePackages';
+import { toast } from 'sonner';
 
 export const Checkout: React.FC = () => {
   const { t, dir } = useLanguage();
   const navigate = useNavigate();
   const search = useSearch({ from: '/checkout' }) as { planId?: string };
-  const planId = search.planId || 'pro';
+  const planId = search.planId;
   
-  const plan = PLANS.find(p => p.id === planId) || PLANS[1];
+  const { data: packageData, isLoading: loadingPackage } = usePackageDetail(planId || '');
+  const checkCoupon = useCheckCoupon();
+  const subscribe = useSubscribe();
   
-  const [coupon, setCoupon] = useState('');
+  const [couponCode, setCouponCode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'visa' | 'knet'>('knet');
-  const [isApplied, setIsApplied] = useState(false);
-  const [discount, setDiscount] = useState(0);
+  const [couponData, setCouponData] = useState<CouponResponse | null>(null);
 
-  const applyCoupon = () => {
-    if (coupon.toUpperCase() === 'SAVE10') {
-      setDiscount(plan.price * 0.1);
-      setIsApplied(true);
-    } else {
-      alert('Invalid coupon code. Try SAVE10');
-    }
+  const handleApplyCoupon = () => {
+    if (!packageData || !couponCode) return;
+    
+    checkCoupon.mutate({
+      package_id: packageData.id,
+      coupon_num: couponCode
+    }, {
+      onSuccess: (data) => {
+        setCouponData(data);
+        toast.success(t('coupon_applied') || 'Coupon applied successfully');
+      },
+      onError: (error: any) => {
+        toast.error(error.message);
+        setCouponData(null);
+      }
+    });
   };
-
-  const total = plan.price - discount;
 
   const handlePay = () => {
-    // Simulate payment process
-    alert('Payment Successful!');
-    navigate({ to: '/profile' });
+    if (!packageData) return;
+    
+    subscribe.mutate({
+      package_id: packageData.id,
+      coupon_num: couponData?.coupon_num
+    }, {
+      onSuccess: (data) => {
+        toast.success(data.message || t('subscription_success'));
+        navigate({ to: '/profile' });
+      },
+      onError: (error: any) => {
+        toast.error(error.message);
+      }
+    });
   };
+
+  if (loadingPackage) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <p className="text-sm text-secondary">{t('loading')}</p>
+      </div>
+    );
+  }
+
+  if (!packageData) {
+    return (
+      <div className="p-10 text-center">
+        <p className="text-secondary">{t('package_not_found') || 'Package not found'}</p>
+        <Button className="mt-4" onClick={() => navigate({ to: '/subscriptions' })}>{t('go_back')}</Button>
+      </div>
+    );
+  }
+
+  const finalPrice = couponData ? couponData.final_price : packageData.price;
 
   return (
     <div className="pb-10 min-h-screen bg-background">
@@ -79,17 +88,17 @@ export const Checkout: React.FC = () => {
         <h1 className="text-xl font-bold text-primary">{t('checkout_title')}</h1>
       </div>
 
-      <div className="p-5 space-y-6">
+      <div className="p-5 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
         {/* Order Summary */}
         <div className="space-y-3">
           <h2 className="text-sm font-bold text-secondary uppercase tracking-wider px-1">{t('order_summary')}</h2>
           <GlassCard className="p-5 flex justify-between items-center bg-brand-500/5 border-brand-500/20">
             <div>
-              <h3 className="font-bold text-primary text-lg">{t(plan.nameKey as any)}</h3>
-              <p className="text-xs text-secondary mt-0.5">{t(plan.durationKey as any)}</p>
+              <h3 className="font-bold text-primary text-lg">{packageData.name}</h3>
+              <p className="text-xs text-secondary mt-0.5">{packageData.duration} {t('months')}</p>
             </div>
             <div className="text-right">
-              <span className="text-xl font-black text-brand-500">{plan.price} {t('kwd')}</span>
+              <span className="text-xl font-black text-brand-500">{packageData.price} {t('kwd')}</span>
             </div>
           </GlassCard>
         </div>
@@ -104,20 +113,20 @@ export const Checkout: React.FC = () => {
               </div>
               <input
                 type="text"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                placeholder="SAVE10"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder={t('ph_coupon') || 'Enter coupon code'}
                 className="w-full h-12 bg-glass border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all uppercase"
-                disabled={isApplied}
+                disabled={!!couponData}
               />
             </div>
             <Button 
-              onClick={applyCoupon} 
-              variant="outline" 
-              className={`px-6 h-12 ${isApplied ? 'bg-green-500/10 text-green-500 border-green-500/50' : ''}`}
-              disabled={isApplied || !coupon}
+              onClick={handleApplyCoupon} 
+              variant="secondary" 
+              className={`px-6 h-12 ${couponData ? 'bg-green-500/10 text-green-500 border-green-500/50' : ''}`}
+              disabled={!!couponData || !couponCode || checkCoupon.isPending}
             >
-              {isApplied ? <Check size={20} /> : t('apply_coupon')}
+              {checkCoupon.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : couponData ? <Check size={20} /> : t('apply_coupon')}
             </Button>
           </div>
         </div>
@@ -146,20 +155,20 @@ export const Checkout: React.FC = () => {
         {/* Total Summary */}
         <GlassCard className="p-5 space-y-4">
           <div className="flex justify-between text-sm">
-            <span className="text-secondary">Subtotal</span>
-            <span className="text-primary font-medium">{plan.price} {t('kwd')}</span>
+            <span className="text-secondary">{t('subtotal') || 'Subtotal'}</span>
+            <span className="text-primary font-medium">{packageData.price} {t('kwd')}</span>
           </div>
-          {discount > 0 && (
+          {couponData && (
             <div className="flex justify-between text-sm text-green-500">
-              <span className="font-medium">Discount (10%)</span>
-              <span>-{discount.toFixed(3)} {t('kwd')}</span>
+              <span className="font-medium">{t('discount') || 'Discount'}</span>
+              <span>-{couponData.discount_amount} {t('kwd')}</span>
             </div>
           )}
           <div className="h-px bg-border my-2" />
           <div className="flex justify-between items-center">
             <span className="text-primary font-bold">{t('total_amount')}</span>
             <span className="text-2xl font-black text-brand-500">
-              {total.toFixed(3)} {t('kwd')}
+              {finalPrice} {t('kwd')}
             </span>
           </div>
         </GlassCard>
@@ -167,7 +176,7 @@ export const Checkout: React.FC = () => {
         {/* Security Note */}
         <div className="flex items-center justify-center gap-2 text-[10px] text-secondary">
           <ShieldCheck size={14} className="text-green-500" />
-          <span>Secure Encrypted Payment Gateway</span>
+          <span>{t('secure_payment_note') || 'Secure Encrypted Payment Gateway'}</span>
         </div>
 
         {/* Pay Button */}
@@ -175,8 +184,9 @@ export const Checkout: React.FC = () => {
           onClick={handlePay} 
           variant="primary" 
           className="w-full h-14 text-lg font-bold shadow-xl shadow-brand-500/20"
+          disabled={subscribe.isPending}
         >
-          {t('pay_now')}
+          {subscribe.isPending ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : t('pay_now')}
         </Button>
       </div>
     </div>
@@ -189,7 +199,7 @@ const PaymentOption: React.FC<{
   icon: React.ReactNode, 
   isSelected: boolean, 
   onClick: () => void 
-}> = ({ id, label, icon, isSelected, onClick }) => (
+}> = ({ label, icon, isSelected, onClick }) => (
   <div 
     onClick={onClick}
     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-3 bg-glass

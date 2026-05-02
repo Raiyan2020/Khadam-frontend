@@ -1,128 +1,117 @@
 import React, { useState } from 'react';
-import { Award, Check, ChevronLeft, ChevronRight, Gem, Zap } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
+import { Check, ArrowLeft, ArrowRight, Zap, Gem, Award, Loader2 } from 'lucide-react';
+import { GlassCard, Button } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
-import { GlassCard, Badge } from '../components/GlassUI';
-
-interface SubscriptionPlan {
-  id: string;
-  nameKey: string;
-  durationKey: string;
-  priceKey: string;
-  advantagesKeys: string[];
-  isPopular?: boolean;
-  icon: React.ReactNode;
-}
-
-const PLANS: SubscriptionPlan[] = [
-  {
-    id: 'basic',
-    nameKey: 'plan_basic_name',
-    durationKey: 'plan_basic_duration',
-    priceKey: 'plan_basic_price',
-    advantagesKeys: ['adv_basic_1', 'adv_basic_2', 'adv_basic_3'],
-    icon: <Award size={24} className="text-zinc-400" />
-  },
-  {
-    id: 'pro',
-    nameKey: 'plan_pro_name',
-    durationKey: 'plan_pro_duration',
-    priceKey: 'plan_pro_price',
-    advantagesKeys: ['adv_pro_1', 'adv_pro_2', 'adv_pro_3', 'adv_pro_4'],
-    isPopular: true,
-    icon: <Zap size={24} className="text-brand-400" />
-  },
-  {
-    id: 'premium',
-    nameKey: 'plan_premium_name',
-    durationKey: 'plan_premium_duration',
-    priceKey: 'plan_premium_price',
-    advantagesKeys: ['adv_premium_1', 'adv_premium_2', 'adv_premium_3', 'adv_premium_4', 'adv_premium_5'],
-    icon: <Gem size={24} className="text-purple-400" />
-  }
-];
+import { useNavigate } from '@tanstack/react-router';
+import { usePackages } from '../features/auth/hooks/usePackages';
 
 export const Subscriptions: React.FC = () => {
   const { t, dir } = useLanguage();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
+  const { data: packages, isLoading } = usePackages();
+  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+
+  const getPackageIcon = (index: number) => {
+    switch (index) {
+      case 0: return <Award size={24} className="text-zinc-400" />;
+      case 1: return <Zap size={24} className="text-brand-400" />;
+      default: return <Gem size={24} className="text-purple-400" />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <p className="text-sm text-secondary">{t('loading')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-24 min-h-screen bg-background">
       {/* Header */}
       <div className="relative sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 transition-colors">
         <div className="flex items-center justify-between mb-2">
-          <button 
-            onClick={() => navigate({ to: '/' })}
-            className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary"
+          <button
+            onClick={() => navigate({ to: '/profile' })}
+            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-glassHigh transition-colors"
           >
-            {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {dir === 'rtl' ? <ArrowRight size={22} /> : <ArrowLeft size={22} />}
           </button>
-          <div className="w-10 h-10" />
+          <h1 className="text-xl font-bold text-primary">{t('subscriptions')}</h1>
+          <div className="w-10" />
         </div>
-        <h1 className="text-xl font-bold text-primary">{t('nav_subscriptions') || 'Subscriptions'}</h1>
-        <p className="text-sm text-secondary mt-1">{t('subs_subtitle') || 'Select the perfect package for your office'}</p>
+        <p className="text-xs text-secondary text-center">
+          {t('choose_plan_desc') || 'Choose the best plan for your office'}
+        </p>
       </div>
 
-      <div className="p-5 space-y-6">
-        {PLANS.map((plan) => {
-          const isSelected = selectedPlan === plan.id;
-          
-          return (
-            <GlassCard 
-              key={plan.id}
-              onClick={() => setSelectedPlan(plan.id)}
-              className={`p-6 relative transition-all duration-300 border-2 cursor-pointer
-                ${isSelected ? 'border-brand-500 shadow-lg shadow-brand-500/10' : 'border-transparent hover:border-brand-500/50'}
-                ${plan.isPopular ? 'overflow-visible' : 'overflow-hidden'}
-              `}
-            >
-              {plan.isPopular && (
-                <div className="absolute -top-3 transform inset-x-0 flex justify-center z-10 animate-in fade-in slide-in-from-bottom-2">
-                  <Badge color="accent" className="shadow-lg px-4 py-1 text-[10px] uppercase font-bold tracking-widest">{t('most_popular') || 'Most Popular'}</Badge>
-                </div>
-              )}
-              
-              <div className="flex justify-between items-start mb-6 mt-2 relative z-0">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isSelected ? 'bg-brand-500/20 shadow-inner' : 'bg-glassHigh'}`}>
-                    {plan.icon}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-primary">{t(plan.nameKey as any) || plan.nameKey}</h3>
-                    <p className="text-xs text-secondary font-medium">{t(plan.durationKey as any) || '1 Month'}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-2xl font-black text-brand-500">{t(plan.priceKey as any) || 'Free'}</span>
+      <div className="px-5 pt-8 space-y-6">
+        {packages?.map((pkg, index) => (
+          <GlassCard
+            key={pkg.id}
+            className={`relative overflow-hidden transition-all duration-300 ${selectedPlan === pkg.id
+              ? 'ring-2 ring-brand-400 border-transparent bg-brand-500/5'
+              : 'hover:border-brand-400/30'
+              }`}
+            onClick={() => setSelectedPlan(pkg.id)}
+          >
+            {/* Popular Badge */}
+            {index === 1 && (
+              <div className="absolute top-0 end-0 bg-brand-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                {t('popular') || 'Popular'}
+              </div>
+            )}
+
+            <div className="flex items-start gap-4 mb-6">
+              <div className={`p-3 rounded-2xl ${index === 1 ? 'bg-brand-500/10' : index === 2 ? 'bg-purple-500/10' : 'bg-zinc-500/10'
+                }`}>
+                {getPackageIcon(index)}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-primary">{pkg.name}</h3>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-2xl font-black text-brand-500">{pkg.price}</span>
+                  <span className="text-xs text-secondary font-medium">KWD / {pkg.duration} {t('months') || 'Months'}</span>
                 </div>
               </div>
+            </div>
 
-              {/* Dividers */}
-              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full my-4 opacity-50" />
+            <div className="space-y-3 mb-8">
+              {pkg.features.map((feature) => (
+                <div key={feature.id} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                    <Check size={12} className="text-green-500" />
+                  </div>
+                  <span className="text-sm text-secondary font-medium">{feature.description}</span>
+                </div>
+              ))}
+            </div>
 
-              <ul className="space-y-3 relative z-0">
-                {plan.advantagesKeys.map((advKey, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <div className="w-5 h-5 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} strokeWidth={3} />
-                    </div>
-                    <span className="text-sm text-secondary font-medium leading-relaxed">{t(advKey as any) || 'Feature Included'}</span>
-                  </li>
-                ))}
-              </ul>
+            <Button
+              fullWidth
+              onClick={() => navigate({ to: '/checkout', search: { planId: pkg.id.toString() } })}
+              variant={selectedPlan === pkg.id ? 'primary' : 'secondary'}
+              className="h-12 text-sm font-bold"
+            >
+              {selectedPlan === pkg.id ? t('selected') || 'Selected' : t('choose_plan') || 'Choose Plan'}
+            </Button>
+          </GlassCard>
+        ))}
 
-              {isSelected && (
-                <button 
-                  onClick={() => navigate({ to: '/checkout', search: { planId: plan.id } as any })}
-                  className="w-full mt-6 py-3.5 rounded-xl bg-brand-500 text-white font-bold tracking-wide shadow-lg shadow-brand-500/20 active:scale-95 transition-all text-sm"
-                >
-                  {t('subscribe_now') || 'Subscribe Now'}
-                </button>
-              )}
-            </GlassCard>
-          );
-        })}
+        {/* Support Note */}
+        <button
+          onClick={() => navigate({ to: '/help-support' })}
+          className="p-4 cursor-pointer w-full bg-glass border border-border rounded-2xl flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+            <Zap size={20} className="text-accent" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-primary">{t('need_custom_plan') || 'Need a custom plan?'}</h4>
+            <p className="text-[10px] text-secondary mt-0.5">{t('contact_support_plan') || 'Contact our support for enterprise solutions'}</p>
+          </div>
+        </button>
       </div>
     </div>
   );

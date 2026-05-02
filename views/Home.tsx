@@ -352,21 +352,26 @@ export const Home: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-sm font-bold text-primary">{t('stat_package') || 'Subscription'}</h3>
+                    <h3 className="text-sm font-bold text-primary">
+                      {companyHomeData?.subscription?.name || t('stat_package') || 'Subscription'}
+                    </h3>
                     <Badge color={companyHomeData?.subscription ? 'accent' : 'neutral'}>
                       {companyHomeData?.subscription ? (t('active') || 'Active') : (t('no_subscription') || 'No Plan')}
                     </Badge>
                   </div>
                   <p className="text-[10px] text-secondary mt-0.5">
                     {companyHomeData?.subscription
-                      ? (t('stat_expires') || 'Remaining until your package expires')
+                      ? `${companyHomeData.subscription.remaining_days} ${t('days_remaining') || 'Days Remaining'}`
                       : (t('subscribe_to_unlock') || 'Subscribe to unlock premium features')}
                   </p>
                 </div>
               </div>
               {companyHomeData?.subscription && (
                 <div className="w-full bg-background rounded-full h-1.5 mt-1 overflow-hidden border border-border">
-                  <div className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full" style={{ width: '60%' }} />
+                  <div 
+                    className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full transition-all duration-1000" 
+                    style={{ width: `${Math.max(0, Math.min(100, (companyHomeData.subscription.remaining_days / companyHomeData.subscription.total_days) * 100))}%` }} 
+                  />
                 </div>
               )}
             </GlassCard>
