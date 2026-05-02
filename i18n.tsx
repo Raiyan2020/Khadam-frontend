@@ -293,9 +293,14 @@ export const translations = {
     v_salary_max: "Max salary is 1,000,000",
     v_gender_required: "Gender is required",
     v_languages_min: "Select at least one language",
+    v_name_min: "Name must be at least 3 characters",
+    v_message_min: "Message must be at least 10 characters",
+    message_sent_success: "Your message has been sent successfully",
+    available_24_7: "Available 24/7",
     confirm_delete: "Confirm Delete",
     delete_ad_warning: "Are you sure you want to delete this ad? This action cannot be undone.",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    last_updated: "Last Updated"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -586,9 +591,14 @@ export const translations = {
     v_salary_max: "أقصى راتب هو 1,000,000",
     v_gender_required: "الجنس مطلوب",
     v_languages_min: "اختر لغة واحدة على الأقل",
+    v_name_min: "الاسم يجب أن يكون 3 أحرف على الأقل",
+    v_message_min: "الرسالة يجب أن تكون 10 أحرف على الأقل",
+    message_sent_success: "تم إرسال رسالتك بنجاح",
+    available_24_7: "متاح على مدار الساعة",
     confirm_delete: "تأكيد الحذف",
     delete_ad_warning: "هل أنت متأكد أنك تريد حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء.",
-    cancel: "إلغاء"
+    cancel: "إلغاء",
+    last_updated: "آخر تحديث"
   }
 };
 
