@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 
 import { z } from 'zod';
 import { useContactUs, ContactUsPayload } from '../features/auth/hooks/useContactUs';
+import { useSettings } from '../features/auth/hooks/useSettings';
 import { zodResolver } from "@hookform/resolvers/zod"
 
 const getContactSchema = (t: (key: any) => string) => z.object({
@@ -20,6 +21,7 @@ export const HelpSupport: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
   const contactUs = useContactUs();
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   const {
     register,
@@ -42,6 +44,8 @@ export const HelpSupport: React.FC = () => {
     });
   };
 
+  const social = settings?.social_media;
+
   return (
     <div className="pb-20 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
@@ -58,14 +62,18 @@ export const HelpSupport: React.FC = () => {
         {/* Contact Number */}
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-primary px-1">{t('support_number')}</h2>
-          <GlassCard className="p-4 flex items-center justify-between group cursor-pointer hover:border-brand-400 transition-colors" onClick={() => window.location.href = 'tel:+96512345678'}>
+          <GlassCard className="p-4 flex items-center justify-between group cursor-pointer hover:border-brand-400 transition-colors" onClick={() => social?.phone_support && (window.location.href = `tel:${social.phone_support}`)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-colors">
                 <Phone size={20} />
               </div>
               <div>
-                <p className="text-sm font-bold text-primary">+965 1234 5678</p>
-                <p className="text-xs text-secondary">{t('available_24_7') || 'Available 24/7'}</p>
+                {isLoadingSettings ? (
+                  <div className="h-4 w-32 bg-glassHigh animate-pulse rounded" />
+                ) : (
+                  <p className="text-sm font-bold text-primary">{social?.phone_support || '+965 1234 5678'}</p>
+                )}
+                <p className="text-xs text-secondary mt-0.5">{t('available_24_7') || 'Available 24/7'}</p>
               </div>
             </div>
           </GlassCard>
@@ -132,10 +140,10 @@ export const HelpSupport: React.FC = () => {
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-primary px-1">{t('follow_us')}</h2>
           <div className="grid grid-cols-4 gap-3">
-            <SocialButton icon={<MessageCircle size={24} />} color="text-green-500" bg="bg-green-500/10" hover="hover:bg-green-500 hover:text-white" onClick={() => window.open('https://wa.me/96512345678', '_blank')} />
-            <SocialButton icon={<Instagram size={24} />} color="text-pink-500" bg="bg-pink-500/10" hover="hover:bg-pink-500 hover:text-white" onClick={() => window.open('https://instagram.com', '_blank')} />
-            <SocialButton icon={<Twitter size={24} />} color="text-blue-400" bg="bg-blue-400/10" hover="hover:bg-blue-400 hover:text-white" onClick={() => window.open('https://twitter.com', '_blank')} />
-            <SocialButton icon={<Facebook size={24} />} color="text-blue-600" bg="bg-blue-600/10" hover="hover:bg-blue-600 hover:text-white" onClick={() => window.open('https://facebook.com', '_blank')} />
+            <SocialButton icon={<MessageCircle size={24} />} color="text-green-500" onClick={() => social?.phone_support && window.open(`https://wa.me/${social.phone_support}`, '_blank')} />
+            <SocialButton icon={<Instagram size={24} />} color="text-pink-500" onClick={() => social?.instagram && window.open(social.instagram, '_blank')} />
+            <SocialButton icon={<Twitter size={24} />} color="text-blue-400" onClick={() => social?.twitter && window.open(social.twitter, '_blank')} />
+            <SocialButton icon={<Facebook size={24} />} color="text-blue-600" onClick={() => social?.facebook && window.open(social.facebook, '_blank')} />
           </div>
         </div>
       </div>
