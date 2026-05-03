@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { Camera, Image as ImageIcon, User, Building, Phone, Globe, FileText, CreditCard, Mail, X, MapPin, Loader2 } from 'lucide-react';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { LocationPicker, LatLng } from '../../../components/LocationPicker';
@@ -48,7 +49,7 @@ export const CompleteProfile: React.FC = () => {
   });
   const [mapDesc, setMapDesc] = useState('');
   const [website, setWebsite] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
+  const [whatsapp, setWhatsapp] = useState('+965');
   const [email, setEmail] = useState('');
 
   const [commercialLicenseFile, setCommercialLicenseFile] = useState<File | null>(null);
@@ -56,7 +57,7 @@ export const CompleteProfile: React.FC = () => {
   const commercialLicenseRef = useRef<HTMLInputElement>(null);
 
   const [nationalNumberManager, setNationalNumberManager] = useState('');
-  const [phoneManager, setPhoneManager] = useState('');
+  const [phoneManager, setPhoneManager] = useState('+965');
 
   const [managerIdImageFile, setManagerIdImageFile] = useState<File | null>(null);
   const [managerIdImagePreview, setManagerIdImagePreview] = useState<string | null>(null);
@@ -349,16 +350,10 @@ export const CompleteProfile: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-primary px-1">{t('whatsapp') || 'WhatsApp (Optional)'}</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
-                      <Phone size={18} />
-                    </div>
-                    <input
-                      type="tel"
+                    <PhoneInput
                       value={whatsapp}
-                      onChange={(e) => setWhatsapp(normalizeArabicNumbers(e.target.value))}
+                      onChange={setWhatsapp}
                       placeholder="+965 1234 5678"
-                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
-                      dir="ltr"
                     />
                   </div>
                 </div>
@@ -438,18 +433,10 @@ export const CompleteProfile: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-primary px-1">{t('responsible_number') || 'Manager Phone'} *</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
-                      <Phone size={18} />
-                    </div>
-                    <input
-                      type="tel"
+                    <PhoneInput
                       value={phoneManager}
-                      onChange={(e) => setPhoneManager(normalizeArabicNumbers(e.target.value))}
-                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
-                      dir="ltr"
-                      required
-                      minLength={8}
-                      maxLength={18}
+                      onChange={setPhoneManager}
+                      placeholder={t('responsible_number') || 'Responsible Number'}
                     />
                   </div>
                 </div>

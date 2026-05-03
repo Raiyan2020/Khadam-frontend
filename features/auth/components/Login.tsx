@@ -4,6 +4,7 @@ import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
 import { Phone, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
+import { PhoneInput } from '../../../components/PhoneInput';
 import { useLogin } from '../hooks/useLogin';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -11,7 +12,7 @@ import { toast } from 'sonner';
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('+965');
   const loginMutation = useLogin();
 
   const loginSchema = z.object({
@@ -58,16 +59,10 @@ export const Login: React.FC = () => {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-primary px-1">{t('phone_number') || 'Phone Number'}</label>
               <div className="relative">
-                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
-                  <Phone size={18} />
-                </div>
-                <input
-                  type="tel"
+                <PhoneInput
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(normalizeArabicNumbers(e.target.value))}
+                  onChange={setPhoneNumber}
                   placeholder="XXXX XXXX"
-                  className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
-                  dir="ltr"
                 />
               </div>
             </div>
