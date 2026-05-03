@@ -7,6 +7,8 @@ import { ThemeProvider } from './theme';
 import { UserRoleProvider } from './UserRoleContext';
 import { Toaster } from 'sonner';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { NotificationHandler } from './components/NotificationHandler';
+
 const queryClient = new QueryClient();
 const App: React.FC = () => {
   return (
@@ -14,6 +16,7 @@ const App: React.FC = () => {
       <ThemeProvider>
         <LanguageProvider>
           <UserRoleProvider>
+            <NotificationHandler />
             <RouterProvider router={router} />
             <Toaster
               position="top-center"

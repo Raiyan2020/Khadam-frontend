@@ -6,6 +6,7 @@ import { Lock, Loader2 } from 'lucide-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useVerifyOtp } from '../hooks/useVerifyOtp';
 import { useResendOtp } from '../hooks/useResendOtp';
+import { requestForToken } from '../../../lib/firebase';
 
 export const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
@@ -23,13 +24,24 @@ export const VerifyOtp: React.FC = () => {
   }, [timer]);
 
   useEffect(() => {
-    // Generate or retrieve a device_id
-    let storedDeviceId = localStorage.getItem('device_id');
-    if (!storedDeviceId) {
-      storedDeviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('device_id', storedDeviceId);
-    }
-    setDeviceId(storedDeviceId);
+    const getDeviceId = async () => {
+      // Try to get Firebase FCM token first
+      const fcmToken = await requestForToken();
+      if (fcmToken) {
+        setDeviceId(fcmToken);
+        localStorage.setItem('device_id', fcmToken);
+      } else {
+        // Fallback to random ID if FCM fails/denied
+        let storedDeviceId = localStorage.getItem('device_id');
+        if (!storedDeviceId) {
+          storedDeviceId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+          localStorage.setItem('device_id', storedDeviceId);
+        }
+        setDeviceId(storedDeviceId);
+      }
+    };
+
+    getDeviceId();
 
     // If no phone number is provided, redirect back to login
     if (!search.phone) {
