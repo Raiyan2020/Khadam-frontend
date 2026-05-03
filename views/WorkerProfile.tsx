@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft, ArrowRight, MessageCircle, Share2, MapPin, Globe, Clock, CheckCircle, Wallet, Heart } from 'lucide-react';
 import { GlassCard, Button, Skeleton } from '../components/GlassUI';
 import { useUserRole } from '../UserRoleContext';
@@ -25,6 +25,10 @@ export const WorkerProfile: React.FC = () => {
       toggleLike({ type: 'ad', id });
     }
   };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const isThisPending = isPending && variables?.id === parseInt(workerId);
   const favoriteStatus = isThisPending ? !worker?.is_liked : worker?.is_liked;

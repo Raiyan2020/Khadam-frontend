@@ -71,7 +71,12 @@ export const Home: React.FC = () => {
     if (!scrollContainer) return;
 
     const handleScroll = () => {
-      setShowSearch(scrollContainer.scrollTop < 400);
+      const scrollTop = scrollContainer.scrollTop;
+      if (scrollTop > 400) {
+        setShowSearch(false);
+      } else if (scrollTop < 50) {
+        setShowSearch(true);
+      }
     };
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', handleScroll);

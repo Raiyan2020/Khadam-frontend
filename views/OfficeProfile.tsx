@@ -20,6 +20,7 @@ export const OfficeProfile: React.FC = () => {
 
   const { data: office, isLoading: isLoadingOffice } = useOfficeDetails(officeId);
   const { data: adsResponse, isLoading: isLoadingAds } = useOfficeAds(officeId, page);
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
 
   const ads = adsResponse?.data || [];
   const pagination = adsResponse?.pagination;
@@ -83,7 +84,6 @@ export const OfficeProfile: React.FC = () => {
     }
   };
 
-  const { mutate: toggleLike, isPending, variables } = useToggleLike();
 
   const handleToggleLike = () => {
     toggleLike({ type: 'office', id: office.id });
