@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
 import { Phone, Loader2 } from 'lucide-react';
@@ -63,7 +64,7 @@ export const Login: React.FC = () => {
                 <input
                   type="tel"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(e) => setPhoneNumber(normalizeArabicNumbers(e.target.value))}
                   placeholder="XXXX XXXX"
                   className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
                   dir="ltr"

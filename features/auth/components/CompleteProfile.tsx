@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { Camera, Image as ImageIcon, User, Building, Phone, Globe, FileText, CreditCard, Mail, X, MapPin, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
@@ -354,7 +355,7 @@ export const CompleteProfile: React.FC = () => {
                     <input
                       type="tel"
                       value={whatsapp}
-                      onChange={(e) => setWhatsapp(e.target.value)}
+                      onChange={(e) => setWhatsapp(normalizeArabicNumbers(e.target.value))}
                       placeholder="+965 1234 5678"
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
                       dir="ltr"
@@ -443,7 +444,7 @@ export const CompleteProfile: React.FC = () => {
                     <input
                       type="tel"
                       value={phoneManager}
-                      onChange={(e) => setPhoneManager(e.target.value)}
+                      onChange={(e) => setPhoneManager(normalizeArabicNumbers(e.target.value))}
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
                       dir="ltr"
                       required

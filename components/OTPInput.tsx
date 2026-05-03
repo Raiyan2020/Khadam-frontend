@@ -1,5 +1,6 @@
 import React from 'react';
-import { OTPInput, SlotProps } from 'input-otp';
+import { OTPInput, SlotProps, REGEXP_ONLY_DIGITS } from 'input-otp';
+import { normalizeArabicNumbers } from '../lib/numbers';
 
 interface OTPInputProps {
   value: string;
@@ -14,7 +15,7 @@ export const ShadcnOTPInput: React.FC<OTPInputProps> = ({ value, onChange, maxLe
       <OTPInput
         maxLength={maxLength}
         value={value}
-        onChange={onChange}
+        onChange={(val) => onChange(normalizeArabicNumbers(val))}
         disabled={disabled}
         containerClassName="group flex items-center has-[:disabled]:opacity-50"
         render={({ slots }) => (
