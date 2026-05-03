@@ -42,7 +42,7 @@ export const useToggleLike = () => {
       queryClient.invalidateQueries({ queryKey: ['office-ads'] });
       queryClient.invalidateQueries({ queryKey: ['worker'] });
       queryClient.invalidateQueries({ queryKey: ['ad-filter'] });
-      queryClient.invalidateQueries({ queryKey: ['home-data'] });
+      queryClient.invalidateQueries({ queryKey: ['homeData'] });
       queryClient.invalidateQueries({ queryKey: ['adDetails'] });
       queryClient.invalidateQueries({ queryKey: ['my-likes'] });
     },
