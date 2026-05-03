@@ -222,11 +222,14 @@ const ListingCard: React.FC<{
 }> = ({ ad, onSelect, t }) => {
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
-  const { mutate: toggleLike } = useToggleLike();
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
 
   const handleToggleLike = (id: number) => {
     toggleLike({ type: 'ad', id });
   };
+
+  const isThisPending = isPending && variables?.id === ad.id;
+  const favoriteStatus = isThisPending ? !ad.is_liked : ad.is_liked;
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -246,9 +249,10 @@ const ListingCard: React.FC<{
               {isSeeker && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
-                  className={`p-2 rounded-full transition-colors ${ad.is_liked ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                  disabled={isThisPending}
+                  className={`p-2 rounded-full transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favoriteStatus ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
                 >
-                  <Heart size={18} fill={ad.is_liked ? 'currentColor' : 'none'} />
+                  <Heart size={18} fill={favoriteStatus ? 'currentColor' : 'none'} />
                 </button>
               )}
             </div>

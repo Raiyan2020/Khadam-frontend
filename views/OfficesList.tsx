@@ -13,7 +13,7 @@ export const OfficesList: React.FC = () => {
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
-  const { mutate: toggleLike } = useToggleLike();
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
 
   const [page, setPage] = useState(1);
   const { data: officesResponse, isLoading } = useOffices(page);
@@ -45,7 +45,9 @@ export const OfficesList: React.FC = () => {
         ) : offices.length > 0 ? (
           <>
             {offices.map(office => {
-              const favorite = office.is_favourite;
+              const isThisPending = isPending && variables?.id === office.id;
+              const favorite = isThisPending ? !office.is_favourite : office.is_favourite;
+
               return (
                 <GlassCard
                   key={office.id}
@@ -66,7 +68,8 @@ export const OfficesList: React.FC = () => {
                           e.stopPropagation();
                           handleToggleLike(office.id);
                         }}
-                        className={`p-2 rounded-full transition-colors ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                        disabled={isThisPending}
+                        className={`p-2 rounded-full transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
                       >
                         <Heart size={18} fill={favorite ? 'currentColor' : 'none'} />
                       </button>

@@ -17,10 +17,8 @@ export const Favorites: React.FC = () => {
 
   const { data: favoriteAds, isLoading: isLoadingAds } = useMyLikes('ad');
   const { data: favoriteOffices, isLoading: isLoadingOffices } = useMyLikes('office');
-  const { mutate: toggleLike } = useToggleLike();
-
   const handleToggleLike = (id: number, type: 'ad' | 'office') => {
-    toggleLike({ type, id });
+    // This is now handled inside the components for better pending state tracking
   };
 
   const isLoading = activeTab === 'workers' ? isLoadingAds : isLoadingOffices;
@@ -128,7 +126,10 @@ const FavoriteAdCard: React.FC<{
   isFavorite: boolean;
   onToggleFavorite: () => void;
   isSeeker: boolean;
-}> = ({ ad, onSelect, t, isFavorite, onToggleFavorite, isSeeker }) => {
+}> = ({ ad, onSelect, t, isFavorite, isSeeker }) => {
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
+  const isThisPending = isPending && variables?.id === ad.id;
+  const favoriteStatus = isThisPending ? !isFavorite : isFavorite;
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
     e.currentTarget.className += ' grayscale opacity-30 object-contain p-4';
@@ -151,10 +152,11 @@ const FavoriteAdCard: React.FC<{
               <h4 className="font-bold text-primary leading-tight line-clamp-1">{ad.worker_name}</h4>
               {isSeeker && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-                  className={`p-1.5 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+                  onClick={(e) => { e.stopPropagation(); toggleLike({ type: 'ad', id: ad.id }); }}
+                  disabled={isThisPending}
+                  className={`p-1.5 rounded-full transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favoriteStatus ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
                 >
-                  <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
+                  <Heart size={16} fill={favoriteStatus ? "currentColor" : "none"} />
                 </button>
               )}
             </div>
@@ -185,7 +187,10 @@ const FavoriteOfficeCard: React.FC<{
   isFavorite: boolean;
   onToggleFavorite: () => void;
   isSeeker: boolean;
-}> = ({ office, onSelect, dir, isFavorite, onToggleFavorite, isSeeker }) => {
+}> = ({ office, onSelect, dir, isFavorite, isSeeker }) => {
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
+  const isThisPending = isPending && variables?.id === office.id;
+  const favoriteStatus = isThisPending ? !isFavorite : isFavorite;
   const Icon = dir === 'rtl' ? ChevronLeft : ChevronRight;
 
   return (
@@ -206,10 +211,11 @@ const FavoriteOfficeCard: React.FC<{
       <div className="flex items-center gap-2">
         {isSeeker && (
           <button
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-            className={`p-2 rounded-full transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+            onClick={(e) => { e.stopPropagation(); toggleLike({ type: 'office', id: office.id }); }}
+            disabled={isThisPending}
+            className={`p-2 rounded-full transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favoriteStatus ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
           >
-            <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
+            <Heart size={18} fill={favoriteStatus ? "currentColor" : "none"} />
           </button>
         )}
         <div className="w-8 h-8 rounded-full bg-glass flex items-center justify-center text-secondary group-hover:bg-accent group-hover:text-accent-fg transition-colors">

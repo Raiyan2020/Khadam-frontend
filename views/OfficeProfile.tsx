@@ -14,7 +14,7 @@ export const OfficeProfile: React.FC = () => {
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
 
-  const { mutate: toggleLike } = useToggleLike();
+
 
   const [page, setPage] = useState(1);
 
@@ -83,11 +83,14 @@ export const OfficeProfile: React.FC = () => {
     }
   };
 
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
+
   const handleToggleLike = () => {
     toggleLike({ type: 'office', id: office.id });
   };
 
-  const isFavorited = office.is_liked;
+  const isThisPending = isPending && variables?.id === office.id;
+  const isFavorited = isThisPending ? !office.is_liked : office.is_liked;
 
   return (
     <div className="pb-20">
@@ -103,7 +106,7 @@ export const OfficeProfile: React.FC = () => {
 
         <div className="absolute top-5 start-5 z-20">
           <button
-            onClick={() => { if (window.history.length > 1) { navigate({ to: '..' }); } else { navigate({ to: '/' }); } }}
+            onClick={() => { if (window.history.length > 1) { history.back(); } else { navigate({ to: '/' }); } }}
             className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/30 transition-colors"
           >
             <BackIcon size={20} />
@@ -114,7 +117,8 @@ export const OfficeProfile: React.FC = () => {
           {isSeeker && (
             <button
               onClick={handleToggleLike}
-              className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border transition-colors ${isFavorited ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-black/20 text-white border-white/10 hover:bg-black/30'}`}
+              disabled={isThisPending}
+              className={`w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center border transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${isFavorited ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-black/20 text-white border-white/10 hover:bg-black/30'}`}
             >
               <Heart size={20} fill={isFavorited ? "currentColor" : "none"} />
             </button>

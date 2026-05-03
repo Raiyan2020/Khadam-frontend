@@ -16,7 +16,7 @@ export const WorkerProfile: React.FC = () => {
   const isSeeker = userRole === 'SEEKER';
 
   const { data: worker, isLoading, error } = useAdDetails(workerId);
-  const { mutate: toggleLike } = useToggleLike();
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
   const { mutate: recordTransfer, isPending: isRecordingTransfer } = useWhatsappTransfer();
 
   const handleToggleLike = () => {
@@ -25,6 +25,9 @@ export const WorkerProfile: React.FC = () => {
       toggleLike({ type: 'ad', id });
     }
   };
+
+  const isThisPending = isPending && variables?.id === parseInt(workerId);
+  const favoriteStatus = isThisPending ? !worker?.is_liked : worker?.is_liked;
 
   const handleWhatsappContact = () => {
     if (!worker) return;
@@ -61,7 +64,6 @@ export const WorkerProfile: React.FC = () => {
   );
 
   const office = worker.office;
-  const favorite = worker.is_liked;
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png';
@@ -96,9 +98,10 @@ export const WorkerProfile: React.FC = () => {
             {isSeeker && (
               <button
                 onClick={handleToggleLike}
-                className={`w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 transition-colors ${favorite ? 'text-red-500 hover:bg-black/40' : 'text-white hover:bg-black/40'}`}
+                disabled={isThisPending}
+                className={`w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center border border-white/10 transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favoriteStatus ? 'text-red-500' : 'text-white'}`}
               >
-                <Heart size={20} fill={favorite ? "currentColor" : "none"} />
+                <Heart size={20} fill={favoriteStatus ? "currentColor" : "none"} />
               </button>
             )}
             <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">

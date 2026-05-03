@@ -64,6 +64,18 @@ export const Home: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<any>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(true);
+
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main');
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      setShowSearch(scrollContainer.scrollTop < 400);
+    };
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
   const { t, dir, language } = useLanguage();
   const { userRole } = useUserRole();
@@ -172,7 +184,7 @@ export const Home: React.FC = () => {
 
   return (
     <div className="pb-10">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4 transition-colors">
+      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-5 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -197,19 +209,6 @@ export const Home: React.FC = () => {
           </button>
         </div>
 
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t('search_placeholder')}
-          onSearch={() => navigate({
-            to: '/search',
-            search: {
-              query: searchQuery || undefined,
-              category_id: activeCategory !== 'All' ? activeCategory : undefined,
-            }
-          } as any)}
-          onFilterClick={() => setIsFilterModalOpen(true)}
-        />
 
         {/* FilterModal triggers navigation on apply */}
         <FilterModal
@@ -234,25 +233,40 @@ export const Home: React.FC = () => {
           initialCriteria={filterCriteria}
         />
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+        <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[200px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t('search_placeholder')}
+            onSearch={() => navigate({
+              to: '/search',
+              search: {
+                query: searchQuery || undefined,
+                category_id: activeCategory !== 'All' ? activeCategory : undefined,
+              }
+            } as any)}
+            onFilterClick={() => setIsFilterModalOpen(true)}
+          />
 
-          {isLoadingCategories ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
-            ))
-          ) : (
-            categories?.map(cat => (
-              <CategoryChip
-                key={cat.id}
-                label={cat.name}
-                isActive={activeCategory === cat.id}
-                onClick={() => navigate({
-                  to: '/search',
-                  search: { category_id: cat.id }
-                } as any)}
-              />
-            ))
-          )}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+            {isLoadingCategories ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+              ))
+            ) : (
+              categories?.map(cat => (
+                <CategoryChip
+                  key={cat.id}
+                  label={cat.name}
+                  isActive={activeCategory === cat.id}
+                  onClick={() => navigate({
+                    to: '/search',
+                    search: { category_id: cat.id }
+                  } as any)}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
       {/* Company Dashboard */}
@@ -368,9 +382,9 @@ export const Home: React.FC = () => {
               </div>
               {companyHomeData?.subscription && (
                 <div className="w-full bg-background rounded-full h-1.5 mt-1 overflow-hidden border border-border">
-                  <div 
-                    className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full transition-all duration-1000" 
-                    style={{ width: `${Math.max(0, Math.min(100, (companyHomeData.subscription.remaining_days / companyHomeData.subscription.total_days) * 100))}%` }} 
+                  <div
+                    className="bg-gradient-to-r from-orange-600 to-orange-400 h-1.5 rounded-full transition-all duration-1000"
+                    style={{ width: `${Math.max(0, Math.min(100, (companyHomeData.subscription.remaining_days / companyHomeData.subscription.total_days) * 100))}%` }}
                   />
                 </div>
               )}
@@ -724,11 +738,14 @@ const FullListingCard: React.FC<{
 }> = ({ ad, onSelect, onSelectOffice, t, dir }) => {
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'SEEKER';
-  const { mutate: toggleLike } = useToggleLike();
+  const { mutate: toggleLike, isPending, variables } = useToggleLike();
 
   const handleToggleLike = (id: number) => {
     toggleLike({ type: 'ad', id });
   };
+
+  const isThisPending = isPending && variables?.id === ad.id;
+  const favoriteStatus = isThisPending ? !ad.is_liked : ad.is_liked;
 
   return (
     <GlassCard onClick={onSelect} className="group overflow-hidden">
@@ -750,9 +767,10 @@ const FullListingCard: React.FC<{
           {isSeeker && (
             <button
               onClick={(e) => { e.stopPropagation(); handleToggleLike(ad.id); }}
-              className={`p-1.5 rounded-full transition-colors ${ad.is_liked ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
+              disabled={isThisPending}
+              className={`p-1.5 rounded-full transition-all ${isThisPending ? 'opacity-50 scale-90' : 'hover:scale-110'} ${favoriteStatus ? 'text-red-500 bg-red-500/10' : 'text-secondary hover:bg-glassHigh'}`}
             >
-              <Heart size={16} fill={ad.is_liked ? "currentColor" : "none"} />
+              <Heart size={16} fill={favoriteStatus ? "currentColor" : "none"} />
             </button>
           )}
           <Badge color="neutral">{ad.code}</Badge>

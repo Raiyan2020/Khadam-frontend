@@ -22,7 +22,7 @@ export const SignUp: React.FC = () => {
 
   const signUpSchema = z.object({
     phoneNumber: z.string().min(8, t('phone_min_length') || 'Phone number must be at least 8 digits'),
-    accountType: z.enum(['1', '2'], { required_error: t('account_type_required') || 'Account type is required' }),
+    accountType: z.enum(['1', '2'], { message: t('account_type_required') || 'Account type is required' }),
   });
 
   const handleSelectAccountType = (type: '1' | '2') => {
