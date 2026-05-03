@@ -39,6 +39,31 @@ export const WorkerProfile: React.FC = () => {
     window.open(whatsappLink, '_blank', 'noopener,noreferrer');
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const text = t('share_text');
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: worker?.worker_name || t('app_name'),
+          text,
+          url
+        });
+        return;
+      }
+    } catch {
+      // ignore share error (e.g. user cancelled)
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      import('sonner').then(({ toast }) => toast.success(t('link_copied')));
+    } catch {
+      alert(t('copy_failed') + url);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -104,7 +129,10 @@ export const WorkerProfile: React.FC = () => {
                 <Heart size={20} fill={favoriteStatus ? "currentColor" : "none"} />
               </button>
             )}
-            <button className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
+            <button
+              onClick={handleShare}
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors"
+            >
               <Share2 size={20} />
             </button>
           </div>

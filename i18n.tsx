@@ -302,7 +302,12 @@ export const translations = {
     confirm_delete: "Confirm Delete",
     delete_ad_warning: "Are you sure you want to delete this ad? This action cannot be undone.",
     cancel: "Cancel",
-    last_updated: "Last Updated"
+    last_updated: "Last Updated",
+    share_text: "Check out this worker listing on Khadam App 👇",
+    link_copied: "Link copied to clipboard ✅",
+    copy_failed: "Could not copy link, please copy manually: ",
+    workers: "Workers",
+    offices: "Offices"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -602,7 +607,12 @@ export const translations = {
     confirm_delete: "تأكيد الحذف",
     delete_ad_warning: "هل أنت متأكد أنك تريد حذف هذا الإعلان؟ لا يمكن التراجع عن هذا الإجراء.",
     cancel: "إلغاء",
-    last_updated: "آخر تحديث"
+    last_updated: "آخر تحديث",
+    share_text: "شاهد هذا الإعلان على تطبيق خدم 👇",
+    link_copied: "تم نسخ الرابط ✅",
+    copy_failed: "تعذر النسخ، يرجى نسخ الرابط يدوياً: ",
+    workers: "العمالة",
+    offices: "المكاتب"
   }
 };
 
