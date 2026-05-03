@@ -27,8 +27,13 @@ export const WorkerProfile: React.FC = () => {
   };
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    const main = document.querySelector('main');
+    if (main) {
+      main.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [workerId]);
+
+
 
   const isThisPending = isPending && variables?.id === parseInt(workerId);
   const favoriteStatus = isThisPending ? !worker?.is_liked : worker?.is_liked;
@@ -119,11 +124,13 @@ export const WorkerProfile: React.FC = () => {
         />
 
         {/* Nav Header */}
-        <div className="absolute top-0 left-0 right-0 p-5 flex justify-between items-center z-20">
-          <button onClick={() => { if (window.history.length > 1) { history.back(); } else { navigate({ to: '/' }); } }} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
-            <BackIcon size={20} />
-          </button>
-          <div className="flex gap-2">
+        <div className="fixed top-0 left-0 right-0 p-5 flex justify-between items-center z-40 pointer-events-none">
+          <div className="pointer-events-auto">
+            <button onClick={() => { if (window.history.length > 1) { history.back(); } else { navigate({ to: '/' }); } }} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 transition-colors">
+              <BackIcon size={20} />
+            </button>
+          </div>
+          <div className="flex gap-2 pointer-events-auto">
             {isSeeker && (
               <button
                 onClick={handleToggleLike}

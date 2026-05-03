@@ -31,14 +31,19 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, placeho
 
   // Update local state if prop value changes externally
   useEffect(() => {
-    if (value && !value.startsWith(selectedCountry.code)) {
+    if (value) {
       const match = countries.find(c => value.startsWith(c.code));
       if (match) {
         setSelectedCountry(match);
-        setLocalNumber(value.slice(match.code.length));
+        const numberPart = value.slice(match.code.length);
+        if (numberPart !== localNumber) {
+          setLocalNumber(numberPart);
+        }
       }
+    } else if (value === '') {
+      setLocalNumber('');
     }
-  }, [value]);
+  }, [value, selectedCountry.code]);
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = normalizeArabicNumbers(e.target.value);

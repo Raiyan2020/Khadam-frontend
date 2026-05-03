@@ -144,7 +144,7 @@ export const OfficeProfile: React.FC = () => {
             <h1 className="text-2xl font-bold text-primary tracking-tight">{office.name}</h1>
           </div>
 
-          <p className="text-sm text-secondary leading-relaxed max-w-[95%]">
+          <p className="text-sm text-secondary leading-relaxed max-w-[95%] overflow-x-hidden">
             {office.description || t('no_description')}
           </p>
         </div>

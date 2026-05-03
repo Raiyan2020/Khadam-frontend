@@ -65,7 +65,7 @@ export const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(true);
-
+  //scroll to top on mount
   useEffect(() => {
     const scrollContainer = document.querySelector('main');
     if (!scrollContainer) return;

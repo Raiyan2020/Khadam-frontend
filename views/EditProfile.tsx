@@ -5,6 +5,7 @@ import { UserRole } from '../types';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 
 import { useNavigate } from '@tanstack/react-router';
+import { PhoneInput } from '../components/PhoneInput';
 import { useUserRole } from '../UserRoleContext';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { useUpdateProfile } from '../features/auth/hooks/useUpdateProfile';
@@ -42,14 +43,20 @@ export const EditProfile: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
+      let pPhone = profile.phone || '';
+      if (pPhone && !pPhone.startsWith('+')) pPhone = '+' + pPhone;
+      
+      let pWhatsapp = profile.whatsapp || '';
+      if (pWhatsapp && !pWhatsapp.startsWith('+')) pWhatsapp = '+' + pWhatsapp;
+
       setFormData({
         name: profile.name || '',
-        phone: profile.phone || '',
+        phone: pPhone,
         email: profile.email || '',
         state_name: profile.state_name || '',
         website: profile.website || '',
         description: profile.description || '',
-        whatsapp: profile.whatsapp || '',
+        whatsapp: pWhatsapp,
         map_desc: profile.map_desc || '',
       });
       setPreviews({
@@ -194,13 +201,10 @@ export const EditProfile: React.FC = () => {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-primary px-1">{t('phone_number') || 'Phone Number'}</label>
-            <input
-              type="tel"
-              name="phone"
+            <PhoneInput
               value={formData.phone}
-              onChange={handleChange}
-              className="w-full bg-glass border border-border rounded-xl px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all"
-              dir="ltr"
+              onChange={(val) => setFormData(prev => ({ ...prev, phone: val }))}
+              placeholder="XXXX XXXX"
             />
           </div>
 
@@ -232,13 +236,10 @@ export const EditProfile: React.FC = () => {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-primary px-1">{t('whatsapp') || 'WhatsApp'}</label>
-                <input
-                  type="tel"
-                  name="whatsapp"
+                <PhoneInput
                   value={formData.whatsapp}
-                  onChange={handleChange}
-                  className="w-full bg-glass border border-border rounded-xl px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all"
-                  dir="ltr"
+                  onChange={(val) => setFormData(prev => ({ ...prev, whatsapp: val }))}
+                  placeholder="XXXX XXXX"
                 />
               </div>
 
