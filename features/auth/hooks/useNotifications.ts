@@ -147,7 +147,7 @@ export const useMarkAllAsRead = () => {
   return useMutation({
     mutationFn: async () => {
       const token = localStorage.getItem('token');
-      const response = await apiFetch(`${API_BASE_URL}/notifications/unread`, {
+      const response = await apiFetch(`${API_BASE_URL}/notifications/read-all`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
