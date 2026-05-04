@@ -108,7 +108,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, placeho
         value={localNumber}
         onChange={handleNumberChange}
         placeholder={placeholder}
-        className="h-12 flex-1 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium"
+        className="h-12 flex-1 min-w-0 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium"
         dir="ltr"
       />
     </div>
