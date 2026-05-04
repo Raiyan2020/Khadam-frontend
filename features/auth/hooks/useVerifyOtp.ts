@@ -50,7 +50,7 @@ export const useVerifyOtp = () => {
       // Check if profile is completed
       if (data.data.user.is_completed_profile == 0) {
         console.log('Profile not completed');
-        navigate({ to: '/complete-profile' });
+        navigate({ to: '/complete-profile', search: { phone: data.data.user.phone } });
       } else {
         navigate({ to: '/' });
       }

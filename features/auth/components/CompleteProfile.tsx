@@ -3,7 +3,7 @@ import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { Camera, Image as ImageIcon, User, Building, Phone, Globe, FileText, CreditCard, Mail, X, MapPin, Loader2 } from 'lucide-react';
 import { PhoneInput } from '../../../components/PhoneInput';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { LocationPicker, LatLng } from '../../../components/LocationPicker';
 import { useCompleteProfile } from '../hooks/useCompleteProfile';
@@ -17,6 +17,7 @@ import { z } from 'zod';
 export const CompleteProfile: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const search = useSearch({ from: '/complete-profile' }) as { phone?: string; country_id?: string };
 
   const [userType, setUserType] = useState<'1' | '2' | null>(null);
 
@@ -64,6 +65,12 @@ export const CompleteProfile: React.FC = () => {
   const managerIdImageRef = useRef<HTMLInputElement>(null);
 
   const [description, setDescription] = useState('');
+
+  // Pre-fill phone from previous OTP step
+  const [phone, setPhone] = useState(() => {
+    const p = search.phone || '';
+    return p.startsWith('+') ? p : p ? '+' + p : '+965';
+  });
 
   const completeProfileMutation = useCompleteProfile();
   const [isCompressing, setIsCompressing] = useState(false);
@@ -147,6 +154,9 @@ export const CompleteProfile: React.FC = () => {
     setIsCompressing(true);
     const formData = new FormData();
     formData.append('name', name);
+    if (phone) formData.append('phone', phone);
+    // is_completed_profile: 1 for seeker, 0 for company (company fills extra details separately)
+    formData.append('is_completed_profile', userType === '1' ? '1' : '0');
 
     try {
       const compressedProfileImage = await compressFile(profileImageFile!);
