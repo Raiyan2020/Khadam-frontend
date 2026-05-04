@@ -308,7 +308,13 @@ export const translations = {
     link_copied: "Link copied to clipboard ✅",
     copy_failed: "Could not copy link, please copy manually: ",
     workers: "Workers",
-    offices: "Offices"
+    offices: "Offices",
+    delete: "Delete",
+    no_unread_notifications: "No unread notifications",
+    delete_confirm_title: "Delete notification?",
+    delete_confirm_desc: "This notification will be permanently removed.",
+    delete_all_confirm_title: "Delete all notifications?",
+    delete_all_confirm_desc: "This will permanently remove all your notifications."
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -424,6 +430,7 @@ export const translations = {
     no_notifications: "لا توجد تنبيهات جديدة",
     no_notifications_desc: "ستتلقى التحديثات والتنبيهات هنا",
     mark_read: "تحديد الكل كمقروء",
+    unread_only: "غير مقروء فقط",
     load_more: "تحميل المزيد",
     section_continue: "استكمل من آخر مشاهدة",
     section_available: "متاح الآن",
@@ -614,7 +621,13 @@ export const translations = {
     link_copied: "تم نسخ الرابط ✅",
     copy_failed: "تعذر النسخ، يرجى نسخ الرابط يدوياً: ",
     workers: "العمالة",
-    offices: "المكاتب"
+    offices: "المكاتب",
+    delete: "حذف",
+    no_unread_notifications: "لا توجد تنبيهات غير مقروءة",
+    delete_confirm_title: "حذف التنبيه؟",
+    delete_confirm_desc: "سيتم حذف هذا التنبيه بشكل نهائي.",
+    delete_all_confirm_title: "حذف جميع التنبيهات؟",
+    delete_all_confirm_desc: "سيتم حذف جميع تنبيهاتك بشكل نهائي."
   }
 };
 
