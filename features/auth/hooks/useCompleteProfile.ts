@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { useLanguage } from '../../../i18n';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
 
@@ -16,6 +17,7 @@ export interface CompleteProfileResponse {
 
 export const useCompleteProfile = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: async (formData: FormData) => {
@@ -42,8 +44,8 @@ export const useCompleteProfile = () => {
         navigate({ to: '/' });
       } else {
         // Company (type 2): no token → pending admin approval → go to login
-        toast.success('يمكنك تسجيل الدخول بعد قبول الإدارة', {
-          description: 'You can login after management acceptance',
+        toast.success(t('pending_approval_title'), {
+          description: t('pending_approval_desc'),
           duration: 5000,
         });
         navigate({ to: '/login' });
