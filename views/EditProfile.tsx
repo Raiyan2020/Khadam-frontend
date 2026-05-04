@@ -45,7 +45,7 @@ export const EditProfile: React.FC = () => {
     if (profile) {
       let pPhone = profile.phone || '';
       if (pPhone && !pPhone.startsWith('+')) pPhone = '+' + pPhone;
-      
+
       let pWhatsapp = profile.whatsapp || '';
       if (pWhatsapp && !pWhatsapp.startsWith('+')) pWhatsapp = '+' + pWhatsapp;
 
@@ -92,7 +92,7 @@ export const EditProfile: React.FC = () => {
         data.append(key, formData[key]);
       }
     });
-    
+
     if (images.image) {
       data.append('image', images.image);
     }
@@ -118,7 +118,7 @@ export const EditProfile: React.FC = () => {
   return (
     <div className="pb-20 min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
         <button
           onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
@@ -150,7 +150,7 @@ export const EditProfile: React.FC = () => {
               accept="image/*"
               onChange={(e) => handleImageChange(e, 'cover_image')}
             />
-            <button 
+            <button
               onClick={() => coverInputRef.current?.click()}
               className="absolute bottom-2 end-2 bg-background/80 backdrop-blur-sm text-primary rounded-full p-2 border border-border hover:scale-105 transition-transform shadow-lg flex items-center gap-2 px-3"
             >
@@ -176,7 +176,7 @@ export const EditProfile: React.FC = () => {
               accept="image/*"
               onChange={(e) => handleImageChange(e, 'image')}
             />
-            <button 
+            <button
               onClick={() => imageInputRef.current?.click()}
               className="absolute bottom-0 end-0 bg-accent text-accent-fg rounded-full p-2 border-4 border-background hover:scale-105 transition-transform shadow-lg"
             >

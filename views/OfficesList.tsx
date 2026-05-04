@@ -31,7 +31,7 @@ export const OfficesList: React.FC = () => {
   };
 
   return (
-    <div className="pb-10 pt-6 px-5">
+    <div className="pb-10 pt-6 px-4">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-primary">{t('offices_title')}</h1>
         <p className="text-xs text-secondary">{t('browse_offices')}</p>

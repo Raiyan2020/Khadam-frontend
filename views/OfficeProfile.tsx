@@ -30,7 +30,7 @@ export const OfficeProfile: React.FC = () => {
     return (
       <div className="pb-20 animate-pulse">
         <Skeleton className="h-44 w-full" />
-        <div className="-mt-12 px-5">
+        <div className="-mt-12 px-4">
           <Skeleton className="w-24 h-24 rounded-full border-4 border-background" />
           <div className="mt-4 space-y-3">
             <Skeleton className="h-8 w-1/2 rounded-lg" />
@@ -127,7 +127,7 @@ export const OfficeProfile: React.FC = () => {
       </div>
 
       {/* Office Profile Details */}
-      <div className="-mt-12 px-5 relative z-10">
+      <div className="-mt-12 px-4 relative z-10">
         {/* Avatar Section */}
         <div className="mb-4">
           <Avatar

@@ -77,7 +77,7 @@ export const WorkerProfile: React.FC = () => {
     return (
       <div className="space-y-6">
         <Skeleton className="h-[480px] w-full" />
-        <div className="px-5 space-y-6">
+        <div className="px-4 space-y-6">
           <Skeleton className="h-16 w-full rounded-2xl" />
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -172,7 +172,7 @@ export const WorkerProfile: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 mt-6 space-y-6">
+      <div className="px-4 mt-6 space-y-6">
         <GlassCard onClick={() => navigate({ to: '/office/$officeId', params: { officeId: office.id } } as any)} className="flex items-center justify-between !py-3 hover:border-brand-300 transition-colors">
           <div className="flex items-center gap-3">
             <img src={office.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'} alt={office.name} className="w-10 h-10 rounded-full border border-border" />

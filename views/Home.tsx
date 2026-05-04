@@ -189,7 +189,7 @@ export const Home: React.FC = () => {
 
   return (
     <div className="pb-10">
-      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-5 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
+      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -276,7 +276,7 @@ export const Home: React.FC = () => {
       </div>
       {/* Company Dashboard */}
       {isCompany && (
-        <div className="px-5 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="px-4 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
           <div className="grid grid-cols-2 gap-3">
             {/* WhatsApp Redirects */}
@@ -400,7 +400,7 @@ export const Home: React.FC = () => {
 
       {/* Seeker-only static analytics (kept as-is) */}
       {!isSeeker && !isCompany && (
-        <div className="px-5 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="px-4 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
           <div className="grid grid-cols-2 gap-3">
             {/* WhatsApp Redirects */}
@@ -551,10 +551,10 @@ export const Home: React.FC = () => {
       <div className="space-y-8 mt-6">
         {/* Nationality Section */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between px-5">
+          <div className="flex items-center justify-between px-4">
             <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
           </div>
-          <div className="flex gap-6 overflow-x-auto no-scrollbar px-5 pb-2">
+          <div className="flex gap-6 overflow-x-auto no-scrollbar px-4 pb-2">
             {isLoadingCountries ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 shrink-0">
@@ -596,7 +596,7 @@ export const Home: React.FC = () => {
           const historyData = isCompany ? companyHomeData?.history : homeData?.history;
           return historyData && historyData.length > 0 && (
             <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
-              <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+              <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
                 {historyData.map((worker: any) => (
                   <CompactCard
                     key={worker.id}
@@ -617,7 +617,7 @@ export const Home: React.FC = () => {
           const availableAds = isCompany ? companyHomeData?.available_ads : homeData?.available_ads;
           return isLoading ? (
             <SectionContainer title={t('section_available')} canShowAll={false}>
-              <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+              <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
                 ))}
@@ -626,7 +626,7 @@ export const Home: React.FC = () => {
           ) : (
             availableAds && availableAds.length > 0 && (
               <SectionContainer title={t('section_available')} canShowAll={false}>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar px-5">
+                <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
                   {availableAds.map((worker: any) => (
                     <CompactCard
                       key={worker.id}
@@ -644,7 +644,7 @@ export const Home: React.FC = () => {
 
         {/* Latest ads */}
         <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest', latest: 1 } } as any)}>
-          <div className="px-5 space-y-4">
+          <div className="px-4 space-y-4">
             {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
@@ -666,7 +666,7 @@ export const Home: React.FC = () => {
 
         {/* Most experienced ads */}
         <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience', experience: 1 } } as any)}>
-          <div className="px-5 space-y-4">
+          <div className="px-4 space-y-4">
             {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
@@ -700,7 +700,7 @@ const SectionContainer: React.FC<{
   const { t } = useLanguage();
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-5">
+      <div className="flex items-center justify-between px-4">
         <h2 className="text-lg font-bold text-primary">{title}</h2>
         {canShowAll && onViewAll && (
           <button onClick={onViewAll} className="text-xs font-semibold text-accent-text hover:underline">{t('view_all')}</button>

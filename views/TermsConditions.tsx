@@ -22,8 +22,8 @@ export const TermsConditions: React.FC = () => {
   return (
     <div className="pb-10 min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
-        <button 
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
+        <button
           onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
@@ -36,11 +36,11 @@ export const TermsConditions: React.FC = () => {
         {terms?.map((term) => (
           <React.Fragment key={term.id}>
             <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-brand-500/10 flex items-center justify-center text-brand-500 mb-4">
-                    <ShieldCheck size={32} />
-                </div>
-                <h2 className="text-lg font-bold text-primary">{term.title}</h2>
-                <p className="text-sm text-secondary mt-1">{term.description}</p>
+              <div className="w-16 h-16 rounded-3xl bg-brand-500/10 flex items-center justify-center text-brand-500 mb-4">
+                <ShieldCheck size={32} />
+              </div>
+              <h2 className="text-lg font-bold text-primary">{term.title}</h2>
+              <p className="text-sm text-secondary mt-1">{term.description}</p>
             </div>
 
             <div className="space-y-4">
@@ -53,8 +53,8 @@ export const TermsConditions: React.FC = () => {
                     </h3>
                   </div>
                   <p className="text-sm text-secondary leading-relaxed">
-                    {feature.description.includes(':') 
-                      ? feature.description.split(':').slice(1).join(':').trim() 
+                    {feature.description.includes(':')
+                      ? feature.description.split(':').slice(1).join(':').trim()
                       : feature.description}
                   </p>
                 </GlassCard>
@@ -64,9 +64,9 @@ export const TermsConditions: React.FC = () => {
         ))}
 
         <div className="pt-4 text-center">
-            <p className="text-xs text-secondary opacity-50 italic">
-              {t('last_updated') || 'Last Updated'}: {new Date().toLocaleDateString(dir === 'rtl' ? 'ar-KW' : 'en-US', { month: 'long', year: 'numeric' })}
-            </p>
+          <p className="text-xs text-secondary opacity-50 italic">
+            {t('last_updated') || 'Last Updated'}: {new Date().toLocaleDateString(dir === 'rtl' ? 'ar-KW' : 'en-US', { month: 'long', year: 'numeric' })}
+          </p>
         </div>
       </div>
     </div>

@@ -81,14 +81,14 @@ export const EditAd: React.FC = () => {
       setYearsExperience(String(adData.years_experience || ''));
       setSalary(String(adData.salary || ''));
       setIsAvailable(adData.is_available === 1);
-      
+
       // Map gender string to enum
       if (adData.gender?.includes('انثى') || adData.gender?.toLowerCase() === 'female') {
         setGender('female');
       } else if (adData.gender?.includes('ذكر') || adData.gender?.toLowerCase() === 'male') {
         setGender('male');
       }
-      
+
       setSelectedLanguages(adData.languages?.map(l => l.id) || []);
       setImagePreview(adData.image || null);
     }
@@ -172,7 +172,7 @@ export const EditAd: React.FC = () => {
   }
 
   return (
-    <div className="px-5 pt-8 pb-28">
+    <div className="px-4 pt-8 pb-28">
       <div className="flex items-center justify-between mb-8">
         <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary transition-colors">
           <X size={24} />
@@ -224,11 +224,10 @@ export const EditAd: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => setCategoryId(cat.id)}
-                  className={`border rounded-xl p-3 text-center text-sm font-medium transition-all duration-200 ${
-                    categoryId === cat.id
+                  className={`border rounded-xl p-3 text-center text-sm font-medium transition-all duration-200 ${categoryId === cat.id
                       ? 'border-accent text-accent bg-accent/10'
                       : 'bg-glass border-border text-secondary hover:border-accent/50'
-                  }`}
+                    }`}
                 >
                   {cat.name}
                 </button>
@@ -277,11 +276,10 @@ export const EditAd: React.FC = () => {
                 <button
                   key={g}
                   onClick={() => setGender(g)}
-                  className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${
-                    gender === g
+                  className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${gender === g
                       ? 'border-accent text-accent bg-accent/10'
                       : 'bg-glass border-border text-secondary hover:border-accent/50'
-                  }`}
+                    }`}
                 >
                   {g === 'male' ? t('gender_male') : t('gender_female')}
                 </button>
@@ -295,11 +293,10 @@ export const EditAd: React.FC = () => {
                 <button
                   key={String(val)}
                   onClick={() => setIsAvailable(val)}
-                  className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${
-                    isAvailable === val
+                  className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${isAvailable === val
                       ? 'border-accent text-accent bg-accent/10'
                       : 'bg-glass border-border text-secondary hover:border-accent/50'
-                  }`}
+                    }`}
                 >
                   {val ? t('available') : t('reserved')}
                 </button>
@@ -316,11 +313,10 @@ export const EditAd: React.FC = () => {
               <button
                 key={lang.id}
                 onClick={() => toggleLanguage(lang.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${
-                  selectedLanguages.includes(lang.id)
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${selectedLanguages.includes(lang.id)
                     ? 'border-accent text-accent bg-accent/10'
                     : 'bg-glass border-border text-secondary hover:border-accent/50'
-                }`}
+                  }`}
               >
                 {selectedLanguages.includes(lang.id) && <Check size={10} className="inline me-1" />}
                 {lang.name}

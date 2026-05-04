@@ -32,10 +32,10 @@ export const Notifications: React.FC = () => {
   return (
     <div className="pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-5 pt-8 pb-4 flex items-center justify-between transition-colors">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-4 pt-8 pb-4 flex items-center justify-between transition-colors">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate({ to: '..' })} 
+          <button
+            onClick={() => navigate({ to: '..' })}
             className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]"
           >
             <BackIcon size={20} />
@@ -47,20 +47,20 @@ export const Notifications: React.FC = () => {
         </button>
       </div>
 
-      <div className="px-5 mt-6 space-y-3 animate-in fade-in duration-500">
+      <div className="px-4 mt-6 space-y-3 animate-in fade-in duration-500">
         {allNotifications.length === 0 ? (
-           <div className="flex flex-col items-center justify-center py-32 text-secondary">
-             <div className="w-20 h-20 rounded-full bg-glass border border-border flex items-center justify-center mb-6">
-                <Bell size={40} className="opacity-20" />
-             </div>
-             <p className="text-sm font-medium">{t('no_notifications')}</p>
-             <p className="text-xs opacity-50 mt-1">{t('no_notifications_desc') || 'You will receive updates here'}</p>
-           </div>
+          <div className="flex flex-col items-center justify-center py-32 text-secondary">
+            <div className="w-20 h-20 rounded-full bg-glass border border-border flex items-center justify-center mb-6">
+              <Bell size={40} className="opacity-20" />
+            </div>
+            <p className="text-sm font-medium">{t('no_notifications')}</p>
+            <p className="text-xs opacity-50 mt-1">{t('no_notifications_desc') || 'You will receive updates here'}</p>
+          </div>
         ) : (
           <>
             {allNotifications.map(notif => (
-              <GlassCard 
-                key={notif.id} 
+              <GlassCard
+                key={notif.id}
                 className={`flex gap-4 group transition-all hover:border-accent/30 ${!notif.read_at ? 'bg-accent/5 border-accent/20' : ''}`}
               >
                 <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 transition-colors ${!notif.read_at ? 'bg-accent animate-pulse' : 'bg-transparent'}`} />
@@ -80,9 +80,9 @@ export const Notifications: React.FC = () => {
 
             {hasNextPage && (
               <div className="pt-4 flex justify-center">
-                <Button 
-                  variant="secondary" 
-                  onClick={() => fetchNextPage()} 
+                <Button
+                  variant="secondary"
+                  onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
                   className="!h-10 !px-8 text-xs"
                 >

@@ -48,7 +48,7 @@ export const HelpSupport: React.FC = () => {
 
   return (
     <div className="pb-20 min-h-screen bg-background">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
         <button
           onClick={() => navigate({ to: '/profile' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"

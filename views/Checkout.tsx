@@ -11,18 +11,18 @@ export const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const search = useSearch({ from: '/checkout' }) as { planId?: string };
   const planId = search.planId;
-  
+
   const { data: packageData, isLoading: loadingPackage } = usePackageDetail(planId || '');
   const checkCoupon = useCheckCoupon();
   const subscribe = useSubscribe();
-  
+
   const [couponCode, setCouponCode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'visa' | 'knet'>('knet');
   const [couponData, setCouponData] = useState<CouponResponse | null>(null);
 
   const handleApplyCoupon = () => {
     if (!packageData || !couponCode) return;
-    
+
     checkCoupon.mutate({
       package_id: packageData.id,
       coupon_num: couponCode
@@ -40,14 +40,13 @@ export const Checkout: React.FC = () => {
 
   const handlePay = () => {
     if (!packageData) return;
-    
+
     subscribe.mutate({
       package_id: packageData.id,
       coupon_num: couponData?.coupon_num
     }, {
       onSuccess: (data) => {
         toast.success(data.message || t('subscription_success'));
-        navigate({ to: '/profile' });
       },
       onError: (error: any) => {
         toast.error(error.message);
@@ -78,8 +77,8 @@ export const Checkout: React.FC = () => {
   return (
     <div className="pb-10 min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 flex items-center gap-4">
-        <button 
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
+        <button
           onClick={() => navigate({ to: '/subscriptions' })}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary"
         >
@@ -120,9 +119,9 @@ export const Checkout: React.FC = () => {
                 disabled={!!couponData}
               />
             </div>
-            <Button 
-              onClick={handleApplyCoupon} 
-              variant="secondary" 
+            <Button
+              onClick={handleApplyCoupon}
+              variant="secondary"
               className={`px-6 h-12 ${couponData ? 'bg-green-500/10 text-green-500 border-green-500/50' : ''}`}
               disabled={!!couponData || !couponCode || checkCoupon.isPending}
             >
@@ -135,19 +134,19 @@ export const Checkout: React.FC = () => {
         <div className="space-y-3">
           <h2 className="text-sm font-bold text-secondary uppercase tracking-wider px-1">{t('payment_method')}</h2>
           <div className="grid grid-cols-2 gap-4">
-            <PaymentOption 
-              id="knet" 
-              label={t('knet')} 
-              icon={<Wallet size={20} />} 
-              isSelected={paymentMethod === 'knet'} 
-              onClick={() => setPaymentMethod('knet')} 
+            <PaymentOption
+              id="knet"
+              label={t('knet')}
+              icon={<Wallet size={20} />}
+              isSelected={paymentMethod === 'knet'}
+              onClick={() => setPaymentMethod('knet')}
             />
-            <PaymentOption 
-              id="visa" 
-              label={t('visa')} 
-              icon={<CreditCard size={20} />} 
-              isSelected={paymentMethod === 'visa'} 
-              onClick={() => setPaymentMethod('visa')} 
+            <PaymentOption
+              id="visa"
+              label={t('visa')}
+              icon={<CreditCard size={20} />}
+              isSelected={paymentMethod === 'visa'}
+              onClick={() => setPaymentMethod('visa')}
             />
           </div>
         </div>
@@ -180,9 +179,9 @@ export const Checkout: React.FC = () => {
         </div>
 
         {/* Pay Button */}
-        <Button 
-          onClick={handlePay} 
-          variant="primary" 
+        <Button
+          onClick={handlePay}
+          variant="primary"
           className="w-full h-14 text-lg font-bold shadow-xl shadow-brand-500/20"
           disabled={subscribe.isPending}
         >
@@ -193,14 +192,14 @@ export const Checkout: React.FC = () => {
   );
 };
 
-const PaymentOption: React.FC<{ 
-  id: string, 
-  label: string, 
-  icon: React.ReactNode, 
-  isSelected: boolean, 
-  onClick: () => void 
+const PaymentOption: React.FC<{
+  id: string,
+  label: string,
+  icon: React.ReactNode,
+  isSelected: boolean,
+  onClick: () => void
 }> = ({ label, icon, isSelected, onClick }) => (
-  <div 
+  <div
     onClick={onClick}
     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center gap-3 bg-glass
       ${isSelected ? 'border-brand-500 bg-brand-500/5' : 'border-border hover:border-brand-500/40'}

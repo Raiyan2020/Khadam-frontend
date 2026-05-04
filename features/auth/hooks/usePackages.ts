@@ -73,6 +73,16 @@ export const usePackageDetail = (id: string) => {
   });
 };
 
+export interface SubscribeResponse {
+  status: boolean;
+  message: string;
+  data: {
+    payment_url: string;
+    transaction_id: number;
+  };
+  errors: any[];
+}
+
 export interface CouponResponse {
   original_price: string;
   discount_amount: string;
@@ -131,13 +141,17 @@ export const useSubscribe = () => {
         body: formData,
       });
 
-      const data = await response.json();
+      const data: SubscribeResponse = await response.json();
       if (!response.ok || !data.status) {
-        // If error response has a specific message in errors object as described in prompt
-        const errorMsg = data.errors?.package_id?.[0] || data.message || 'Subscription failed';
+        const errorMsg = (data.errors as any)?.package_id?.[0] || data.message || 'Subscription failed';
         throw new Error(errorMsg);
       }
       return data;
+    },
+    onSuccess: (data) => {
+      if (data?.data?.payment_url) {
+        window.location.href = data.data.payment_url;
+      }
     },
   });
 };

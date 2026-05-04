@@ -30,14 +30,14 @@ export const UserProfile: React.FC = () => {
   return (
     <div className="pb-10">
       {/* Profile Header */}
-      <div className="relative pt-10 px-5 mb-8">
+      <div className="relative pt-10 px-4 mb-8">
         <div className="flex flex-col items-center">
           <div className="relative">
-            <Avatar 
-              src={profile?.image || (userRole === UserRole.SEEKER ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200")} 
-              alt={profile?.name || "User"} 
-              size="xl" 
-              className="border-4 border-background" 
+            <Avatar
+              src={profile?.image || (userRole === UserRole.SEEKER ? "https://picsum.photos/seed/user/200/200" : "https://picsum.photos/seed/office1/200/200")}
+              alt={profile?.name || "User"}
+              size="xl"
+              className="border-4 border-background"
             />
             {isCompany && (
               <img src={verified} alt="Verified" className="absolute bottom-1 start-1 w-6 h-6" />
@@ -54,17 +54,17 @@ export const UserProfile: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-5 space-y-3">
+      <div className="px-4 space-y-3">
         <MenuButton icon={<User size={20} />} label={t('edit_profile')} onClick={() => navigate({ to: '/edit-profile' })} />
         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={() => navigate({ to: '/settings' })} />
         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => navigate({ to: '/help-support' })} />
         <MenuButton icon={<FileText size={20} />} label={t('terms_conditions')} onClick={() => navigate({ to: '/terms' })} />
         <div className="pt-4">
-          <MenuButton 
-            icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />} 
-            label={logoutMutation.isPending ? t('loading') || 'Loading...' : t('logout')} 
-            danger 
-            onClick={() => logoutMutation.mutate()} 
+          <MenuButton
+            icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+            label={logoutMutation.isPending ? t('loading') || 'Loading...' : t('logout')}
+            danger
+            onClick={() => logoutMutation.mutate()}
           />
         </div>
       </div>

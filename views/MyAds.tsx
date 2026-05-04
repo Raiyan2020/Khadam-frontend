@@ -37,7 +37,7 @@ export const MyAds: React.FC = () => {
   const ads = myAdsData?.data || [];
 
   return (
-    <div className="pb-24 pt-6 px-5">
+    <div className="pb-24 pt-6 px-4">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-primary">{t('my_ads_title')}</h1>
         <Button onClick={() => navigate({ to: '/publish-ad' })} className="!h-9 !px-3 gap-2 !text-xs">

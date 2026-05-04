@@ -163,7 +163,7 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="pb-10 min-h-screen bg-background">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 space-y-4">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 space-y-4">
         {/* Header row */}
         <div className="flex items-center gap-3">
           <button

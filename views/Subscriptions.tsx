@@ -31,7 +31,7 @@ export const Subscriptions: React.FC = () => {
   return (
     <div className="pb-24 min-h-screen bg-background">
       {/* Header */}
-      <div className="relative sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-5 transition-colors">
+      <div className="relative sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 transition-colors">
         <div className="flex items-center justify-between mb-2">
           <button
             onClick={() => navigate({ to: '/profile' })}
@@ -47,7 +47,7 @@ export const Subscriptions: React.FC = () => {
         </p>
       </div>
 
-      <div className="px-5 pt-8 space-y-6">
+      <div className="px-4 pt-8 space-y-6">
         {packages?.map((pkg, index) => (
           <GlassCard
             key={pkg.id}
