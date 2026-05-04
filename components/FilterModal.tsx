@@ -70,7 +70,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   return (
     <div className="fixed h-screen inset-0 z-50 overflow-y-auto !mt-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="min-h-full flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div className="w-full   max-h-[70dvh] no-scrollbar overflow-y-auto relative sm:w-[400px] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
+        <div className="w-full   max-h-[70dvh] no-scrollbar overflow-y-auto relative sm:w-[400px] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300 sm:pb-0 pb-20">
           <div className="flex items-center justify-between p-5 border-b border-zinc-800">
             <h2 className="text-lg font-bold text-white">{t('filter_title')}</h2>
             <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">

@@ -38,7 +38,7 @@ export const Notifications: React.FC = () => {
   // Open detail sheet and silently mark as read in the background
   const handleOpenNotif = (notif: NotificationData) => {
     setSelectedNotif(notif);
-    if (!notif.read_at) {
+    if (!notif.is_read) {
       markAsRead.mutate(notif.id);
     }
   };
