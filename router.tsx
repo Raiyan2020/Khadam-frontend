@@ -67,7 +67,7 @@ const AppLayout = () => {
 export const rootRoute = createRootRoute({
   component: AppLayout,
   beforeLoad: ({ location }) => {
-    const publicPaths = ['/login', '/sign-up', '/verify-otp'];
+    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile'];
     const isPublic = publicPaths.includes(location.pathname);
     const token = localStorage.getItem('token');
 

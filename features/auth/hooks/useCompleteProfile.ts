@@ -7,7 +7,10 @@ import { apiFetch } from '../../../lib/apiFetch';
 export interface CompleteProfileResponse {
   status: boolean;
   message: string;
-  data: any;
+  data: {
+    user: any;
+    token?: string; // Present for users (type 1), absent for companies (type 2)
+  };
   errors: any[];
 }
 
@@ -30,8 +33,21 @@ export const useCompleteProfile = () => {
       }
       return result;
     },
-    onSuccess: () => {
-      navigate({ to: '/' });
+    onSuccess: (data) => {
+      const token = data.data?.token;
+
+      if (token) {
+        // User (type 1): token returned → save it and go home
+        localStorage.setItem('token', token);
+        navigate({ to: '/' });
+      } else {
+        // Company (type 2): no token → pending admin approval → go to login
+        toast.success('يمكنك تسجيل الدخول بعد قبول الإدارة', {
+          description: 'You can login after management acceptance',
+          duration: 5000,
+        });
+        navigate({ to: '/login' });
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'An error occurred during profile completion');

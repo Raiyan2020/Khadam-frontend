@@ -19,7 +19,8 @@ export interface VerifyOtpResponse {
       type_text: string;
       phone: string;
     };
-    token: string;
+    token?: string; // Only present on login, not on sign-up
+    is_completed_profile?: number;
   };
   errors: any[];
 }
@@ -41,18 +42,20 @@ export const useVerifyOtp = () => {
       return result;
     },
     onSuccess: (data) => {
-      // Store token and user type
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('user_type', data.data.user.type);
-      setUserRole(data.data.user.type === '2' ? UserRole.OFFICE : UserRole.SEEKER);
-      console.log(data);
+      const { user, token } = data.data;
 
-      // Check if profile is completed
-      if (data.data.user.is_completed_profile == 0) {
-        console.log('Profile not completed');
-        navigate({ to: '/complete-profile', search: { phone: data.data.user.phone } });
-      } else {
+      // Save user type for profile completion page
+      localStorage.setItem('user_type', user.type);
+      setUserRole(user.type === '2' ? UserRole.OFFICE : UserRole.SEEKER);
+
+      if (user.is_completed_profile === 1 && token) {
+        // Login flow: profile complete + token given → go home
+        localStorage.setItem('token', token);
         navigate({ to: '/' });
+      } else {
+        // Sign-up flow OR incomplete profile: go to complete-profile
+        // Do NOT store token here (there is none in sign-up response)
+        navigate({ to: '/complete-profile', search: { phone: user.phone } });
       }
     },
     onError: (error: any) => {
