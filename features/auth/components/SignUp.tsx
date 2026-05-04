@@ -4,7 +4,8 @@ import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
 import { ChevronLeft, Phone, User, Building, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
-import { PhoneInput } from '../../../components/PhoneInput';
+import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
+import { ApiCountry } from '../../../lib/useCountryCodes';
 import { useRegister } from '../hooks/useRegister';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ export const SignUp: React.FC = () => {
   const [step, setStep] = useState<SignUpStep>('ACCOUNT_TYPE');
   const [accountType, setAccountType] = useState<'1' | '2' | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('+965');
+  const [selectedCountry, setSelectedCountry] = useState<ApiCountry | null>(null);
 
   const registerMutation = useRegister();
 
@@ -36,7 +38,8 @@ export const SignUp: React.FC = () => {
     
     try {
       signUpSchema.parse({ phoneNumber, accountType });
-      registerMutation.mutate({ type: accountType!, phone: phoneNumber });
+      const { phone } = splitPhone(phoneNumber);
+      registerMutation.mutate({ type: accountType!, country_id: selectedCountry?.id ?? 1, phone });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.issues[0].message);
@@ -93,6 +96,7 @@ export const SignUp: React.FC = () => {
               <PhoneInput
                 value={phoneNumber}
                 onChange={setPhoneNumber}
+                onCountryChange={setSelectedCountry}
                 placeholder="XXXX XXXX"
               />
             </div>

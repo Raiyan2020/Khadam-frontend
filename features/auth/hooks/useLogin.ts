@@ -15,9 +15,10 @@ export const useLogin = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async (phone: string) => {
+    mutationFn: async (payload: { country_id: number; phone: string }) => {
       const formData = new FormData();
-      formData.append('phone', phone);
+      formData.append('country_id', String(payload.country_id));
+      formData.append('phone', payload.phone);
 
       const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -33,7 +34,7 @@ export const useLogin = () => {
     onSuccess: (_, variables) => {
       navigate({
         to: '/verify-otp',
-        search: { phone: variables }
+        search: { phone: `${variables.phone}` }
       });
     },
     onError: (error: any) => {

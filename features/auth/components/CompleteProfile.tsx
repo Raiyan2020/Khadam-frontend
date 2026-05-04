@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { Camera, Image as ImageIcon, User, Building, Phone, Globe, FileText, CreditCard, Mail, X, MapPin, Loader2 } from 'lucide-react';
-import { PhoneInput } from '../../../components/PhoneInput';
+import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
+import { ApiCountry } from '../../../lib/useCountryCodes';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { LocationPicker, LatLng } from '../../../components/LocationPicker';
@@ -59,6 +60,8 @@ export const CompleteProfile: React.FC = () => {
 
   const [nationalNumberManager, setNationalNumberManager] = useState('');
   const [phoneManager, setPhoneManager] = useState('+965');
+  const [phoneCountryId, setPhoneCountryId] = useState<number>(1);
+  const [phoneManagerCountryId, setPhoneManagerCountryId] = useState<number>(1);
 
   const [managerIdImageFile, setManagerIdImageFile] = useState<File | null>(null);
   const [managerIdImagePreview, setManagerIdImagePreview] = useState<string | null>(null);
@@ -154,7 +157,11 @@ export const CompleteProfile: React.FC = () => {
     setIsCompressing(true);
     const formData = new FormData();
     formData.append('name', name);
-    if (phone) formData.append('phone', phone);
+    const { phone: phoneLocal } = splitPhone(phone);
+    if (phone) {
+      formData.append('country_id', String(phoneCountryId));
+      formData.append('phone', phoneLocal);
+    }
     // is_completed_profile: 1 for seeker, 0 for company (company fills extra details separately)
     formData.append('is_completed_profile', userType === '1' ? '1' : '0');
 
@@ -179,7 +186,9 @@ export const CompleteProfile: React.FC = () => {
         if (email) formData.append('email', email);
         formData.append('commercial_license', compressedLicense);
         formData.append('national_number_manager', nationalNumberManager);
-        formData.append('phone_manager', phoneManager);
+        const { phone: mgrLocal } = splitPhone(phoneManager);
+        formData.append('country_id_manager', String(phoneManagerCountryId));
+        formData.append('phone_manager', mgrLocal);
         formData.append('manager_id_image', compressedManagerId);
         formData.append('description', description);
       }
@@ -446,6 +455,7 @@ export const CompleteProfile: React.FC = () => {
                     <PhoneInput
                       value={phoneManager}
                       onChange={setPhoneManager}
+                      onCountryChange={(c: ApiCountry) => setPhoneManagerCountryId(c.id)}
                       placeholder={t('responsible_number') || 'Responsible Number'}
                     />
                   </div>

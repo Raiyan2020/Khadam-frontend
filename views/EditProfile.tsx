@@ -5,7 +5,8 @@ import { UserRole } from '../types';
 import { GlassCard, Button, Avatar } from '../components/GlassUI';
 
 import { useNavigate } from '@tanstack/react-router';
-import { PhoneInput } from '../components/PhoneInput';
+import { PhoneInput, splitPhone } from '../components/PhoneInput';
+import { ApiCountry } from '../lib/useCountryCodes';
 import { useUserRole } from '../UserRoleContext';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { useUpdateProfile } from '../features/auth/hooks/useUpdateProfile';
@@ -16,6 +17,7 @@ export const EditProfile: React.FC = () => {
   const { t, dir } = useLanguage();
   const { data: profile, isLoading } = useProfile();
   const updateProfileMutation = useUpdateProfile();
+  const [phoneCountryId, setPhoneCountryId] = useState<number>(1);
 
   const [formData, setFormData] = useState<any>({
     name: '',
@@ -89,7 +91,14 @@ export const EditProfile: React.FC = () => {
     const data = new FormData();
     Object.keys(formData).forEach(key => {
       if (formData[key] !== null && formData[key] !== undefined) {
-        data.append(key, formData[key]);
+        if (key === 'phone') {
+          // Split phone into numeric country_id + local number
+          const { phone } = splitPhone(formData.phone);
+          data.append('country_id', String(phoneCountryId));
+          data.append('phone', phone);
+        } else {
+          data.append(key, formData[key]);
+        }
       }
     });
 
@@ -204,6 +213,7 @@ export const EditProfile: React.FC = () => {
             <PhoneInput
               value={formData.phone}
               onChange={(val) => setFormData(prev => ({ ...prev, phone: val }))}
+              onCountryChange={(c: ApiCountry) => setPhoneCountryId(c.id)}
               placeholder="XXXX XXXX"
             />
           </div>

@@ -1,101 +1,139 @@
 
 import React, { useState, useEffect } from 'react';
-import { countries, Country, defaultCountry } from '../lib/countries';
+import { useCountryCodes, ApiCountry } from '../lib/useCountryCodes';
 import { normalizeArabicNumbers } from '../lib/numbers';
 import { ChevronDown } from 'lucide-react';
 
+/**
+ * Extracts the local phone number (without country code prefix).
+ * e.g. splitPhone("+96512345678") → { phoneCode: "+965", phone: "12345678" }
+ * For the numeric country id, use the onCountryChange callback.
+ */
+export const splitPhone = (fullPhone: string): { phoneCode: string; phone: string } => {
+  // Sort by length descending to match longest prefix first
+  const knownCodes = ['+965','+966','+971','+974','+973','+968','+963','+961','+962','+964','+218','+216','+212','+20'];
+  const match = knownCodes.sort((a, b) => b.length - a.length).find(c => fullPhone.startsWith(c));
+  if (match) return { phoneCode: match, phone: fullPhone.slice(match.length) };
+  return { phoneCode: '+965', phone: fullPhone };
+};
+
 interface PhoneInputProps {
-  value: string; // The full number with country code, e.g., +96512345678
+  value: string;
   onChange: (value: string) => void;
+  /** Called whenever the selected country changes. Use country.id for numeric country_id. */
+  onCountryChange?: (country: ApiCountry) => void;
   placeholder?: string;
   className?: string;
 }
 
-export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, placeholder, className }) => {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(() => {
-    if (value.startsWith('+')) {
-      const match = countries.find(c => value.startsWith(c.code));
-      return match || defaultCountry;
-    }
-    return defaultCountry;
-  });
-
-  const [localNumber, setLocalNumber] = useState(() => {
-    if (value.startsWith(selectedCountry.code)) {
-      return value.slice(selectedCountry.code.length);
-    }
-    return '';
-  });
-
+export const PhoneInput: React.FC<PhoneInputProps> = ({
+  value,
+  onChange,
+  onCountryChange,
+  placeholder,
+  className,
+}) => {
+  const { data: apiCountries, isLoading } = useCountryCodes();
+  const [selectedCountry, setSelectedCountry] = useState<ApiCountry | null>(null);
+  const [localNumber, setLocalNumber] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Update local state if prop value changes externally
+  const findByPhone = (phone: string, list: ApiCountry[]): ApiCountry => {
+    const sorted = [...list].sort((a, b) => b.phone_code.length - a.phone_code.length);
+    return sorted.find(c => phone.startsWith(c.phone_code)) ?? list[0];
+  };
+
+  // Initialize once API countries load
   useEffect(() => {
-    if (value) {
-      const match = countries.find(c => value.startsWith(c.code));
-      if (match) {
-        setSelectedCountry(match);
-        const numberPart = value.slice(match.code.length);
-        if (numberPart !== localNumber) {
-          setLocalNumber(numberPart);
-        }
-      }
-    } else if (value === '') {
-      setLocalNumber('');
+    if (!apiCountries?.length) return;
+    const country = findByPhone(value, apiCountries);
+    setSelectedCountry(country);
+    setLocalNumber(value.startsWith(country.phone_code) ? value.slice(country.phone_code.length) : '');
+    onCountryChange?.(country);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiCountries]);
+
+  // Sync when value changes externally (e.g. pre-fill from profile)
+  useEffect(() => {
+    if (!apiCountries?.length || !value) return;
+    const country = findByPhone(value, apiCountries);
+    if (country.id !== selectedCountry?.id) {
+      setSelectedCountry(country);
+      onCountryChange?.(country);
     }
-  }, [value, selectedCountry.code]);
+    const newLocal = value.startsWith(country.phone_code) ? value.slice(country.phone_code.length) : value;
+    setLocalNumber(newLocal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = normalizeArabicNumbers(e.target.value);
-    const cleaned = rawValue.replace(/\D/g, ''); // Remove non-digits
-
-    // Total length check: code length + number length <= 13
-    const maxNumberLength = 13 - selectedCountry.code.length;
-    const limited = cleaned.slice(0, maxNumberLength);
-
+    if (!selectedCountry) return;
+    const cleaned = normalizeArabicNumbers(e.target.value).replace(/\D/g, '');
+    const maxLen = 13 - selectedCountry.phone_code.length;
+    const limited = cleaned.slice(0, maxLen);
     setLocalNumber(limited);
-    onChange(`${selectedCountry.code}${limited}`);
+    onChange(`${selectedCountry.phone_code}${limited}`);
   };
 
-  const handleCountrySelect = (country: Country) => {
+  const handleCountrySelect = (country: ApiCountry) => {
     setSelectedCountry(country);
     setIsOpen(false);
-
-    // Re-validate length with new country code
-    const maxNumberLength = 13 - country.code.length;
-    const limited = localNumber.slice(0, maxNumberLength);
+    const maxLen = 13 - country.phone_code.length;
+    const limited = localNumber.slice(0, maxLen);
     setLocalNumber(limited);
-    onChange(`${country.code}${limited}`);
+    onChange(`${country.phone_code}${limited}`);
+    onCountryChange?.(country);
   };
 
+  if (isLoading || !selectedCountry) {
+    return (
+      <div className={`flex gap-2 ${className ?? ''}`}>
+        <div className="h-12 w-[90px] bg-glass border border-border rounded-xl animate-pulse" />
+        <div className="h-12 flex-1 min-w-0 bg-glass border border-border rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={`flex gap-2 ${className ?? ''}`}>
       {/* Country Selector */}
       <div className="relative">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="h-12 flex items-center gap-2 px-3 bg-glass border border-border rounded-xl text-primary hover:border-brand-500/50 transition-all min-w-[90px] justify-between"
+          className="h-12 flex items-center gap-1.5 px-3 bg-glass border border-border rounded-xl text-primary hover:border-brand-500/50 transition-all min-w-[90px] justify-between"
         >
-          <span className="text-lg">{selectedCountry.flag}</span>
-          <span className="text-sm font-medium" dir="ltr">{selectedCountry.code}</span>
-          <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          <img
+            src={selectedCountry.image}
+            alt={selectedCountry.country_code}
+            className="w-5 h-4 object-cover rounded-sm flex-shrink-0"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+          <span className="text-sm font-medium" dir="ltr">{selectedCountry.phone_code}</span>
+          <ChevronDown size={14} className={`transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-48 max-h-64 overflow-y-auto bg-white border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200">
-            {countries.map((country) => (
+          <div className="absolute top-full left-0 mt-2 w-56 max-h-64 overflow-y-auto bg-white border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200">
+            {apiCountries!.map((country) => (
               <button
                 key={country.id}
                 type="button"
                 onClick={() => handleCountrySelect(country)}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-sm transition-colors ${selectedCountry.id === country.id ? 'bg-brand-500/10 text-brand-500' : 'text-primary hover:bg-glass'}`}
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-sm transition-colors ${
+                  selectedCountry.id === country.id ? 'bg-brand-500/10 text-brand-500' : 'text-primary hover:bg-glass'
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">{country.flag}</span>
+                  <img
+                    src={country.image}
+                    alt={country.country_code}
+                    className="w-6 h-4 object-cover rounded-sm flex-shrink-0"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
                   <span className="font-medium">{country.name}</span>
                 </div>
-                <span className="text-xs text-secondary font-mono" dir="ltr">{country.code}</span>
+                <span className="text-xs text-secondary font-mono" dir="ltr">{country.phone_code}</span>
               </button>
             ))}
           </div>

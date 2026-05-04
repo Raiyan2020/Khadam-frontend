@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
-import { Phone, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
-import { PhoneInput } from '../../../components/PhoneInput';
+import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
+import { ApiCountry } from '../../../lib/useCountryCodes';
 import { useLogin } from '../hooks/useLogin';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [phoneNumber, setPhoneNumber] = useState('+965');
+  const [selectedCountry, setSelectedCountry] = useState<ApiCountry | null>(null);
   const loginMutation = useLogin();
 
   const loginSchema = z.object({
@@ -21,10 +22,13 @@ export const Login: React.FC = () => {
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       loginSchema.parse({ phoneNumber });
-      loginMutation.mutate(phoneNumber);
+      const { phone } = splitPhone(phoneNumber);
+      loginMutation.mutate({
+        country_id: selectedCountry?.id ?? 1,
+        phone,
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast.error(error.issues[0].message);
@@ -34,7 +38,6 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-sm z-10 space-y-8">
@@ -58,13 +61,12 @@ export const Login: React.FC = () => {
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-primary px-1">{t('phone_number') || 'Phone Number'}</label>
-              <div className="relative">
-                <PhoneInput
-                  value={phoneNumber}
-                  onChange={setPhoneNumber}
-                  placeholder="XXXX XXXX"
-                />
-              </div>
+              <PhoneInput
+                value={phoneNumber}
+                onChange={setPhoneNumber}
+                onCountryChange={setSelectedCountry}
+                placeholder="XXXX XXXX"
+              />
             </div>
             <Button
               type="submit"

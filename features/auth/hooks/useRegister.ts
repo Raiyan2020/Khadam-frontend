@@ -15,9 +15,10 @@ export const useRegister = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async (data: { type: '1' | '2'; phone: string }) => {
+    mutationFn: async (data: { type: '1' | '2'; country_id: number; phone: string }) => {
       const formData = new FormData();
       formData.append('type', data.type);
+      formData.append('country_id', String(data.country_id));
       formData.append('phone', data.phone);
 
       const response = await apiFetch(`${API_BASE_URL}/auth/register`, {
@@ -25,7 +26,7 @@ export const useRegister = () => {
         body: formData,
       });
       const result: RegisterResponse = await response.json();
-      
+
       if (!response.ok || !result.status) {
         throw new Error(result.message || 'Registration failed');
       }
@@ -34,7 +35,7 @@ export const useRegister = () => {
     onSuccess: (_, variables) => {
       navigate({
         to: '/verify-otp',
-        search: { phone: variables.phone }
+        search: { phone: `${variables.phone}` }
       });
     },
     onError: (error: any) => {

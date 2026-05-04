@@ -17,6 +17,7 @@ export const countries: Country[] = [
   { id: 'JO', name: 'Jordan', code: '+962', flag: '🇯🇴' },
   { id: 'LB', name: 'Lebanon', code: '+961', flag: '🇱🇧' },
   { id: 'IQ', name: 'Iraq', code: '+964', flag: '🇮🇶' },
+
 ];
 
 export const defaultCountry = countries[0]; // Kuwait
