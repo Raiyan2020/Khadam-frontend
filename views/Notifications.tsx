@@ -9,6 +9,7 @@ import {
   useDeleteNotification,
   useDeleteAllNotifications,
   useMarkAllAsRead,
+  useMarkAsRead,
   NotificationData,
 } from '../features/auth/hooks/useNotifications';
 
@@ -32,6 +33,15 @@ export const Notifications: React.FC = () => {
   const deleteOne = useDeleteNotification();
   const deleteAll = useDeleteAllNotifications();
   const markAllRead = useMarkAllAsRead();
+  const markAsRead = useMarkAsRead();
+
+  // Open detail sheet and silently mark as read in the background
+  const handleOpenNotif = (notif: NotificationData) => {
+    setSelectedNotif(notif);
+    if (!notif.read_at) {
+      markAsRead.mutate(notif.id);
+    }
+  };
 
   const activeQuery = showUnreadOnly ? unreadQuery : allQuery;
   const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = activeQuery;
@@ -153,13 +163,13 @@ export const Notifications: React.FC = () => {
             {allNotifications.map(notif => (
               <GlassCard
                 key={notif.id}
-                onClick={() => setSelectedNotif(notif)}
-                className={`flex gap-3 cursor-pointer transition-all hover:border-accent/30 active:scale-[0.98] ${!notif.read_at ? 'bg-accent/5 border-accent/20' : ''}`}
+                onClick={() => handleOpenNotif(notif)}
+                className={`flex gap-3 cursor-pointer transition-all hover:border-accent/30 active:scale-[0.98] ${!notif.is_read ? 'bg-accent/5 border-accent/20' : ''}`}
               >
-                <div className={`mt-2 w-2 h-2 rounded-full shrink-0 ${!notif.read_at ? 'bg-accent animate-pulse' : 'bg-transparent'}`} />
+                <div className={`mt-2 w-2 h-2 rounded-full shrink-0 ${!notif.is_read ? 'bg-accent animate-pulse' : 'bg-transparent'}`} />
 
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-sm truncate mb-0.5 ${!notif.read_at ? 'font-bold text-primary' : 'font-medium text-primary/80'}`}>
+                  <h3 className={`text-sm truncate mb-0.5 ${!notif.is_read ? 'font-bold text-primary' : 'font-medium text-primary/80'}`}>
                     {notif.data.title}
                   </h3>
                   <span className="text-[10px] text-secondary tabular-nums">
@@ -198,7 +208,7 @@ export const Notifications: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={() => setSelectedNotif(null)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" />
           <div
-            className="relative w-full max-w-[991px] bg-background rounded-t-3xl border border-border border-b-0 shadow-2xl animate-in slide-in-from-bottom duration-300 p-6 pb-10"
+            className="relative w-full max-w-[991px] bg-background rounded-t-3xl border border-white border-b-0 shadow-2xl animate-in slide-in-from-bottom duration-300 p-6 pb-10"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
@@ -208,13 +218,13 @@ export const Notifications: React.FC = () => {
             >
               <X size={16} />
             </button>
-            <div className="w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-accent/20 flex items-center justify-center mb-4">
               <Bell size={26} className="text-accent" />
             </div>
-            <h2 className="text-lg font-bold text-primary mb-2 leading-snug">{selectedNotif.data.title}</h2>
-            <span className="text-xs text-secondary mb-4 block">{selectedNotif.created_at_diff ?? selectedNotif.created_at}</span>
+            <h2 className="text-lg font-bold text-white mb-2 leading-snug">{selectedNotif.data.title}</h2>
+            <span className="text-xs text-white mb-4 block">{selectedNotif.created_at_diff ?? selectedNotif.created_at}</span>
             <div className="border-t border-border mb-4" />
-            <p className="text-sm text-secondary leading-relaxed">{selectedNotif.data.description}</p>
+            <p className="text-sm text-white leading-relaxed">{selectedNotif.data.description}</p>
           </div>
         </div>
       )}
@@ -224,7 +234,7 @@ export const Notifications: React.FC = () => {
         <div className="fixed inset-0 z-[110] flex items-center justify-center px-5" onClick={() => setConfirm({ open: false })}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
           <div
-            className="relative w-full max-w-sm bg-background rounded-2xl border border-border shadow-2xl animate-in zoom-in-95 fade-in duration-200 p-6"
+            className="relative w-full max-w-sm bg-background rounded-2xl border border-wiite shadow-2xl animate-in zoom-in-95 fade-in duration-200 p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Icon */}
