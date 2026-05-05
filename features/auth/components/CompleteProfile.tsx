@@ -372,7 +372,7 @@ export const CompleteProfile: React.FC = () => {
                     <PhoneInput
                       value={whatsapp}
                       onChange={setWhatsapp}
-                      placeholder="+965 1234 5678"
+                      placeholder="XXXX XXXX"
                     />
                   </div>
                 </div>

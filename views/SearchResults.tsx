@@ -24,6 +24,23 @@ export const SearchResults: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(searchParams.page || 1);
+  const [showSearch, setShowSearch] = useState(true);
+
+  useEffect(() => {
+    const scrollContainer = document.querySelector('main');
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      if (scrollTop > 300) {
+        setShowSearch(false);
+      } else if (scrollTop < 50) {
+        setShowSearch(true);
+      }
+    };
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const [filters, setFilters] = useState<FilterCriteria>({
     category: searchParams.category_id,
@@ -163,7 +180,7 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="pb-10 min-h-screen bg-background">
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 space-y-4">
+      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
         {/* Header row */}
         <div className="flex items-center gap-3">
           <button
@@ -193,51 +210,6 @@ export const SearchResults: React.FC = () => {
           )}
         </div>
 
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
-          onFilterClick={() => setIsFilterModalOpen(true)}
-        />
-
-        {/* Active filter chips */}
-        {activeChips.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {activeChips.map((chip, i) => (
-              <div
-                key={`${chip.key}-${i}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex-shrink-0"
-              >
-                <span>{chip.label}</span>
-                <button
-                  onClick={() => {
-                    if (chip.key === 'languages') {
-                      // Remove all language filters at once
-                      const updated = { ...filters, languages: undefined };
-                      setFilters(updated);
-                      setCurrentPage(1);
-                      doSearch({
-                        ...updated,
-                        page: 1,
-                        worker_name: searchQuery || undefined,
-                        history: searchParams.history,
-                        latest: searchParams.latest,
-                        experience: searchParams.experience,
-                      } as any);
-                    } else {
-                      removeFilter(chip.key);
-                    }
-                  }}
-                  className="hover:text-red-500 transition-colors ml-0.5"
-                  aria-label="remove filter"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         <FilterModal
           isOpen={isFilterModalOpen}
           onClose={() => setIsFilterModalOpen(false)}
@@ -245,29 +217,76 @@ export const SearchResults: React.FC = () => {
           initialCriteria={filters}
         />
 
-        {/* Category chips from API */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-          {isLoadingCategories ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
-            ))
-          ) : (
-            <>
-              <CategoryChip
-                label={t('cat_all')}
-                isActive={activeCategory === 'All'}
-                onClick={() => setActiveCategory('All')}
-              />
-              {categories?.map(cat => (
-                <CategoryChip
-                  key={cat.id}
-                  label={cat.name}
-                  isActive={activeCategory === cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                />
+        <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[300px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
+            onFilterClick={() => setIsFilterModalOpen(true)}
+          />
+
+          {/* Active filter chips */}
+          {activeChips.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {activeChips.map((chip, i) => (
+                <div
+                  key={`${chip.key}-${i}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex-shrink-0"
+                >
+                  <span>{chip.label}</span>
+                  <button
+                    onClick={() => {
+                      if (chip.key === 'languages') {
+                        // Remove all language filters at once
+                        const updated = { ...filters, languages: undefined };
+                        setFilters(updated);
+                        setCurrentPage(1);
+                        doSearch({
+                          ...updated,
+                          page: 1,
+                          worker_name: searchQuery || undefined,
+                          history: searchParams.history,
+                          latest: searchParams.latest,
+                          experience: searchParams.experience,
+                        } as any);
+                      } else {
+                        removeFilter(chip.key);
+                      }
+                    }}
+                    className="hover:text-red-500 transition-colors ml-0.5"
+                    aria-label="remove filter"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
               ))}
-            </>
+            </div>
           )}
+
+          {/* Category chips from API */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+            {isLoadingCategories ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+              ))
+            ) : (
+              <>
+                <CategoryChip
+                  label={t('cat_all')}
+                  isActive={activeCategory === 'All'}
+                  onClick={() => setActiveCategory('All')}
+                />
+                {categories?.map(cat => (
+                  <CategoryChip
+                    key={cat.id}
+                    label={cat.name}
+                    isActive={activeCategory === cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                  />
+                ))}
+              </>
+            )}
+          </div>
         </div>
       </div>
 

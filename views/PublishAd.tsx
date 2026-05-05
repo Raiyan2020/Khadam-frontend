@@ -75,16 +75,17 @@ export const PublishAd: React.FC = () => {
   // ── Step validation ────────────────────────────────────────────────────────
   const validateStep = (currentStep: number): boolean => {
     if (currentStep === 1) {
-      if (!imageFile) { toast.error('Worker image is required'); return false; }
-      if (!categoryId) { toast.error('Please select a category'); return false; }
+      if (!imageFile) { toast.error(t('v_image_required') || 'Worker image is required'); return false; }
+      if (!categoryId) { toast.error(t('v_category_required') || 'Please select a category'); return false; }
       return true;
     }
     if (currentStep === 2) {
-      if (title.trim().length < 3) { toast.error('Title must be at least 3 characters'); return false; }
-      if (workerName.trim().length < 3) { toast.error('Worker name must be at least 3 characters'); return false; }
-      if (!countryId) { toast.error('Please select a nationality'); return false; }
-      if (!age || Number(age) < 1) { toast.error('Please enter a valid age'); return false; }
-      if (description.trim().length < 3) { toast.error('Description must be at least 3 characters'); return false; }
+      if (title.trim().length < 3) { toast.error(t('v_title_min') || 'Title must be at least 3 characters'); return false; }
+      if (workerName.trim().length < 3) { toast.error(t('v_worker_name_min') || 'Worker name must be at least 3 characters'); return false; }
+      if (!countryId) { toast.error(t('v_nationality_required') || 'Please select a nationality'); return false; }
+      if (!age || Number(age) < 1) { toast.error(t('v_age_min') || 'Please enter a valid age'); return false; }
+      if (Number(age) > 99) { toast.error(t('v_age_max') || 'Age max 99'); return false; }
+      if (description.trim().length < 3) { toast.error(t('v_description_min') || 'Description must be at least 3 characters'); return false; }
       return true;
     }
     return true;
@@ -253,7 +254,17 @@ export const PublishAd: React.FC = () => {
                 placeholder={t('ph_age')}
                 type="number"
                 value={age}
-                onChange={setAge}
+                onChange={(val) => {
+                  const cleaned = val.replace(/\D/g, '');
+                  if (!cleaned) {
+                    setAge('');
+                    return;
+                  }
+                  const num = parseInt(cleaned, 10);
+                  if (num <= 99) {
+                    setAge(num.toString());
+                  }
+                }}
               />
               {/* Gender */}
               <div className="space-y-1.5">
