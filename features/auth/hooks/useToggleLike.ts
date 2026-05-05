@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
+import { toast } from 'sonner';
 
 export interface ToggleLikeParams {
   type: 'ad' | 'office';
@@ -30,6 +31,7 @@ export const useToggleLike = () => {
       });
 
       const result = await response.json();
+      toast[response.ok ? 'success' : 'error'](result.message);
       if (!response.ok || !result.status) {
         throw new Error(result.message || 'Failed to toggle favorite');
       }

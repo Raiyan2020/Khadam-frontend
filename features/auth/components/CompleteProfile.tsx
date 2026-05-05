@@ -437,13 +437,18 @@ export const CompleteProfile: React.FC = () => {
                       <CreditCard size={18} />
                     </div>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="numeric"
                       value={nationalNumberManager}
-                      onChange={(e) => setNationalNumberManager(e.target.value)}
+                      onChange={(e) => {
+                        const digits = normalizeArabicNumbers(e.target.value).replace(/\D/g, '').slice(0, 12);
+                        setNationalNumberManager(digits);
+                      }}
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
                       required
-                      minLength={10}
-                      maxLength={20}
+                      minLength={12}
+                      maxLength={12}
+                      dir="ltr"
                     />
                   </div>
                 </div>

@@ -10,6 +10,7 @@ import { ApiCountry } from '../lib/useCountryCodes';
 import { useUserRole } from '../UserRoleContext';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { useUpdateProfile } from '../features/auth/hooks/useUpdateProfile';
+import { useCountryCodes } from '../lib/useCountryCodes';
 
 export const EditProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const EditProfile: React.FC = () => {
   const { t, dir } = useLanguage();
   const { data: profile, isLoading } = useProfile();
   const updateProfileMutation = useUpdateProfile();
+  const { data: apiCountries } = useCountryCodes();
   const [phoneCountryId, setPhoneCountryId] = useState<number>(1);
 
   const [formData, setFormData] = useState<any>({
@@ -44,12 +46,19 @@ export const EditProfile: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (profile) {
-      let pPhone = profile.phone || '';
-      if (pPhone && !pPhone.startsWith('+')) pPhone = '+' + pPhone;
+    if (profile && apiCountries?.length) {
+      // Find the country object by country_id to get the dial code
+      const countryObj = apiCountries.find(c => c.id === profile.country_id);
+      const dialCode = countryObj?.phone_code ?? '+965';
 
-      let pWhatsapp = profile.whatsapp || '';
-      if (pWhatsapp && !pWhatsapp.startsWith('+')) pWhatsapp = '+' + pWhatsapp;
+      // Reconstruct full phone: API returns bare local number, PhoneInput needs E.164
+      const pPhone = profile.phone ? `${dialCode}${profile.phone}` : '';
+
+      // WhatsApp already comes as full string (e.g. "+96560072509") or null
+      const pWhatsapp = profile.whatsapp || '';
+
+      // Seed country id for the save payload
+      if (profile.country_id) setPhoneCountryId(profile.country_id);
 
       setFormData({
         name: profile.name || '',
@@ -62,11 +71,11 @@ export const EditProfile: React.FC = () => {
         map_desc: profile.map_desc || '',
       });
       setPreviews({
-        image: profile.image,
-        cover_image: profile.cover_image,
+        image: profile.image || null,
+        cover_image: profile.cover_image || null,
       });
     }
-  }, [profile]);
+  }, [profile, apiCountries]);
 
   const isCompany = profile?.type === '2';
 
@@ -215,6 +224,7 @@ export const EditProfile: React.FC = () => {
               onChange={(val) => setFormData(prev => ({ ...prev, phone: val }))}
               onCountryChange={(c: ApiCountry) => setPhoneCountryId(c.id)}
               placeholder="XXXX XXXX"
+              disabled
             />
           </div>
 

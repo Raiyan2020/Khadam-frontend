@@ -25,6 +25,7 @@ interface PhoneInputProps {
   onCountryChange?: (country: ApiCountry) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export const PhoneInput: React.FC<PhoneInputProps> = ({
@@ -33,6 +34,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   onCountryChange,
   placeholder,
   className,
+  disabled = false,
 }) => {
   const { data: apiCountries, isLoading } = useCountryCodes();
   const { dir } = useLanguage();
@@ -106,14 +108,16 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         onChange={handleNumberChange}
         placeholder={placeholder}
         maxLength={selectedCountry?.country_code === 'KW' ? 8 : 11}
-        className="h-12 flex-1 min-w-0 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium"
+        disabled={disabled}
+        className={`h-12 flex-1 min-w-0 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
         dir="ltr"
       />
       <div className="relative">
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="h-12 flex items-center gap-1.5 px-3 bg-glass border border-border rounded-xl text-primary hover:border-brand-500/50 transition-all min-w-[90px] justify-between"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          className={`h-12 flex items-center gap-1.5 px-3 bg-glass border border-border rounded-xl text-primary transition-all min-w-[90px] justify-between ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:border-brand-500/50'}`}
         >
           <img
             src={selectedCountry.image}
