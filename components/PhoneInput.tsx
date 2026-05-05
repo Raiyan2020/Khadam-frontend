@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useCountryCodes, ApiCountry } from '../lib/useCountryCodes';
 import { normalizeArabicNumbers } from '../lib/numbers';
 import { ChevronDown } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 /**
  * Extracts the local phone number (without country code prefix).
@@ -34,6 +35,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   className,
 }) => {
   const { data: apiCountries, isLoading } = useCountryCodes();
+  const { dir } = useLanguage();
   const [selectedCountry, setSelectedCountry] = useState<ApiCountry | null>(null);
   const [localNumber, setLocalNumber] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -124,7 +126,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-56 max-h-64 overflow-y-auto bg-white border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200">
+          <div className={`absolute top-full ${dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-56 max-h-64 overflow-y-auto bg-white border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200`}>
             {apiCountries!.map((country) => (
               <button
                 key={country.id}
