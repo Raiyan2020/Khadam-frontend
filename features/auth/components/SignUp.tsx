@@ -35,7 +35,7 @@ export const SignUp: React.FC = () => {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       signUpSchema.parse({ phoneNumber, accountType });
       const { phone } = splitPhone(phoneNumber);
@@ -119,7 +119,7 @@ export const SignUp: React.FC = () => {
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 
-      <div className="absolute top-5 start-5 z-20">
+      <div className="absolute top-8 start-8 z-20">
         <button
           onClick={() => {
             if (step === 'ACCOUNT_TYPE') navigate({ to: '/login' });
