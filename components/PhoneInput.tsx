@@ -11,7 +11,7 @@ import { ChevronDown } from 'lucide-react';
  */
 export const splitPhone = (fullPhone: string): { phoneCode: string; phone: string } => {
   // Sort by length descending to match longest prefix first
-  const knownCodes = ['+965','+966','+971','+974','+973','+968','+963','+961','+962','+964','+218','+216','+212','+20'];
+  const knownCodes = ['+965', '+966', '+971', '+974', '+973', '+968', '+963', '+961', '+962', '+964', '+218', '+216', '+212', '+20'];
   const match = knownCodes.sort((a, b) => b.length - a.length).find(c => fullPhone.startsWith(c));
   if (match) return { phoneCode: match, phone: fullPhone.slice(match.length) };
   return { phoneCode: '+965', phone: fullPhone };
@@ -69,7 +69,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!selectedCountry) return;
     const cleaned = normalizeArabicNumbers(e.target.value).replace(/\D/g, '');
-    const maxLen = 13 - selectedCountry.phone_code.length;
+    const maxLen = selectedCountry.country_code === 'KW' ? 8 : 11;
     const limited = cleaned.slice(0, maxLen);
     setLocalNumber(limited);
     onChange(`${selectedCountry.phone_code}${limited}`);
@@ -97,6 +97,16 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   return (
     <div className={`flex gap-2 ${className ?? ''}`}>
       {/* Country Selector */}
+      {/* Number Input */}
+      <input
+        type="tel"
+        value={localNumber}
+        onChange={handleNumberChange}
+        placeholder={placeholder}
+        maxLength={selectedCountry?.country_code === 'KW' ? 8 : 11}
+        className="h-12 flex-1 min-w-0 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium"
+        dir="ltr"
+      />
       <div className="relative">
         <button
           type="button"
@@ -120,9 +130,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
                 key={country.id}
                 type="button"
                 onClick={() => handleCountrySelect(country)}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-sm transition-colors ${
-                  selectedCountry.id === country.id ? 'bg-brand-500/10 text-brand-500' : 'text-primary hover:bg-glass'
-                }`}
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-sm transition-colors ${selectedCountry.id === country.id ? 'bg-brand-500/10 text-brand-500' : 'text-primary hover:bg-glass'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -140,15 +149,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         )}
       </div>
 
-      {/* Number Input */}
-      <input
-        type="tel"
-        value={localNumber}
-        onChange={handleNumberChange}
-        placeholder={placeholder}
-        className="h-12 flex-1 min-w-0 px-4 bg-glass border border-border rounded-xl text-primary focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all outline-none text-sm font-medium"
-        dir="ltr"
-      />
+
     </div>
   );
 };
