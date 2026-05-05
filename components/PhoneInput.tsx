@@ -122,7 +122,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
           <img
             src={selectedCountry.image}
             alt={selectedCountry.country_code}
-            className="w-5 h-4 object-cover rounded-sm flex-shrink-0"
+            className="w-5 h-4 object-contain rounded-sm flex-shrink-0"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <span className="text-sm font-medium" dir="ltr">{selectedCountry.phone_code}</span>
@@ -143,7 +143,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
                   <img
                     src={country.image}
                     alt={country.country_code}
-                    className="w-6 h-4 object-cover rounded-sm flex-shrink-0"
+                    className="w-6 h-4 object-contain rounded-sm flex-shrink-0"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                   <span className="font-medium">{country.name}</span>
