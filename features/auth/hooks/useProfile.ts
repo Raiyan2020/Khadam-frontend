@@ -18,6 +18,8 @@ export interface ProfileData {
   website: string | null;
   whatsapp: string | null;
   description: string | null;
+  country_id: number;
+
 }
 
 export interface ProfileResponse {
