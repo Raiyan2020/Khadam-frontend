@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Check, ChevronDown, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Check, ChevronDown, Loader2, Image as ImageIcon, Crown, Zap } from 'lucide-react';
 import { Button, GlassCard } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { useNavigate } from '@tanstack/react-router';
@@ -9,6 +9,7 @@ import { useCategories } from '../features/auth/hooks/useCategories';
 import { useCountries } from '../features/auth/hooks/useCountries';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
+import { useProfile } from '../features/auth/hooks/useProfile';
 
 // ─── Zod Schemas per step ─────────────────────────────────────────────────────
 const getStep1Schema = (t: any) =>
@@ -38,12 +39,23 @@ const getStep3Schema = (t: any, maxExperience: number) =>
 export const PublishAd: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [step, setStep] = useState(1);
+  // step 0 = subscription gate, steps 1-3 = ad form
+  const [step, setStep] = useState(0);
+  const [isSingleAd, setIsSingleAd] = useState(false);
 
+  const { data: profile, isLoading: loadingProfile } = useProfile();
   const { data: categories, isLoading: loadingCats } = useCategories();
   const { data: countries, isLoading: loadingCountries } = useCountries();
   const { data: languages, isLoading: loadingLangs } = useLanguages();
   const storeAd = useStoreAd();
+
+  // Auto-skip the subscription gate if the user is already subscribed
+  React.useEffect(() => {
+    if (!loadingProfile && profile?.is_subscribed && step === 0) {
+      setIsSingleAd(false);
+      setStep(1);
+    }
+  }, [loadingProfile, profile?.is_subscribed]);
 
   // Form state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -149,12 +161,17 @@ export const PublishAd: React.FC = () => {
       is_available: isAvailable,
       gender: gender as 'male' | 'female',
       languages: selectedLanguages,
+      is_single_ad: isSingleAd,
     };
 
     storeAd.mutate(payload, {
       onSuccess: (data) => {
         toast.success(data.message || 'Ad published successfully!');
-        navigate({ to: '/my-ads' });
+        if (data.data?.payment_url) {
+          window.location.href = data.data.payment_url;
+        } else {
+          navigate({ to: '/my-ads' });
+        }
       },
     });
   };
@@ -172,12 +189,67 @@ export const PublishAd: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {/* Step Indicator */}
-        <div className="flex gap-2 mb-6">
-          {[1, 2, 3].map(i => (
-            <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= step ? 'bg-accent' : 'bg-glassHigh'}`} />
-          ))}
-        </div>
+        {/* Step Indicator — only shown for steps 1-3 */}
+        {step > 0 && (
+          <div className="flex gap-2 mb-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= step ? 'bg-accent' : 'bg-glassHigh'}`} />
+            ))}
+          </div>
+        )}
+
+        {/* ── Step 0: Subscription Gate ── */}
+        {step === 0 && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            {loadingProfile ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                <p className="text-sm text-secondary">{t('loading') || 'Loading...'}</p>
+              </div>
+            ) : (
+              // User is NOT subscribed — show options
+              <>
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-bold text-primary">{t('choose_publish_method') || 'How would you like to publish?'}</h2>
+                  <p className="text-sm text-secondary">{t('choose_publish_method_desc') || 'Select a publishing option to continue'}</p>
+                </div>
+
+                {/* Single Ad Option */}
+                <button
+                  onClick={() => { setIsSingleAd(true); setStep(1); }}
+                  className="w-full text-start p-5 rounded-2xl bg-glass border border-border hover:border-accent/60 hover:bg-accent/5 transition-all duration-200 group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+                      <Zap size={22} className="text-accent" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-primary text-sm">{t('single_ad') || 'Single Ad'}</p>
+                      <p className="text-xs text-secondary mt-0.5">{t('single_ad_desc') || 'Publish one ad without a subscription'}</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Subscriptions Option */}
+                <button
+                  onClick={() => navigate({ to: '/subscriptions' })}
+                  className="w-full text-start p-5 rounded-2xl bg-glass border border-border hover:border-accent/60 hover:bg-accent/5 transition-all duration-200 group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
+                      <Crown size={22} className="text-accent" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-primary text-sm">{t('view_subscriptions') || 'View Subscriptions'}</p>
+                      <p className="text-xs text-secondary mt-0.5">{t('view_subscriptions_desc') || 'Get unlimited ads with a subscription plan'}</p>
+                    </div>
+                  </div>
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
 
         {/* ── Step 1: Image & Category ── */}
         {step === 1 && (
@@ -435,28 +507,28 @@ export const PublishAd: React.FC = () => {
         )}
 
         {/* Navigation Buttons */}
-        <div className="pt-4 flex gap-3">
-          {step > 1 && (
+        {step > 0 && (
+          <div className="pt-4 flex gap-3">
             <Button variant="secondary" className="flex-1" onClick={() => { setStep(s => s - 1); setErrors({}); }}>
               {t('go_back')}
             </Button>
-          )}
-          {step < 3 ? (
-            <Button className="flex-1" onClick={handleNext}>
-              {t('next_step')}
-            </Button>
-          ) : (
-            <Button
-              className="flex-1"
-              onClick={handleSubmit}
-              disabled={storeAd.isPending}
-            >
-              {storeAd.isPending
-                ? <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                : t('publish_now')}
-            </Button>
-          )}
-        </div>
+            {step < 3 ? (
+              <Button className="flex-1" onClick={handleNext}>
+                {t('next_step')}
+              </Button>
+            ) : (
+              <Button
+                className="flex-1"
+                onClick={handleSubmit}
+                disabled={storeAd.isPending}
+              >
+                {storeAd.isPending
+                  ? <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                  : t('publish_now')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

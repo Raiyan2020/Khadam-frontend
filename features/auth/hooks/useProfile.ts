@@ -19,6 +19,7 @@ export interface ProfileData {
   whatsapp: string | null;
   description: string | null;
   country_id: number;
+  is_subscribed: boolean;
 
 }
 
@@ -49,5 +50,6 @@ export const useProfile = () => {
       }
       return data.data;
     },
+    staleTime: 60 * 1000,
   });
 };

@@ -43,9 +43,7 @@ export const useStoreAd = () => {
       payload.languages.forEach((langId, i) => {
         formData.append(`languages[${i}]`, String(langId));
       });
-      // if (payload.is_single_ad !== undefined) {
-      formData.append('is_single_ad', '0');
-      // }
+      formData.append('is_single_ad', payload.is_single_ad ? '1' : '0');
 
       const response = await apiFetch(`${API_BASE_URL}/office/store-ad`, {
         method: 'POST',

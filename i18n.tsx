@@ -314,7 +314,15 @@ export const translations = {
     delete_confirm_title: "Delete notification?",
     delete_confirm_desc: "This notification will be permanently removed.",
     delete_all_confirm_title: "Delete all notifications?",
-    delete_all_confirm_desc: "This will permanently remove all your notifications."
+    delete_all_confirm_desc: "This will permanently remove all your notifications.",
+    you_are_subscribed: "You have an active subscription!",
+    continue: "Continue",
+    choose_publish_method: "How would you like to publish?",
+    choose_publish_method_desc: "Select a publishing option to continue",
+    single_ad: "Single Ad",
+    single_ad_desc: "Publish one ad without a subscription",
+    view_subscriptions: "View Subscriptions",
+    view_subscriptions_desc: "Get unlimited ads with a subscription plan"
   },
   ar: {
     app_name: "تطبيق خدم",
@@ -627,7 +635,15 @@ export const translations = {
     delete_confirm_title: "حذف التنبيه؟",
     delete_confirm_desc: "سيتم حذف هذا التنبيه بشكل نهائي.",
     delete_all_confirm_title: "حذف جميع التنبيهات؟",
-    delete_all_confirm_desc: "سيتم حذف جميع تنبيهاتك بشكل نهائي."
+    delete_all_confirm_desc: "سيتم حذف جميع تنبيهاتك بشكل نهائي.",
+    you_are_subscribed: "لديك اشتراك نشط!",
+    continue: "متابعة",
+    choose_publish_method: "كيف تريد النشر؟",
+    choose_publish_method_desc: "اختر طريقة النشر للمتابعة",
+    single_ad: "إعلان واحد",
+    single_ad_desc: "انشر إعلاناً واحداً بدون اشتراك",
+    view_subscriptions: "عرض الاشتراكات",
+    view_subscriptions_desc: "احصل على إعلانات غير محدودة بباقة اشتراك"
   }
 };
 
