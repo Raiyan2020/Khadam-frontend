@@ -35,7 +35,7 @@ export const useRegister = () => {
     onSuccess: (_, variables) => {
       navigate({
         to: '/verify-otp',
-        search: { phone: `${variables.phone}` }
+        search: { phone: `${variables.phone}`, country_id: variables.country_id }
       });
     },
     onError: (error: any) => {

@@ -10,7 +10,7 @@ import { requestForToken } from '../../../lib/firebase';
 
 export const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/verify-otp' }) as { phone?: string };
+  const search = useSearch({ from: '/verify-otp' }) as { phone?: string; country_id?: number };
   const { t } = useLanguage();
   const [otp, setOtp] = useState('');
   const [deviceId, setDeviceId] = useState('');
@@ -53,8 +53,8 @@ export const VerifyOtp: React.FC = () => {
   const resendMutation = useResendOtp();
 
   const handleResendOtp = () => {
-    if (search.phone) {
-      resendMutation.mutate(search.phone);
+    if (search.phone && search.country_id != null) {
+      resendMutation.mutate({ phone: search.phone, country_id: search.country_id });
       setTimer(40);
     }
   };
@@ -100,9 +100,9 @@ export const VerifyOtp: React.FC = () => {
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-primary px-1">{t('otp_code') || 'OTP Code'}</label>
               <div className="py-4">
-                <ShadcnOTPInput 
-                  value={otp} 
-                  onChange={setOtp} 
+                <ShadcnOTPInput
+                  value={otp}
+                  onChange={setOtp}
                   maxLength={4}
                   disabled={verifyMutation.isPending}
                 />

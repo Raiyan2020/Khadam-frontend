@@ -35,6 +35,17 @@ export const CompleteProfile: React.FC = () => {
   const states: StateOption[] = statesResponse?.data || [];
 
   // Common Fields
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
   const [name, setName] = useState('');
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
@@ -147,9 +158,27 @@ export const CompleteProfile: React.FC = () => {
       } else {
         seekerSchema.parse(dataToValidate);
       }
+      setErrors({});
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast.error(error.issues[0].message);
+        const newErrors: Record<string, string> = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(newErrors);
+
+        const firstErrorField = error.issues[0]?.path[0] as string;
+        if (firstErrorField) {
+          setTimeout(() => {
+            const element = document.getElementById(`field-${firstErrorField}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              element.focus({ preventScroll: true });
+            }
+          }, 50);
+        }
         return;
       }
     }
@@ -206,7 +235,7 @@ export const CompleteProfile: React.FC = () => {
   const isPending = completeProfileMutation.isPending || isCompressing;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md z-10 space-y-6 mt-10">
@@ -216,10 +245,10 @@ export const CompleteProfile: React.FC = () => {
         </div>
 
         <GlassCard className="p-6">
-          <form onSubmit={handleCompleteProfile} className="space-y-4">
+          <form onSubmit={handleCompleteProfile} className="space-y-4" noValidate>
 
             {/* Common: Profile Image */}
-            <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="flex flex-col items-center justify-center space-y-2" id="field-profileImage">
               <div
                 onClick={() => profileImageRef.current?.click()}
                 className="w-24 h-24 rounded-full bg-glass border-2 border-dashed border-border flex items-center justify-center text-secondary relative overflow-hidden group cursor-pointer hover:border-brand-400 transition-colors"
@@ -233,6 +262,7 @@ export const CompleteProfile: React.FC = () => {
                     if (file) {
                       setProfileImageFile(file);
                       setProfileImagePreview(URL.createObjectURL(file));
+                      clearError('profileImage');
                     }
                   }}
                   accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -247,6 +277,7 @@ export const CompleteProfile: React.FC = () => {
                 </div>
               </div>
               <span className="text-xs text-secondary">{t('profile_image') || 'Profile Image'} *</span>
+              {errors.profileImage && <p className="text-xs text-red-500">{errors.profileImage}</p>}
             </div>
 
             {/* Common: Name */}
@@ -259,9 +290,13 @@ export const CompleteProfile: React.FC = () => {
                   {userType === '2' ? <Building size={18} /> : <User size={18} />}
                 </div>
                 <input
+                  id="field-name"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    clearError('name');
+                  }}
                   placeholder={t('name_placeholder') || 'Enter name'}
                   className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
                   required
@@ -269,13 +304,14 @@ export const CompleteProfile: React.FC = () => {
                   maxLength={255}
                 />
               </div>
+              {errors.name && <p className="text-xs text-red-500 px-1">{errors.name}</p>}
             </div>
 
             {/* Company Specific Fields */}
             {userType === '2' && (
               <>
                 {/* Cover Image */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" id="field-coverImage">
                   <label className="text-xs font-bold text-primary px-1">{t('banner_image') || 'Cover Image'} *</label>
                   <div
                     onClick={() => coverImageRef.current?.click()}
@@ -290,6 +326,7 @@ export const CompleteProfile: React.FC = () => {
                         if (file) {
                           setCoverImageFile(file);
                           setCoverImagePreview(URL.createObjectURL(file));
+                          clearError('coverImage');
                         }
                       }}
                       accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -303,6 +340,7 @@ export const CompleteProfile: React.FC = () => {
                       </>
                     )}
                   </div>
+                  {errors.coverImage && <p className="text-xs text-red-500 px-1">{errors.coverImage}</p>}
                 </div>
 
                 {/* State Selection */}
@@ -313,8 +351,12 @@ export const CompleteProfile: React.FC = () => {
                       <MapPin size={18} />
                     </div>
                     <select
+                      id="field-stateId"
                       value={stateId}
-                      onChange={(e) => setStateId(e.target.value)}
+                      onChange={(e) => {
+                        setStateId(e.target.value);
+                        clearError('stateId');
+                      }}
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all appearance-none"
                       required
                     >
@@ -324,27 +366,39 @@ export const CompleteProfile: React.FC = () => {
                       ))}
                     </select>
                   </div>
+                  {errors.stateId && <p className="text-xs text-red-500 px-1">{errors.stateId}</p>}
                 </div>
 
                 {/* Map Location */}
-                <LocationPicker
-                  value={locationData}
-                  onChange={setLocationData}
-                  selectedStateName={states.find(s => s.id.toString() === stateId)?.name}
-                />
+                <div id="field-location" className="space-y-1.5">
+                  <LocationPicker
+                    value={locationData}
+                    onChange={(loc) => {
+                      setLocationData(loc);
+                      clearError('location');
+                    }}
+                    selectedStateName={states.find(s => s.id.toString() === stateId)?.name}
+                  />
+                  {errors.location && <p className="text-xs text-red-500 px-1">{errors.location}</p>}
+                </div>
 
                 {/* Map Description */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-primary px-1">{t('map_desc') || 'Address Details'} *</label>
                   <input
+                    id="field-mapDesc"
                     type="text"
                     value={mapDesc}
-                    onChange={(e) => setMapDesc(e.target.value)}
+                    onChange={(e) => {
+                      setMapDesc(e.target.value);
+                      clearError('mapDesc');
+                    }}
                     placeholder='e.g. "الفروانيه شارع حبيب المناور "'
                     className="w-full h-12 bg-background border border-border rounded-xl px-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
                     required
                     maxLength={255}
                   />
+                  {errors.mapDesc && <p className="text-xs text-red-500 px-1">{errors.mapDesc}</p>}
                 </div>
 
                 {/* Website */}
@@ -355,26 +409,35 @@ export const CompleteProfile: React.FC = () => {
                       <Globe size={18} />
                     </div>
                     <input
+                      id="field-website"
                       type="url"
                       value={website}
-                      onChange={(e) => setWebsite(e.target.value)}
+                      onChange={(e) => {
+                        setWebsite(e.target.value);
+                        clearError('website');
+                      }}
                       placeholder="https://example.com"
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 transition-all"
                       dir="ltr"
                     />
                   </div>
+                  {errors.website && <p className="text-xs text-red-500 px-1">{errors.website}</p>}
                 </div>
 
                 {/* WhatsApp */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" id="field-whatsapp">
                   <label className="text-xs font-bold text-primary px-1">{t('whatsapp') || 'WhatsApp (Optional)'}</label>
                   <div className="relative">
                     <PhoneInput
                       value={whatsapp}
-                      onChange={setWhatsapp}
+                      onChange={(val) => {
+                        setWhatsapp(val);
+                        clearError('whatsapp');
+                      }}
                       placeholder="XXXX XXXX"
                     />
                   </div>
+                  {errors.whatsapp && <p className="text-xs text-red-500 px-1">{errors.whatsapp}</p>}
                 </div>
 
                 {/* Email */}
@@ -385,18 +448,23 @@ export const CompleteProfile: React.FC = () => {
                       <Mail size={18} />
                     </div>
                     <input
+                      id="field-email"
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        clearError('email');
+                      }}
                       placeholder="example@mail.com"
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
                       dir="ltr"
                     />
                   </div>
+                  {errors.email && <p className="text-xs text-red-500 px-1">{errors.email}</p>}
                 </div>
 
                 {/* Commercial License */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" id="field-commercialLicense">
                   <label className="text-xs font-bold text-primary px-1">{t('company_tax_id') || 'Commercial License File'} *</label>
                   <div
                     onClick={() => commercialLicenseRef.current?.click()}
@@ -415,6 +483,7 @@ export const CompleteProfile: React.FC = () => {
                           } else {
                             setCommercialLicensePreview('pdf');
                           }
+                          clearError('commercialLicense');
                         }
                       }}
                       accept="image/jpeg,image/png,image/jpg,application/pdf"
@@ -427,6 +496,7 @@ export const CompleteProfile: React.FC = () => {
                       <span className="text-xs">{t('upload_files') || 'Upload File'}</span>
                     )}
                   </div>
+                  {errors.commercialLicense && <p className="text-xs text-red-500 px-1">{errors.commercialLicense}</p>}
                 </div>
 
                 {/* Manager National Number */}
@@ -437,12 +507,14 @@ export const CompleteProfile: React.FC = () => {
                       <CreditCard size={18} />
                     </div>
                     <input
+                      id="field-nationalNumberManager"
                       type="tel"
                       inputMode="numeric"
                       value={nationalNumberManager}
                       onChange={(e) => {
                         const digits = normalizeArabicNumbers(e.target.value).replace(/\D/g, '').slice(0, 12);
                         setNationalNumberManager(digits);
+                        clearError('nationalNumberManager');
                       }}
                       className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary transition-all"
                       required
@@ -451,23 +523,28 @@ export const CompleteProfile: React.FC = () => {
                       dir="ltr"
                     />
                   </div>
+                  {errors.nationalNumberManager && <p className="text-xs text-red-500 px-1">{errors.nationalNumberManager}</p>}
                 </div>
 
                 {/* Manager Phone */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" id="field-phoneManager">
                   <label className="text-xs font-bold text-primary px-1">{t('responsible_number') || 'Manager Phone'} *</label>
                   <div className="relative">
                     <PhoneInput
                       value={phoneManager}
-                      onChange={setPhoneManager}
+                      onChange={(val) => {
+                        setPhoneManager(val);
+                        clearError('phoneManager');
+                      }}
                       onCountryChange={(c: ApiCountry) => setPhoneManagerCountryId(c.id)}
                       placeholder={t('responsible_number') || 'Responsible Number'}
                     />
                   </div>
+                  {errors.phoneManager && <p className="text-xs text-red-500 px-1">{errors.phoneManager}</p>}
                 </div>
 
                 {/* Manager ID Image */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" id="field-managerIdImage">
                   <label className="text-xs font-bold text-primary px-1">{t('responsible_id_file') || 'Manager ID Image'} *</label>
                   <div
                     onClick={() => managerIdImageRef.current?.click()}
@@ -482,6 +559,7 @@ export const CompleteProfile: React.FC = () => {
                         if (file) {
                           setManagerIdImageFile(file);
                           setManagerIdImagePreview(URL.createObjectURL(file));
+                          clearError('managerIdImage');
                         }
                       }}
                       accept="image/jpeg,image/png,image/jpg,image/webp"
@@ -492,17 +570,23 @@ export const CompleteProfile: React.FC = () => {
                       <span className="text-xs">{t('upload_responsible_id') || 'Upload ID'}</span>
                     )}
                   </div>
+                  {errors.managerIdImage && <p className="text-xs text-red-500 px-1">{errors.managerIdImage}</p>}
                 </div>
 
                 {/* Description */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-primary px-1">{t('description') || 'Description'} *</label>
                   <textarea
+                    id="field-description"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      clearError('description');
+                    }}
                     className="w-full min-h-[100px] bg-background border border-border rounded-xl p-4 text-sm text-primary transition-all resize-y"
                     required
                   />
+                  {errors.description && <p className="text-xs text-red-500 px-1">{errors.description}</p>}
                 </div>
               </>
             )}

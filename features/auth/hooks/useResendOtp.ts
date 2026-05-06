@@ -12,9 +12,11 @@ interface ResendOtpResponse {
 
 export const useResendOtp = () => {
   return useMutation({
-    mutationFn: async (phone: string) => {
+    mutationFn: async ({ phone, country_id }: { phone: string; country_id: number }) => {
       const formData = new FormData();
       formData.append('phone', phone);
+      formData.append('county_id', String(country_id));
+
 
       const response = await apiFetch(`${API_BASE_URL}/auth/resend-otp`, {
         method: 'POST',

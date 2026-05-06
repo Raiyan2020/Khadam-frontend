@@ -115,7 +115,7 @@ export const SignUp: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 
