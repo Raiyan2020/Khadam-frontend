@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button, Skeleton } from './GlassUI';
 import { useLanguage } from '../i18n';
@@ -40,8 +40,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   const [maxAge, setMaxAge] = useState<number | ''>(initialCriteria?.maxAge || '');
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>(initialCriteria?.languages || []);
 
-  if (!isOpen) return null;
-
   const handleApply = () => {
     onApply({
       maxSalary: maxSalary === '' ? undefined : Number(maxSalary),
@@ -67,17 +65,45 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
     setSelectedLanguages([]);
   };
 
-  return (
-    <div className="fixed h-screen inset-0 z-50 overflow-y-auto !mt-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="min-h-full flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div className="w-full   max-h-[70dvh] no-scrollbar overflow-y-auto relative sm:w-[400px] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300 sm:pb-0 pb-20">
-          <div className="flex items-center justify-between p-5 border-b border-zinc-800">
-            <h2 className="text-lg font-bold text-white">{t('filter_title')}</h2>
-            <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
-              <X size={24} />
-            </button>
-          </div>
+  // Lock background scroll and signal Layout while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const main = document.querySelector('main');
+    if (main) {
+      const prev = main.style.overflow;
+      main.style.overflow = 'hidden';
+      document.dispatchEvent(new CustomEvent('filter-modal-change', { detail: { open: true } }));
+      return () => {
+        main.style.overflow = prev;
+        document.dispatchEvent(new CustomEvent('filter-modal-change', { detail: { open: false } }));
+      };
+    }
+    document.dispatchEvent(new CustomEvent('filter-modal-change', { detail: { open: true } }));
+    return () => {
+      document.dispatchEvent(new CustomEvent('filter-modal-change', { detail: { open: false } }));
+    };
+  }, [isOpen]);
 
+  if (!isOpen) return null;
+
+
+  return (
+    <div className="fixed inset-0 h-screen  z-[200] flex flex-col items-end sm:items-center justify-end  !mt-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      {/* Tap-outside to close */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Sheet / dialog */}
+      <div className="relative w-full sm:w-[400px] flex flex-col max-h-[85dvh] sm:max-h-[80vh] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-bottom-16 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500 ease-out">
+        {/* Sticky header */}
+        <div className="shrink-0 flex items-center justify-between p-5 border-b border-zinc-800">
+          <h2 className="text-lg font-bold text-white">{t('filter_title')}</h2>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
           <div className="p-5 space-y-5">
             {/* Salary */}
             <div className="space-y-2">
@@ -213,15 +239,16 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
               />
             </div>
           </div>
+        </div>
 
-          <div className="sticky bottom-0 bg-black/10 backdrop-blur-sm p-5 border-t border-zinc-800 flex gap-3">
-            <Button variant="secondary" className="flex-1 !bg-zinc-800 !text-white hover:!bg-zinc-700 !border-zinc-700" onClick={handleReset}>
-              {t('reset_filter')}
-            </Button>
-            <Button className="flex-1" onClick={handleApply}>
-              {t('apply_filters')}
-            </Button>
-          </div>
+        {/* Sticky action buttons */}
+        <div className="shrink-0 bg-black/10 backdrop-blur-sm p-5 border-t border-zinc-800 flex gap-3">
+          <Button variant="secondary" className="flex-1 !bg-zinc-800 !text-white hover:!bg-zinc-700 !border-zinc-700" onClick={handleReset}>
+            {t('reset_filter')}
+          </Button>
+          <Button className="flex-1" onClick={handleApply}>
+            {t('apply_filters')}
+          </Button>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ interface GlassCardProps {
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({ children, className = '', onClick }) => (
-  <div 
+  <div
     onClick={onClick}
     className={`bg-glass backdrop-blur-xl border border-border shadow-sm rounded-[18px] p-4 ${className} ${onClick ? 'cursor-pointer active:scale-[0.98] transition-transform duration-200' : ''}`}
   >
@@ -24,15 +24,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', fullWidth = false, className = '', ...props }) => {
   const baseStyle = "h-[44px] rounded-[14px] font-medium text-sm flex items-center justify-center transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed px-6 focus:outline-none focus:ring-4 focus:ring-[var(--focus-ring)]";
-  
+
   const variants = {
     primary: "bg-accent text-accent-fg shadow-lg shadow-brand-500/20 hover:bg-accent-hover",
     secondary: "bg-surface border border-border text-primary hover:bg-glassHigh",
     glass: "bg-glass border border-border text-primary hover:bg-glassHigh"
   };
-  
+
   return (
-    <button 
+    <button
       className={`${baseStyle} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...props}
     >
@@ -48,7 +48,7 @@ export const Badge: React.FC<{ children: React.ReactNode; color?: 'accent' | 'gr
     red: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
     neutral: "bg-glassHigh text-secondary border-border"
   };
-  
+
   return (
     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${colors[color]}`}>
       {children}
@@ -70,7 +70,7 @@ export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | '
 
 export const Switch: React.FC<{ checked?: boolean; onChange?: (checked: boolean) => void; disabled?: boolean }> = ({ checked = false, onChange, disabled }) => {
   return (
-    <div 
+    <div
       onClick={(e) => {
         e.stopPropagation();
         if (!disabled && onChange) onChange(!checked);
@@ -100,7 +100,7 @@ export const SearchInput: React.FC<{
       <input
         type="text"
         placeholder={placeholder || t('search_placeholder')}
-        className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-4 focus:ring-[var(--focus-ring)] transition-all"
+        className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-1 focus:ring-[var(--focus-ring)] transition-all"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
@@ -134,7 +134,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, descriptio
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
         onClick={onClose}
       />

@@ -13,6 +13,7 @@ import { useCountries } from '../features/auth/hooks/useCountries';
 import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
 import { useCompanyHomeData } from '../features/auth/hooks/useCompanyHomeData';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
+import { useUnreadNotifications } from '../features/auth/hooks/useNotifications';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -91,6 +92,8 @@ export const Home: React.FC = () => {
 
   const { data: homeData, isLoading: isLoadingHome } = useHomeData(!isCompany);
   const { data: companyHomeData, isLoading: isLoadingCompanyHome } = useCompanyHomeData(isCompany);
+  const { data: unreadNotificationsData } = useUnreadNotifications();
+  const hasUnreadNotifications = (unreadNotificationsData?.pages[0]?.pagination?.total || 0) > 0;
 
   const [lastViewedIds, setLastViewedIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('last_viewed_workers');
@@ -210,7 +213,9 @@ export const Home: React.FC = () => {
             aria-label={t('nav_notifications')}
           >
             <Bell size={20} />
-            <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
+            {hasUnreadNotifications && (
+              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
+            )}
           </button>
         </div>
 

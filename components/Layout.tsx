@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Heart, User, Building2, LayoutList, Inbox, Award, Plus } from 'lucide-react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { UserRole } from '../types';
@@ -21,6 +21,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isHomeActive = location.pathname === '/' || location.pathname.startsWith('/country') || location.pathname.startsWith('/search');
   const isProfileActive = location.pathname === '/profile' || location.pathname === '/settings';
 
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  useEffect(() => {
+    const handler = (e: Event) => setIsFilterOpen((e as CustomEvent<{ open: boolean }>).detail.open);
+    document.addEventListener('filter-modal-change', handler);
+    return () => document.removeEventListener('filter-modal-change', handler);
+  }, []);
+
   return (
     <div className="w-full flex justify-center bg-[var(--bg-app)] transition-colors duration-300 overflow-hidden" style={{ height: 'var(--app-height, 100dvh)' }} dir={dir}>
       <div className="w-full max-w-[991px] bg-background relative flex flex-col shadow-2xl overflow-hidden sm:rounded-[28px] sm:border sm:border-border transition-colors duration-300" style={{ height: 'var(--app-height, 100dvh)' }}>
@@ -30,7 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </main>
 
         {/* Bottom Navigation */}
-        {!hideNav && (
+        {!hideNav && !isFilterOpen && (
           <div className="shrink-0 z-50 bg-background/80 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
             <div className={`grid ${isSeeker ? 'grid-cols-4' : 'grid-cols-5'} h-[80px] items-start pt-3 relative`}>
               <NavItem
