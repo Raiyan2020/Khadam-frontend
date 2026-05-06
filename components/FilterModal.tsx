@@ -40,6 +40,23 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   const [maxAge, setMaxAge] = useState<number | ''>(initialCriteria?.maxAge || '');
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>(initialCriteria?.languages || []);
 
+  // Track the actual visible viewport height (excludes browser toolbar)
+  const [visualHeight, setVisualHeight] = useState<number>(
+    () => (typeof window !== 'undefined' ? (window.visualViewport?.height ?? window.innerHeight) : 600)
+  );
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setVisualHeight(vv.height);
+    update();
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+
   const handleApply = () => {
     onApply({
       maxSalary: maxSalary === '' ? undefined : Number(maxSalary),
@@ -88,12 +105,15 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
 
 
   return (
-    <div className="fixed inset-0 h-screen  z-[200] flex flex-col items-end sm:items-center justify-end  !mt-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-x-0 top-0 z-[200] flex flex-col items-end sm:items-center justify-end !mt-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      style={{ height: `${visualHeight}px` }}
+    >
       {/* Tap-outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet / dialog */}
-      <div className="relative w-full sm:w-[400px] flex flex-col max-h-[85dvh] sm:max-h-[80vh] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-bottom-16 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500 ease-out">
+      <div className="relative w-full sm:w-[400px] flex flex-col max-h-[85svh] sm:max-h-[80vh] bg-black rounded-t-3xl sm:rounded-3xl border border-zinc-800 shadow-2xl animate-in fade-in slide-in-from-bottom-16 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-500 ease-out">
         {/* Sticky header */}
         <div className="shrink-0 flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-lg font-bold text-white">{t('filter_title')}</h2>
@@ -242,7 +262,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
         </div>
 
         {/* Sticky action buttons */}
-        <div className="shrink-0 bg-black/10 backdrop-blur-sm p-5 border-t border-zinc-800 flex gap-3">
+        <div className="shrink-0 bg-black/10 backdrop-blur-sm p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-zinc-800 flex gap-3">
           <Button variant="secondary" className="flex-1 !bg-zinc-800 !text-white hover:!bg-zinc-700 !border-zinc-700" onClick={handleReset}>
             {t('reset_filter')}
           </Button>
