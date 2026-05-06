@@ -10,23 +10,29 @@ import { useCountries } from '../features/auth/hooks/useCountries';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
 
-// ─── Zod Schema ──────────────────────────────────────────────────────────────
-const getAdSchema = (t: any) => z.object({
-  image: z.instanceof(File, { message: t('v_image_required') }),
-  category_id: z.number({ message: t('v_category_required') }).min(1, t('v_category_required')),
-  title: z.string().min(3, t('v_title_min')).max(255, t('v_title_max')),
-  worker_name: z.string().min(3, t('v_worker_name_min')).max(255, t('v_worker_name_max')),
-  country_id: z.number({ message: t('v_nationality_required') }).min(1, t('v_nationality_required')),
-  age: z.number({ message: t('v_age_required') }).min(1, t('v_age_min')).max(100, t('v_age_max')),
-  description: z.string().min(3, t('v_description_min')).max(500, t('v_description_max')),
-  years_experience: z.number().min(0, t('v_experience_min')).max(100, t('v_experience_max')),
-  salary: z.number().min(0, t('v_salary_min')).max(1000000, t('v_salary_max')),
-  is_available: z.boolean(),
-  gender: z.enum(['male', 'female'], { message: t('v_gender_required') }),
-  languages: z.array(z.number()).min(1, t('v_languages_min')),
-});
+// ─── Zod Schemas per step ─────────────────────────────────────────────────────
+const getStep1Schema = (t: any) =>
+  z.object({
+    image: z.instanceof(File, { message: t('v_image_required') }),
+    category_id: z.number({ message: t('v_category_required') }).min(1, t('v_category_required')),
+  });
 
-type AdForm = z.infer<ReturnType<typeof getAdSchema>>;
+const getStep2Schema = (t: any) =>
+  z.object({
+    title: z.string().min(3, t('v_title_min')).max(255, t('v_title_max')),
+    worker_name: z.string().min(3, t('v_worker_name_min')).max(255, t('v_worker_name_max')),
+    country_id: z.number({ message: t('v_nationality_required') }).min(1, t('v_nationality_required')),
+    age: z.number({ message: t('v_age_required') }).min(1, t('v_age_min')).max(99, t('v_age_max')),
+    description: z.string().min(3, t('v_description_min')).max(500, t('v_description_max')),
+    gender: z.enum(['male', 'female'], { message: t('v_gender_required') }),
+  });
+
+const getStep3Schema = (t: any, maxExperience: number) =>
+  z.object({
+    languages: z.array(z.number()).min(1, t('v_languages_min')),
+    years_experience: z.number().min(0, t('v_experience_min')).max(maxExperience, `${t('v_experience_max') || 'Max experience'} ${maxExperience}`),
+    salary: z.number().min(0, t('v_salary_min')).max(1000000, t('v_salary_max')),
+  });
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export const PublishAd: React.FC = () => {
@@ -54,13 +60,21 @@ export const PublishAd: React.FC = () => {
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [selectedLanguages, setSelectedLanguages] = useState<number[]>([]);
 
+  // Per-field error state
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Clear a specific field error when the user edits it
+  const clearError = (key: string) =>
+    setErrors(prev => { const n = { ...prev }; delete n[key]; return n; });
 
   // ── Image handler ──────────────────────────────────────────────────────────
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setImageFile(file);
+    clearError('image');
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -70,24 +84,47 @@ export const PublishAd: React.FC = () => {
     setSelectedLanguages(prev =>
       prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]
     );
+    clearError('languages');
   };
 
-  // ── Step validation ────────────────────────────────────────────────────────
+  // ── Step validation via Zod ─────────────────────────────────────────────────
   const validateStep = (currentStep: number): boolean => {
+    let result: z.SafeParseReturnType<any, any>;
+
     if (currentStep === 1) {
-      if (!imageFile) { toast.error(t('v_image_required') || 'Worker image is required'); return false; }
-      if (!categoryId) { toast.error(t('v_category_required') || 'Please select a category'); return false; }
-      return true;
+      result = getStep1Schema(t).safeParse({
+        image: imageFile,
+        category_id: categoryId,
+      });
+    } else if (currentStep === 2) {
+      result = getStep2Schema(t).safeParse({
+        title,
+        worker_name: workerName,
+        country_id: countryId,
+        age: age ? Number(age) : undefined,
+        description,
+        gender: gender || undefined,
+      });
+    } else {
+      const maxExp = age ? Math.max(0, Number(age) - 10) : 100;
+      result = getStep3Schema(t, maxExp).safeParse({
+        languages: selectedLanguages,
+        years_experience: yearsExperience ? Number(yearsExperience) : 0,
+        salary: salary ? Number(salary) : 0,
+      });
     }
-    if (currentStep === 2) {
-      if (title.trim().length < 3) { toast.error(t('v_title_min') || 'Title must be at least 3 characters'); return false; }
-      if (workerName.trim().length < 3) { toast.error(t('v_worker_name_min') || 'Worker name must be at least 3 characters'); return false; }
-      if (!countryId) { toast.error(t('v_nationality_required') || 'Please select a nationality'); return false; }
-      if (!age || Number(age) < 1) { toast.error(t('v_age_min') || 'Please enter a valid age'); return false; }
-      if (Number(age) > 99) { toast.error(t('v_age_max') || 'Age max 99'); return false; }
-      if (description.trim().length < 3) { toast.error(t('v_description_min') || 'Description must be at least 3 characters'); return false; }
-      return true;
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach(issue => {
+        const key = issue.path[0] as string;
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return false;
     }
+
+    setErrors({});
     return true;
   };
 
@@ -97,6 +134,8 @@ export const PublishAd: React.FC = () => {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = () => {
+    if (!validateStep(3)) return;
+
     const payload = {
       image: imageFile as File,
       category_id: categoryId,
@@ -111,13 +150,6 @@ export const PublishAd: React.FC = () => {
       gender: gender as 'male' | 'female',
       languages: selectedLanguages,
     };
-
-    const schema = getAdSchema(t);
-    const result = schema.safeParse(payload);
-    if (!result.success) {
-      toast.error(result.error.issues[0].message);
-      return;
-    }
 
     storeAd.mutate(payload, {
       onSuccess: (data) => {
@@ -155,7 +187,7 @@ export const PublishAd: React.FC = () => {
               <p className="text-xs text-secondary ms-1 mb-1.5">{t('upload_photo')}</p>
               <div
                 onClick={() => imageInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-2xl p-8 flex flex-col items-center justify-center bg-glass hover:bg-glassHigh transition-colors cursor-pointer text-center relative overflow-hidden"
+                className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center bg-glass hover:bg-glassHigh transition-colors cursor-pointer text-center relative overflow-hidden ${errors.image ? 'border-red-500/60' : 'border-border'}`}
               >
                 {imagePreview ? (
                   <>
@@ -183,6 +215,7 @@ export const PublishAd: React.FC = () => {
                 className="hidden"
                 onChange={handleImageChange}
               />
+              {errors.image && <FieldError message={errors.image} />}
             </div>
 
             {/* Category */}
@@ -199,9 +232,11 @@ export const PublishAd: React.FC = () => {
                   {categories?.map(cat => (
                     <button
                       key={cat.id}
-                      onClick={() => setCategoryId(cat.id)}
+                      onClick={() => { setCategoryId(cat.id); clearError('category_id'); }}
                       className={`border rounded-xl p-3 text-center text-sm font-medium transition-all duration-200 ${categoryId === cat.id
-                          ? 'border-accent text-accent bg-accent/10'
+                        ? 'border-accent text-accent bg-accent/10'
+                        : errors.category_id
+                          ? 'bg-glass border-red-500/50 text-secondary'
                           : 'bg-glass border-border text-secondary hover:border-accent/50'
                         }`}
                     >
@@ -210,6 +245,7 @@ export const PublishAd: React.FC = () => {
                   ))}
                 </div>
               )}
+              {errors.category_id && <FieldError message={errors.category_id} />}
             </div>
           </div>
         )}
@@ -221,13 +257,15 @@ export const PublishAd: React.FC = () => {
               label={t('ad_title')}
               placeholder={t('ph_ad_title')}
               value={title}
-              onChange={setTitle}
+              error={errors.title}
+              onChange={v => { setTitle(v); clearError('title'); }}
             />
             <InputGroup
               label={t('worker_name')}
               placeholder={t('ph_worker_name')}
               value={workerName}
-              onChange={setWorkerName}
+              error={errors.worker_name}
+              onChange={v => { setWorkerName(v); clearError('worker_name'); }}
             />
 
             {/* Nationality dropdown */}
@@ -236,8 +274,8 @@ export const PublishAd: React.FC = () => {
               <div className="relative">
                 <select
                   value={countryId || ''}
-                  onChange={e => setCountryId(Number(e.target.value))}
-                  className="w-full h-12 bg-glass border border-border rounded-xl px-3 pe-10 text-sm text-primary appearance-none focus:outline-none focus:border-accent/50 focus:bg-glassHigh"
+                  onChange={e => { setCountryId(Number(e.target.value)); clearError('country_id'); }}
+                  className={`w-full h-12 bg-glass border rounded-xl px-3 pe-10 text-sm text-primary appearance-none focus:outline-none focus:bg-glassHigh ${errors.country_id ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
                 >
                   <option value="">{loadingCountries ? t('loading') : t('ph_select_nationality')}</option>
                   {countries?.map(c => (
@@ -246,6 +284,7 @@ export const PublishAd: React.FC = () => {
                 </select>
                 <ChevronDown size={16} className="absolute end-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
               </div>
+              {errors.country_id && <FieldError message={errors.country_id} />}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -254,15 +293,20 @@ export const PublishAd: React.FC = () => {
                 placeholder={t('ph_age')}
                 type="number"
                 value={age}
+                error={errors.age}
                 onChange={(val) => {
+                  clearError('age');
                   const cleaned = val.replace(/\D/g, '');
-                  if (!cleaned) {
-                    setAge('');
-                    return;
-                  }
+                  if (!cleaned) { setAge(''); setYearsExperience(''); return; }
                   const num = parseInt(cleaned, 10);
                   if (num <= 99) {
                     setAge(num.toString());
+                    // Clamp experience to (age - 10)
+                    const maxExp = Math.max(0, num - 10);
+                    if (yearsExperience && Number(yearsExperience) > maxExp) {
+                      setYearsExperience(maxExp.toString());
+                      clearError('years_experience');
+                    }
                   }
                 }}
               />
@@ -273,9 +317,11 @@ export const PublishAd: React.FC = () => {
                   {(['male', 'female'] as const).map(g => (
                     <button
                       key={g}
-                      onClick={() => setGender(g)}
+                      onClick={() => { setGender(g); clearError('gender'); }}
                       className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${gender === g
-                          ? 'border-accent text-accent bg-accent/10'
+                        ? 'border-accent text-accent bg-accent/10'
+                        : errors.gender
+                          ? 'bg-glass border-red-500/50 text-secondary'
                           : 'bg-glass border-border text-secondary hover:border-accent/50'
                         }`}
                     >
@@ -283,6 +329,7 @@ export const PublishAd: React.FC = () => {
                     </button>
                   ))}
                 </div>
+                {errors.gender && <FieldError message={errors.gender} />}
               </div>
             </div>
 
@@ -291,7 +338,8 @@ export const PublishAd: React.FC = () => {
               placeholder={t('ph_description')}
               textarea
               value={description}
-              onChange={setDescription}
+              error={errors.description}
+              onChange={v => { setDescription(v); clearError('description'); }}
             />
           </div>
         )}
@@ -301,18 +349,27 @@ export const PublishAd: React.FC = () => {
           <div className="space-y-5 animate-in fade-in slide-in-from-start-4 duration-300">
             <div className="grid grid-cols-2 gap-4">
               <InputGroup
-                label={`${t('experience')} (${t('exp_years')})`}
+                label={`${t('experience')} (${t('exp_years')})${age ? ` · max ${Math.max(0, Number(age) - 10)}` : ''}`}
                 placeholder={t('ph_experience')}
                 type="number"
                 value={yearsExperience}
-                onChange={setYearsExperience}
+                error={errors.years_experience}
+                onChange={v => {
+                  const maxExp = age ? Math.max(0, Number(age) - 10) : 100;
+                  const num = Number(v);
+                  if (v === '' || num <= maxExp) {
+                    setYearsExperience(v);
+                    clearError('years_experience');
+                  }
+                }}
               />
               <InputGroup
                 label={`${t('salary')} (KWD)`}
                 placeholder={t('ph_salary')}
                 type="number"
                 value={salary}
-                onChange={setSalary}
+                error={errors.salary}
+                onChange={v => { setSalary(v); clearError('salary'); }}
               />
             </div>
 
@@ -325,8 +382,8 @@ export const PublishAd: React.FC = () => {
                     key={String(val)}
                     onClick={() => setIsAvailable(val)}
                     className={`h-12 rounded-xl text-sm font-medium border transition-all duration-200 ${isAvailable === val
-                        ? 'border-accent text-accent bg-accent/10'
-                        : 'bg-glass border-border text-secondary hover:border-accent/50'
+                      ? 'border-accent text-accent bg-accent/10'
+                      : 'bg-glass border-border text-secondary hover:border-accent/50'
                       }`}
                   >
                     {val ? t('available') : t('reserved')}
@@ -345,14 +402,14 @@ export const PublishAd: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex flex-wrap gap-2 p-3 rounded-xl border transition-colors ${errors.languages ? 'border-red-500/40 bg-red-500/5' : 'border-transparent'}`}>
                   {languages?.map(lang => (
                     <button
                       key={lang.id}
                       onClick={() => toggleLanguage(lang.id)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 ${selectedLanguages.includes(lang.id)
-                          ? 'border-accent text-accent bg-accent/10'
-                          : 'bg-glass border-border text-secondary hover:border-accent/50'
+                        ? 'border-accent text-accent bg-accent/10'
+                        : 'bg-glass border-border text-secondary hover:border-accent/50'
                         }`}
                     >
                       {selectedLanguages.includes(lang.id) && <Check size={10} className="inline me-1" />}
@@ -361,6 +418,7 @@ export const PublishAd: React.FC = () => {
                   ))}
                 </div>
               )}
+              {errors.languages && <FieldError message={errors.languages} />}
             </div>
 
             {/* Ready summary */}
@@ -379,7 +437,7 @@ export const PublishAd: React.FC = () => {
         {/* Navigation Buttons */}
         <div className="pt-4 flex gap-3">
           {step > 1 && (
-            <Button variant="secondary" className="flex-1" onClick={() => setStep(s => s - 1)}>
+            <Button variant="secondary" className="flex-1" onClick={() => { setStep(s => s - 1); setErrors({}); }}>
               {t('go_back')}
             </Button>
           )}
@@ -405,19 +463,24 @@ export const PublishAd: React.FC = () => {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+const FieldError: React.FC<{ message: string }> = ({ message }) => (
+  <p className="text-xs text-red-500 mt-1 ms-1 animate-in fade-in slide-in-from-top-1 duration-200">{message}</p>
+);
+
 const InputGroup: React.FC<{
   label: string;
   placeholder: string;
   type?: string;
   textarea?: boolean;
   value: string;
+  error?: string;
   onChange: (val: string) => void;
-}> = ({ label, placeholder, type = 'text', textarea, value, onChange }) => (
+}> = ({ label, placeholder, type = 'text', textarea, value, error, onChange }) => (
   <div className="space-y-1.5">
     <label className="text-xs text-secondary ms-1">{label}</label>
     {textarea ? (
       <textarea
-        className="w-full h-24 bg-glass border border-border rounded-xl p-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-accent/50 focus:bg-glassHigh resize-none"
+        className={`w-full h-24 bg-glass border rounded-xl p-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:bg-glassHigh resize-none transition-colors ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -425,11 +488,12 @@ const InputGroup: React.FC<{
     ) : (
       <input
         type={type}
-        className="w-full h-12 bg-glass border border-border rounded-xl px-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-accent/50 focus:bg-glassHigh"
+        className={`w-full h-12 bg-glass border rounded-xl px-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:bg-glassHigh transition-colors ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
       />
     )}
+    {error && <FieldError message={error} />}
   </div>
 );
