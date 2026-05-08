@@ -101,7 +101,7 @@ export const PublishAd: React.FC = () => {
 
   // ── Step validation via Zod ─────────────────────────────────────────────────
   const validateStep = (currentStep: number): boolean => {
-    let result: z.SafeParseReturnType<any, any>;
+    let result: { success: true; data: any } | { success: false; error: z.ZodError };
 
     if (currentStep === 1) {
       result = getStep1Schema(t).safeParse({
