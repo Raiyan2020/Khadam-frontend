@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
+import { toast } from 'sonner';
 
 export interface PackageFeature {
   id: number;
@@ -120,7 +121,7 @@ export const useCheckCoupon = () => {
 };
 
 export const useSubscribe = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   return useMutation({
     mutationFn: async (payload: { package_id: number; coupon_num?: string }) => {
@@ -150,7 +151,11 @@ export const useSubscribe = () => {
     },
     onSuccess: (data) => {
       if (data?.data?.payment_url) {
+        toast.success(t('payment_redirect'));
         window.location.href = data.data.payment_url;
+      }
+      else {
+        toast.success(data.message)
       }
     },
   });

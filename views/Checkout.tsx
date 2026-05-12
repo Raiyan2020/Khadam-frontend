@@ -45,9 +45,7 @@ export const Checkout: React.FC = () => {
       package_id: packageData.id,
       coupon_num: couponData?.coupon_num
     }, {
-      onSuccess: (data) => {
-        toast.success(data.message || t('subscription_success'));
-      },
+
       onError: (error: any) => {
         toast.error(error.message);
       }
