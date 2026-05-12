@@ -47,6 +47,7 @@ export const useAdDetails = (adId: string) => {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept-Language': language,
+          'lang': language,
           'Accept': 'application/json',
         },
       });

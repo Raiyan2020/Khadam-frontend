@@ -5,6 +5,7 @@ import { useUserRole } from '../../../UserRoleContext';
 import { UserRole } from '../../../types';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
+import { useLanguage } from '../../../i18n';
 
 export interface VerifyOtpResponse {
   status: boolean;
@@ -28,7 +29,7 @@ export interface VerifyOtpResponse {
 export const useVerifyOtp = () => {
   const navigate = useNavigate();
   const { setUserRole } = useUserRole();
-
+  const { t } = useLanguage();
   return useMutation({
     mutationFn: async (verifyData: FormData) => {
       const response = await apiFetch(`${API_BASE_URL}/auth/verify-otp`, {
@@ -51,6 +52,7 @@ export const useVerifyOtp = () => {
       if (user.is_completed_profile === 1 && token) {
         // Login flow: profile complete + token given → go home
         localStorage.setItem('token', token);
+        toast.success(t('welcome_back'), { description: t('login_success') })
         navigate({ to: '/' });
       } else {
         // Sign-up flow OR incomplete profile: go to complete-profile

@@ -5,6 +5,8 @@ type Language = 'en' | 'ar';
 
 export const translations = {
   en: {
+    welcome_back: "Welcome back",
+    login_success: "Login successfully",
     app_name: "Khadam App",
     subtitle: "Find trusted domestic help",
     search_placeholder: "Search nationality, job...",
@@ -325,6 +327,8 @@ export const translations = {
     view_subscriptions_desc: "Get unlimited ads with a subscription plan"
   },
   ar: {
+    welcome_back: "أهلاً بك مجدداً",
+    login_success: "تم تسجيل الدخول بنجاح",
     app_name: "تطبيق خدم",
     subtitle: "اعثر على عمالة منزلية موثوقة",
     search_placeholder: "ابحث عن جنسية، وظيفة...",
