@@ -13,7 +13,7 @@ import { useProfile } from '../features/auth/hooks/useProfile';
 export const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { userRole } = useUserRole();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: profile, isLoading } = useProfile();
   const logoutMutation = useLogout();
 
@@ -61,7 +61,7 @@ export const UserProfile: React.FC = () => {
         <MenuButton icon={<FileText size={20} />} label={t('terms_conditions')} onClick={() => navigate({ to: '/terms' })} />
         <div className="pt-4">
           <MenuButton
-            icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
+            icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} className={`${language == "en" ? "rotate-180" : ""}`} />}
             label={logoutMutation.isPending ? t('loading') || 'Loading...' : t('logout')}
             danger
             onClick={() => logoutMutation.mutate()}

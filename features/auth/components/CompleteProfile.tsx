@@ -107,7 +107,7 @@ export const CompleteProfile: React.FC = () => {
     whatsapp: z.string().min(1, t('whatsapp_required') || 'WhatsApp is required'),
     email: z.string().email(t('invalid_email')).optional().or(z.literal('')),
     commercialLicense: z.any().refine((file) => file !== null, t('commercial_license_required')),
-    nationalNumberManager: z.string().min(1, t('manager_id_required')),
+    nationalNumberManager: z.string().min(12, t('manager_id_required')),
     phoneManager: z.string().min(1, t('manager_phone_required')),
     managerIdImage: z.any().refine((file) => file !== null, t('manager_id_image_required')),
     description: z.string().min(1, t('description_required')),
