@@ -166,10 +166,11 @@ export const PublishAd: React.FC = () => {
 
     storeAd.mutate(payload, {
       onSuccess: (data) => {
-        toast.success(data.message || 'Ad published successfully!');
         if (data.data?.payment_url) {
+          toast.success(t('payment_redirect'));
           window.location.href = data.data.payment_url;
         } else {
+          toast.success(data.message || 'Ad published successfully!');
           navigate({ to: '/my-ads' });
         }
       },

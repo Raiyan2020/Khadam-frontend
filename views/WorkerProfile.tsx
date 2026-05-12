@@ -44,7 +44,10 @@ export const WorkerProfile: React.FC = () => {
       company_id: worker.office.id,
       ad_id: worker.id
     });
-    const whatsappLink = `https://wa.me/${worker.office.whatsapp}?text=${encodeURIComponent(`Hi, I am interested in ${worker.worker_name} (ID: ${worker.id}) from your listings.`)}`;
+    const whatsappMessage = t('whatsapp_interest')
+      .replace('{name}', worker.worker_name)
+      .replace('{id}', String(worker.id));
+    const whatsappLink = `https://wa.me/${worker.office.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(whatsappLink, '_blank', 'noopener,noreferrer');
   };
 

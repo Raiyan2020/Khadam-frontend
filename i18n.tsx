@@ -5,8 +5,10 @@ type Language = 'en' | 'ar';
 
 export const translations = {
   en: {
+    payment_redirect: "You will be redirected to the payment gateway",
     welcome_back: "Welcome back",
     login_success: "Login successfully",
+    whatsapp_interest: "Hi, I am interested in {name} (ID: {id}) from your listings.",
     app_name: "Khadam App",
     subtitle: "Find trusted domestic help",
     search_placeholder: "Search nationality, job...",
@@ -327,8 +329,10 @@ export const translations = {
     view_subscriptions_desc: "Get unlimited ads with a subscription plan"
   },
   ar: {
+    payment_redirect: "سيتم إعادة توجيهك إلى بوابة الدفع",
     welcome_back: "أهلاً بك مجدداً",
     login_success: "تم تسجيل الدخول بنجاح",
+    whatsapp_interest: "مرحباً، أنا مهتم بـ {name} (رقم: {id}) من قوائمكم.",
     app_name: "تطبيق خدم",
     subtitle: "اعثر على عمالة منزلية موثوقة",
     search_placeholder: "ابحث عن جنسية، وظيفة...",
