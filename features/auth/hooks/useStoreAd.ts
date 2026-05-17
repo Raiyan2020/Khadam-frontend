@@ -28,7 +28,6 @@ export const useStoreAd = () => {
     mutationFn: async (payload: StoreAdPayload) => {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-
       formData.append('image', payload.image);
       formData.append('category_id', String(payload.category_id));
       formData.append('title', payload.title);

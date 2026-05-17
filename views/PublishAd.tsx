@@ -11,6 +11,7 @@ import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { normalizeArabicNumbers } from '../lib/numbers';
+import { compressToWebP } from '../lib/imageUtils';
 
 // ─── Zod Schemas per step ─────────────────────────────────────────────────────
 const getStep1Schema = (t: any) =>
@@ -83,14 +84,23 @@ export const PublishAd: React.FC = () => {
     setErrors(prev => { const n = { ...prev }; delete n[key]; return n; });
 
   // ── Image handler ──────────────────────────────────────────────────────────
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setImageFile(file);
     clearError('image');
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    try {
+      const webpFile = await compressToWebP(file);
+      setImageFile(webpFile);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(webpFile);
+    } catch {
+      // Fallback to original file if conversion fails
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const toggleLanguage = (id: number) => {
@@ -425,14 +435,15 @@ export const PublishAd: React.FC = () => {
               <InputGroup
                 label={`${t('experience')} (${t('exp_years')})${age ? ` · max ${Math.max(0, Number(age) - 10)}` : ''}`}
                 placeholder={t('ph_experience')}
-                type="number"
+                type="tel"
                 value={yearsExperience}
                 error={errors.years_experience}
                 onChange={v => {
+                  const cleaned = normalizeArabicNumbers(v);
                   const maxExp = age ? Math.max(0, Number(age) - 10) : 100;
-                  const num = Number(v);
-                  if (v === '' || num <= maxExp) {
-                    setYearsExperience(v);
+                  const num = Number(cleaned);
+                  if (cleaned === '' || num <= maxExp) {
+                    setYearsExperience(cleaned);
                     clearError('years_experience');
                   }
                 }}
@@ -440,10 +451,10 @@ export const PublishAd: React.FC = () => {
               <InputGroup
                 label={`${t('salary')} (KWD)`}
                 placeholder={t('ph_salary')}
-                type="number"
+                type="tel"
                 value={salary}
                 error={errors.salary}
-                onChange={v => { setSalary(v); clearError('salary'); }}
+                onChange={v => { setSalary(normalizeArabicNumbers(v)); clearError('salary'); }}
               />
             </div>
 
