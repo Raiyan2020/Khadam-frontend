@@ -10,6 +10,7 @@ import { useCountries } from '../features/auth/hooks/useCountries';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
 import { useProfile } from '../features/auth/hooks/useProfile';
+import { normalizeArabicNumbers } from '../lib/numbers';
 
 // ─── Zod Schemas per step ─────────────────────────────────────────────────────
 const getStep1Schema = (t: any) =>
@@ -364,12 +365,12 @@ export const PublishAd: React.FC = () => {
               <InputGroup
                 label={t('age')}
                 placeholder={t('ph_age')}
-                type="number"
+                type="tel"
                 value={age}
                 error={errors.age}
                 onChange={(val) => {
                   clearError('age');
-                  const cleaned = val.replace(/\D/g, '');
+                  const cleaned = normalizeArabicNumbers(val);
                   if (!cleaned) { setAge(''); setYearsExperience(''); return; }
                   const num = parseInt(cleaned, 10);
                   if (num <= 99) {

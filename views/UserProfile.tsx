@@ -1,6 +1,6 @@
 import React from 'react';
-import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, RefreshCw, CheckCircle, FileText, Loader2 } from 'lucide-react';
-import { GlassCard, Button, Avatar } from '../components/GlassUI';
+import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, FileText, Loader2 } from 'lucide-react';
+import { GlassCard, Avatar } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
 
