@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
@@ -42,11 +42,20 @@ export interface AdFilterResponse {
   };
 }
 
-export const useAdFilter = () => {
+/**
+ * Reactive search query — re-fetches whenever `params` changes.
+ * Results are cached for 30 seconds so navigating back from a worker
+ * profile shows the cached list instantly (enabling scroll restoration).
+ */
+export const useAdFilter = (params: AdFilterParams) => {
   const { language } = useLanguage();
 
-  return useMutation({
-    mutationFn: async (params: AdFilterParams) => {
+  return useQuery({
+    // TanStack Query deep-compares the key array, so changing any param
+    // field automatically triggers a new fetch with the right cache slot.
+    queryKey: ['ad-filter', params, language],
+    staleTime: 30_000,
+    queryFn: async () => {
       const token = localStorage.getItem('token');
 
       const formData = new FormData();

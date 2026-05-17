@@ -6,6 +6,7 @@ import { useLanguage } from '../i18n';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useOfficeDetails, useOfficeAds } from '../features/auth/hooks/useOfficeDetails';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
+import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
 
 export const OfficeProfile: React.FC = () => {
   const { officeId } = useParams({ strict: false }) as { officeId: string };
@@ -17,6 +18,11 @@ export const OfficeProfile: React.FC = () => {
 
 
   const [page, setPage] = useState(1);
+
+  // Restore scroll when returning from a worker profile
+  React.useEffect(() => {
+    restoreScrollPosition(`office-${officeId}`);
+  }, [officeId]);
 
   const { data: office, isLoading: isLoadingOffice } = useOfficeDetails(officeId);
   const { data: adsResponse, isLoading: isLoadingAds } = useOfficeAds(officeId, page);
@@ -190,7 +196,10 @@ export const OfficeProfile: React.FC = () => {
                 {ads.map(ad => (
                   <div
                     key={ad.id}
-                    onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
+                    onClick={() => {
+                      saveScrollPosition(`office-${officeId}`, getScrollContainer()?.scrollTop ?? 0);
+                      navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any);
+                    }}
                     className="cursor-pointer group animate-in fade-in slide-in-from-bottom-2 duration-300"
                   >
                     <div className="aspect-[3/4] rounded-2xl overflow-hidden relative border border-border bg-glass shadow-sm">

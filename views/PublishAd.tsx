@@ -190,7 +190,7 @@ export const PublishAd: React.FC = () => {
 
   // ─── UI ───────────────────────────────────────────────────────────────────
   return (
-    <div className="px-4 pt-8 pb-28">
+    <div className="px-4 pt-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary transition-colors">
@@ -295,7 +295,7 @@ export const PublishAd: React.FC = () => {
               <input
                 ref={imageInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/jpg,image/gif"
+                accept="image/*"
                 className="hidden"
                 onChange={handleImageChange}
               />

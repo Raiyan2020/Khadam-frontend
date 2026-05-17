@@ -26,6 +26,7 @@ export const useMyLikes = (type: 'ad' | 'office') => {
 
   return useQuery({
     queryKey: ['my-likes', type, language],
+    staleTime: 30_000,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/likes/my-likes/${type}`, {

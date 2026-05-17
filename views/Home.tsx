@@ -14,6 +14,7 @@ import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
 import { useCompanyHomeData } from '../features/auth/hooks/useCompanyHomeData';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { useUnreadNotifications } from '../features/auth/hooks/useNotifications';
+import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -81,6 +82,11 @@ export const Home: React.FC = () => {
     };
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll position when returning from a worker profile
+  useEffect(() => {
+    restoreScrollPosition('home');
   }, []);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
   const { t, dir, language } = useLanguage();
@@ -187,6 +193,7 @@ export const Home: React.FC = () => {
     const newHistory = [id, ...lastViewedIds.filter(v => v !== id)].slice(0, 10);
     setLastViewedIds(newHistory);
     localStorage.setItem('last_viewed_workers', JSON.stringify(newHistory));
+    saveScrollPosition('home', getScrollContainer()?.scrollTop ?? 0);
     navigate({ to: '/worker/$workerId', params: { workerId: id } } as any);
   };
 

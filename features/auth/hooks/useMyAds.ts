@@ -31,6 +31,7 @@ export const useMyAds = () => {
 
   return useQuery({
     queryKey: ['myAds', language],
+    staleTime: 30_000,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/office/my-ads`, {

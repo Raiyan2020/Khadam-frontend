@@ -7,6 +7,7 @@ import { useUserRole } from '../UserRoleContext';
 import { useNavigate } from '@tanstack/react-router';
 import { useMyLikes, FavoriteAd, FavoriteOffice } from '../features/auth/hooks/useMyLikes';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
+import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
 
 export const Favorites: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,12 @@ export const Favorites: React.FC = () => {
 
   const { data: favoriteAds, isLoading: isLoadingAds } = useMyLikes('ad');
   const { data: favoriteOffices, isLoading: isLoadingOffices } = useMyLikes('office');
+
+  // Restore scroll position when returning from a worker profile
+  React.useEffect(() => {
+    restoreScrollPosition('favorites');
+  }, []);
+
   const handleToggleLike = (id: number, type: 'ad' | 'office') => {
     // This is now handled inside the components for better pending state tracking
   };
@@ -72,7 +79,10 @@ export const Favorites: React.FC = () => {
                 <FavoriteAdCard
                   key={ad.id}
                   ad={ad}
-                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
+                  onSelect={() => {
+                    saveScrollPosition('favorites', getScrollContainer()?.scrollTop ?? 0);
+                    navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any);
+                  }}
                   t={t}
                   isFavorite={true}
                   onToggleFavorite={() => handleToggleLike(ad.id, 'ad')}

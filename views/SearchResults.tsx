@@ -11,6 +11,7 @@ import { useNavigate, useSearch, useParams } from '@tanstack/react-router';
 import { SearchParams } from '../router';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
+import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
 
 export const SearchResults: React.FC = () => {
   const { category: paramCategory } = useParams({ strict: false }) as { category?: string };
@@ -19,7 +20,24 @@ export const SearchResults: React.FC = () => {
   const { t, dir, language } = useLanguage();
 
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { mutate: fetchResults, data: apiResponse, isPending } = useAdFilter();
+
+  // ── Active query params (drives useAdFilter reactively) ─────────────────────
+  const [queryParams, setQueryParams] = useState<AdFilterParams>(() => ({
+    worker_name: searchParams.query || undefined,
+    category_id: searchParams.category_id,
+    country_id: searchParams.country_id,
+    gender: searchParams.gender as AdFilterParams['gender'],
+    salary: searchParams.salary,
+    age: searchParams.age,
+    years_experience: searchParams.years_experience,
+    languages: searchParams.languages as number[] | undefined,
+    latest: searchParams.latest,
+    experience: searchParams.experience,
+    history: searchParams.history,
+    page: searchParams.page || 1,
+  }));
+
+  const { data: apiResponse, isPending } = useAdFilter(queryParams);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -40,6 +58,11 @@ export const SearchResults: React.FC = () => {
     };
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Restore scroll when returning from a worker profile
+  useEffect(() => {
+    restoreScrollPosition('search');
   }, []);
 
   const [filters, setFilters] = useState<FilterCriteria>({
@@ -77,7 +100,8 @@ export const SearchResults: React.FC = () => {
       page: overrides?.page ?? currentPage,
       ...overrides,
     };
-    fetchResults(params);
+
+    setQueryParams(params);
 
     // Update URL
     navigate({
@@ -95,13 +119,10 @@ export const SearchResults: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.category, filters.country_id, filters.gender,
     filters.maxSalary, filters.maxAge, filters.minExperience, filters.languages,
-    searchParams.country_id, searchParams.latest, searchParams.experience, searchParams.history, currentPage, fetchResults]);
+    searchParams.country_id, searchParams.latest, searchParams.experience, searchParams.history, currentPage]);
 
-  // Initial load
-  useEffect(() => {
-    doSearch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Initial load — no longer needed: useAdFilter fires automatically on mount
+  // useEffect(() => { doSearch(); }, []);
 
   // Sync on category change
   useEffect(() => {
@@ -311,7 +332,10 @@ export const SearchResults: React.FC = () => {
                 <AdCard
                   key={ad.id}
                   ad={ad}
-                  onSelect={() => navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any)}
+                  onSelect={() => {
+                    saveScrollPosition('search', getScrollContainer()?.scrollTop ?? 0);
+                    navigate({ to: '/worker/$workerId', params: { workerId: ad.id.toString() } } as any);
+                  }}
                   t={t}
                 />
               ))}

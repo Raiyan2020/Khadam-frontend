@@ -1,36 +1,48 @@
 /**
- * Compresses and converts any image File to WebP format using the browser Canvas API.
+ * Compresses any image (including iPhone HEIC) and converts it to WebP.
+ * Falls back to JPEG if the browser can't encode WebP from canvas.
  *
- * @param file      - The source image File (any format the browser can decode, incl. HEIC)
- * @param maxWidth  - Max width in pixels; image is scaled down proportionally (default 1200)
- * @param quality   - Encoding quality 0–1 (default 0.82)
- * @returns         A new File — WebP when the browser supports it, JPEG as fallback
+ * Key iOS Safari fix: HEIC files must be decoded via an <img> element that is
+ * temporarily appended to the DOM — without this, naturalWidth/naturalHeight
+ * stay 0 and canvas.toBlob produces an empty blob.
+ *
+ * @param file      - Source image File (HEIC, JPEG, PNG, WebP, …)
+ * @param maxWidth  - Max width in px; height is scaled proportionally (default 1200)
+ * @param quality   - Quality 0–1 for WebP/JPEG encoding (default 0.85)
+ * @returns         A new File — WebP, or JPEG as fallback
  */
 export const compressToWebP = (
   file: File,
   maxWidth = 1200,
-  quality = 0.82,
+  quality = 0.85,
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
-    // Use readAsDataURL instead of createObjectURL — required for HEIC on iOS Safari
     const reader = new FileReader();
 
     reader.onerror = () => reject(new Error('Failed to read image file'));
 
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
-      if (!dataUrl) {
-        reject(new Error('Empty data URL'));
-        return;
-      }
+      if (!dataUrl) { reject(new Error('Empty data URL')); return; }
 
       const img = new Image();
 
-      img.onerror = () => reject(new Error('Failed to decode image'));
+      img.onerror = () => {
+        // Clean up DOM node before rejecting
+        if (document.body.contains(img)) document.body.removeChild(img);
+        reject(new Error('Failed to decode image'));
+      };
 
       img.onload = () => {
-        // Calculate scaled dimensions
-        let { width, height } = img;
+        // naturalWidth is 0 when iOS Safari hasn't fully decoded the image yet
+        if (!img.naturalWidth || !img.naturalHeight) {
+          if (document.body.contains(img)) document.body.removeChild(img);
+          reject(new Error('Image decoded with zero dimensions'));
+          return;
+        }
+
+        // ── Resize ──────────────────────────────────────────────────────────
+        let { naturalWidth: width, naturalHeight: height } = img;
         if (width > maxWidth) {
           height = Math.round((height * maxWidth) / width);
           width = maxWidth;
@@ -42,15 +54,19 @@ export const compressToWebP = (
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
+          if (document.body.contains(img)) document.body.removeChild(img);
           reject(new Error('Canvas 2D context unavailable'));
           return;
         }
 
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Remove the temporary DOM node now that drawing is done
+        if (document.body.contains(img)) document.body.removeChild(img);
+
         const baseName = file.name.replace(/\.[^.]+$/, '');
 
-        // Try WebP first
+        // ── Encode → WebP (fallback JPEG) ────────────────────────────────────
         canvas.toBlob(
           (webpBlob) => {
             if (webpBlob && webpBlob.size > 0) {
@@ -63,7 +79,7 @@ export const compressToWebP = (
               return;
             }
 
-            // WebP not supported or produced an empty blob (older iOS Safari) — fall back to JPEG
+            // WebP encoding not supported → fall back to JPEG
             canvas.toBlob(
               (jpegBlob) => {
                 if (jpegBlob && jpegBlob.size > 0) {
@@ -86,6 +102,11 @@ export const compressToWebP = (
         );
       };
 
+      // ── Critical for HEIC on iOS Safari ─────────────────────────────────────
+      // iOS must see the <img> in the DOM to fully decode HEIC; without this
+      // naturalWidth stays 0 and canvas draw produces a blank/empty image.
+      img.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+      document.body.appendChild(img);
       img.src = dataUrl;
     };
 

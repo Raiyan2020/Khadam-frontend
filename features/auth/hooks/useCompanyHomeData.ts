@@ -52,6 +52,7 @@ export const useCompanyHomeData = (enabled: boolean) => {
   return useQuery({
     queryKey: ['companyHomeData', language],
     enabled,
+    staleTime: 30_000,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/company-home`, {

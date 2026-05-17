@@ -4,6 +4,8 @@ import { GlassCard, Button, Badge, Switch, Modal } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { useNavigate } from '@tanstack/react-router';
 import { useMyAds, useToggleAdAvailability, useDeleteAd } from '../features/auth/hooks/useMyAds';
+import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
+import { useEffect } from 'react';
 
 export const MyAds: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +15,11 @@ export const MyAds: React.FC = () => {
   const deleteAd = useDeleteAd();
 
   const [adToDelete, setAdToDelete] = useState<number | null>(null);
+
+  // Restore scroll when returning from worker profile
+  useEffect(() => {
+    restoreScrollPosition('my-ads');
+  }, []);
 
   const handleDeleteConfirm = () => {
     if (adToDelete) {
@@ -54,7 +61,10 @@ export const MyAds: React.FC = () => {
         ) : (
           ads.map(ad => (
             <GlassCard key={ad.id} className="group">
-              <div className="flex gap-3 mb-3" onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: String(ad.id) } } as any)}>
+              <div className="flex gap-3 mb-3" onClick={() => {
+                saveScrollPosition('my-ads', getScrollContainer()?.scrollTop ?? 0);
+                navigate({ to: '/worker/$workerId', params: { workerId: String(ad.id) } } as any);
+              }}>
                 <img
                   src={ad.image}
                   alt={ad.worker_name}
@@ -86,7 +96,10 @@ export const MyAds: React.FC = () => {
               <div className="flex gap-2 pt-3 border-t border-border">
                 <button
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
-                  onClick={() => navigate({ to: '/worker/$workerId', params: { workerId: String(ad.id) } } as any)}
+                  onClick={() => {
+                    saveScrollPosition('my-ads', getScrollContainer()?.scrollTop ?? 0);
+                    navigate({ to: '/worker/$workerId', params: { workerId: String(ad.id) } } as any);
+                  }}
                 >
                   <Eye size={14} /> {t('action_view')}
                 </button>

@@ -47,6 +47,7 @@ export const useOfficeDetails = (id: string) => {
 
   return useQuery({
     queryKey: ['office', id, language],
+    staleTime: 30_000,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/office/${id}`, {
@@ -72,6 +73,7 @@ export const useOfficeAds = (id: string, page: number = 1) => {
 
   return useQuery({
     queryKey: ['office-ads', id, page, language],
+    staleTime: 30_000,
     queryFn: async () => {
       const token = localStorage.getItem('token');
       const response = await apiFetch(`${API_BASE_URL}/office/${id}/ads?page=${page}`, {
