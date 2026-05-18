@@ -11,6 +11,7 @@ import { useUserRole } from '../UserRoleContext';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { useUpdateProfile } from '../features/auth/hooks/useUpdateProfile';
 import { useCountryCodes } from '../lib/useCountryCodes';
+import { toast } from 'sonner';
 
 export const EditProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -97,6 +98,14 @@ export const EditProfile: React.FC = () => {
   };
 
   const handleSave = () => {
+    if (isCompany) {
+      const { phone } = splitPhone(formData.whatsapp || '');
+      if (phone.length < 8) {
+        toast.error(t('phone_min_length') || 'يجب ألا يقل رقم الهاتف عن 8 أرقام');
+        return;
+      }
+    }
+
     const data = new FormData();
     Object.keys(formData).forEach(key => {
       if (formData[key] !== null && formData[key] !== undefined) {

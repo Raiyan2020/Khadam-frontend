@@ -104,7 +104,10 @@ export const CompleteProfile: React.FC = () => {
     location: z.any().refine((loc) => loc?.position !== null, t('location_required')),
     mapDesc: z.string().min(1, t('address_required')),
     website: z.string().url(t('invalid_url')).optional().or(z.literal('')),
-    whatsapp: z.string().min(1, t('whatsapp_required') || 'WhatsApp is required'),
+    whatsapp: z.string().min(8, t('whatsapp_required') || 'WhatsApp is required').refine(
+      (val) => splitPhone(val).phone.length >= 8,
+      t('phone_min_length')
+    ),
     email: z.string().email(t('invalid_email')).optional().or(z.literal('')),
     commercialLicense: z.any().refine((file) => file !== null, t('commercial_license_required')),
     nationalNumberManager: z.string().min(12, t('manager_id_required')),
