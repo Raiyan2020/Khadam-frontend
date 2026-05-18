@@ -432,7 +432,7 @@ export const CompleteProfile: React.FC = () => {
 
                 {/* WhatsApp */}
                 <div className="space-y-1.5" id="field-whatsapp">
-                  <label className="text-xs font-bold text-primary px-1">{t('whatsapp') || 'WhatsApp'} *</label>
+                  <label className="text-xs font-bold text-primary px-1">{t('whatsapp') || 'WhatsApp (Optional)'}</label>
                   <div className="relative">
                     <PhoneInput
                       value={whatsapp}
