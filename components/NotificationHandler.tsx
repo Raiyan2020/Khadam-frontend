@@ -9,13 +9,13 @@ export const NotificationHandler: React.FC = () => {
     const setupNotifications = async () => {
       const token = await requestForToken();
       const authToken = localStorage.getItem('token');
-      
+
       if (token && authToken) {
         try {
           const formData = new FormData();
           formData.append('fcm_token', token);
-          
-          await apiFetch(`${API_BASE_URL}/fcm-token`, {
+
+          await apiFetch(`${API_BASE_URL}/notifications`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,

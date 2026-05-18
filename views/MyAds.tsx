@@ -44,7 +44,7 @@ export const MyAds: React.FC = () => {
   const ads = myAdsData?.data || [];
 
   return (
-    <div className="pb-24 pt-6 px-4">
+    <div className="pb-24 pt-6 px-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-primary">{t('my_ads_title')}</h1>
         <Button onClick={() => navigate({ to: '/publish-ad' })} className="!h-9 !px-3 gap-2 !text-xs">
@@ -53,7 +53,7 @@ export const MyAds: React.FC = () => {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {ads.length === 0 ? (
           <div className="text-center py-20 text-secondary bg-glass rounded-2xl border border-border">
             <p>{t('no_my_ads')}</p>
@@ -68,7 +68,7 @@ export const MyAds: React.FC = () => {
                 <img
                   src={ad.image}
                   alt={ad.worker_name}
-                  className="w-16 h-16 object-cover rounded-lg bg-surface"
+                  className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl bg-surface flex-shrink-0"
                 />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
@@ -95,7 +95,7 @@ export const MyAds: React.FC = () => {
 
               <div className="flex gap-2 pt-3 border-t border-border">
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-secondary hover:text-primary hover:bg-glassHigh rounded-lg transition-colors"
                   onClick={() => {
                     saveScrollPosition('my-ads', getScrollContainer()?.scrollTop ?? 0);
                     navigate({ to: '/worker/$workerId', params: { workerId: String(ad.id) } } as any);
@@ -104,13 +104,13 @@ export const MyAds: React.FC = () => {
                   <Eye size={14} /> {t('action_view')}
                 </button>
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-secondary hover:text-accent hover:bg-glassHigh rounded-lg transition-colors"
                   onClick={() => navigate({ to: '/edit-ad/$adId', params: { adId: String(ad.id) } } as any)}
                 >
                   <Edit2 size={14} /> {t('action_edit')}
                 </button>
                 <button
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-secondary hover:text-red-500 hover:bg-glassHigh rounded-lg transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-secondary hover:text-red-500 hover:bg-glassHigh rounded-lg transition-colors"
                   onClick={() => setAdToDelete(ad.id)}
                 >
                   <Trash2 size={14} /> {t('action_delete')}

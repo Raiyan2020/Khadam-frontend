@@ -50,6 +50,10 @@ export const useStoreAd = () => {
           'Authorization': `Bearer ${token}`,
           'Accept-Language': language,
           'Accept': 'application/json',
+          // NOTE: Do NOT set Content-Type here.
+          // fetch auto-sets "multipart/form-data; boundary=<generated>"
+          // when the body is FormData. A manual value without the boundary
+          // causes the server to fail parsing the image field.
         },
         body: formData,
       });

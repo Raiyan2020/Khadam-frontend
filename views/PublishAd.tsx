@@ -11,7 +11,7 @@ import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
 import { useProfile } from '../features/auth/hooks/useProfile';
 import { normalizeArabicNumbers } from '../lib/numbers';
-import { compressToWebP } from '../lib/imageUtils';
+import { normalizeImageForUpload } from '../lib/imageUtils';
 
 // ─── Zod Schemas per step ─────────────────────────────────────────────────────
 const getStep1Schema = (t: any) =>
@@ -78,30 +78,55 @@ export const PublishAd: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+
+  // Close country dropdown on outside click
+  React.useEffect(() => {
+    if (!countryDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target as Node)) {
+        setCountryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [countryDropdownOpen]);
 
   // Clear a specific field error when the user edits it
   const clearError = (key: string) =>
     setErrors(prev => { const n = { ...prev }; delete n[key]; return n; });
 
   // ── Image handler ──────────────────────────────────────────────────────────
+  // iOS delivers HEIC camera photos where file.size may report 0.
+  // normalizeImageForUpload uses fetch(objectURL) to force the real data read.
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     clearError('image');
     try {
-      const webpFile = await compressToWebP(file);
-      setImageFile(webpFile);
+      const jpegFile = await normalizeImageForUpload(file);
+      setImageFile(jpegFile);
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(webpFile);
-    } catch {
-      // Fallback to original file if conversion fails
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(jpegFile);
+    } catch (err: any) {
+      // If the file genuinely has bytes, use it as-is (non-iOS case)
+      if (file.size > 0) {
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+      // File is truly empty — iOS didn't finish loading it. Ask the user to retry.
+      toast.error(
+        t('image_load_failed') ||
+        'فشل تحميل الصورة. يرجى إغلاق التطبيق وإعادة المحاولة.',
+      );
     }
   };
+
 
   const toggleLanguage = (id: number) => {
     setSelectedLanguages(prev =>
@@ -352,21 +377,60 @@ export const PublishAd: React.FC = () => {
               onChange={v => { setWorkerName(v); clearError('worker_name'); }}
             />
 
-            {/* Nationality dropdown */}
+            {/* Nationality custom dropdown */}
             <div className="space-y-1.5">
               <label className="text-xs text-secondary ms-1">{t('nationality')}</label>
-              <div className="relative">
-                <select
-                  value={countryId || ''}
-                  onChange={e => { setCountryId(Number(e.target.value)); clearError('country_id'); }}
-                  className={`w-full h-12 bg-glass border rounded-xl px-3 pe-10 text-sm text-primary appearance-none focus:outline-none focus:bg-glassHigh ${errors.country_id ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
+              <div className="relative" ref={countryDropdownRef}>
+                {/* Trigger button */}
+                <button
+                  type="button"
+                  onClick={() => setCountryDropdownOpen(o => !o)}
+                  className={`w-full h-12 bg-glass border rounded-xl px-3 pe-10 text-sm text-start flex items-center transition-colors ${errors.country_id
+                    ? 'border-red-500/60'
+                    : countryDropdownOpen
+                      ? 'border-accent/50 bg-glassHigh'
+                      : 'border-border'
+                    } ${countryId ? 'text-primary' : 'text-secondary'}`}
                 >
-                  <option value="">{loadingCountries ? t('loading') : t('ph_select_nationality')}</option>
-                  {countries?.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="absolute end-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+                  <span className="flex-1 truncate">
+                    {countryId
+                      ? countries?.find(c => c.id === countryId)?.name
+                      : (loadingCountries ? t('loading') : t('ph_select_nationality'))}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`absolute end-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none transition-transform duration-200 ${countryDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                  />
+                </button>
+
+                {/* Options list — rendered in-flow, no OS popup */}
+                {countryDropdownOpen && (
+                  <div className="absolute z-50 start-0 end-0 top-[calc(100%+4px)] bg-white dark:bg-zinc-900 border border-border rounded-xl shadow-xl overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto">
+                      <button
+                        type="button"
+                        className="w-full px-4 py-2.5 text-sm text-start text-secondary hover:bg-glassHigh transition-colors"
+                        onClick={() => { setCountryId(0); clearError('country_id'); setCountryDropdownOpen(false); }}
+                      >
+                        {t('ph_select_nationality')}
+                      </button>
+                      {countries?.map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`w-full px-4 py-2.5 text-sm text-start transition-colors ${countryId === c.id
+                            ? 'bg-accent/20 text-accent-text font-semibold'
+                            : 'text-primary hover:bg-glassHigh'
+                            }`}
+                          onClick={() => { setCountryId(c.id); clearError('country_id'); setCountryDropdownOpen(false); }}
+                        >
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               {errors.country_id && <FieldError message={errors.country_id} />}
             </div>
