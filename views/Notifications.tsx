@@ -208,7 +208,7 @@ export const Notifications: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-end justify-center" onClick={() => setSelectedNotif(null)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" />
           <div
-            className="relative w-full max-w-[991px] bg-background rounded-t-3xl border border-white border-b-0 shadow-2xl animate-in slide-in-from-bottom duration-300 p-6 pb-10"
+            className="relative w-full max-w-[991px] bg-white dark:bg-black/90 rounded-t-3xl border border-white border-b-0 shadow-2xl animate-in slide-in-from-bottom duration-300 p-6 pb-10"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-10 h-1 rounded-full bg-border mx-auto mb-6" />
@@ -221,10 +221,10 @@ export const Notifications: React.FC = () => {
             <div className="w-14 h-14 rounded-2xl bg-white border border-accent/20 flex items-center justify-center mb-4">
               <Bell size={26} className="text-accent" />
             </div>
-            <h2 className="text-lg font-bold text-white mb-2 leading-snug">{selectedNotif.data.title}</h2>
-            <span className="text-xs text-white mb-4 block">{selectedNotif.created_at_diff ?? selectedNotif.created_at}</span>
+            <h2 className="text-lg font-bold text-primary mb-2 leading-snug">{selectedNotif.data.title}</h2>
+            <span className="text-xs text-secondary mb-4 block">{selectedNotif.created_at_diff ?? selectedNotif.created_at}</span>
             <div className="border-t border-border mb-4" />
-            <p className="text-sm text-white leading-relaxed">{selectedNotif.data.description}</p>
+            <p className="text-sm text-secondary leading-relaxed">{selectedNotif.data.description}</p>
           </div>
         </div>
       )}
