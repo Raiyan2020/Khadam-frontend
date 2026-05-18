@@ -109,6 +109,15 @@
       }
     </style>
     <script>
+      try {
+        var savedTheme = localStorage.getItem('app_theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (savedTheme === 'system' && prefersDark) || (!savedTheme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch(e) {}
+    </script>
+    <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {

@@ -24,10 +24,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (e) {
       // Ignore localStorage errors
     }
-    return 'light';
+    return 'system';
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('app_theme') as Theme;
+        if (savedTheme === 'dark') return 'dark';
+        if (savedTheme === 'light') return 'light';
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+    } catch (e) {}
+    return 'light';
+  });
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
