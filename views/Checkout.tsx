@@ -131,7 +131,7 @@ export const Checkout: React.FC = () => {
         {/* Payment Method */}
         <div className="space-y-3">
           <h2 className="text-sm font-bold text-secondary uppercase tracking-wider px-1">{t('payment_method')}</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <PaymentOption
               id="knet"
               label={t('knet')}

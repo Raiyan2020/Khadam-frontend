@@ -108,7 +108,10 @@ export const CompleteProfile: React.FC = () => {
     email: z.string().email(t('invalid_email')).optional().or(z.literal('')),
     commercialLicense: z.any().refine((file) => file !== null, t('commercial_license_required')),
     nationalNumberManager: z.string().min(12, t('manager_id_required')),
-    phoneManager: z.string().min(1, t('manager_phone_required')),
+    phoneManager: z.string().min(8, t('manager_phone_required')).refine(
+      (val) => splitPhone(val).phone.length >= 8,
+      t('phone_min_length')
+    ),
     managerIdImage: z.any().refine((file) => file !== null, t('manager_id_image_required')),
     description: z.string().min(1, t('description_required')),
   });

@@ -239,7 +239,7 @@ export const EditAd: React.FC = () => {
         <InputGroup label={t('ad_title')} placeholder={t('ph_ad_title')} value={title} onChange={setTitle} />
         <InputGroup label={t('worker_name')} placeholder={t('ph_worker_name')} value={workerName} onChange={setWorkerName} />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           {/* Nationality */}
           <div className="space-y-1.5">
             <label className="text-xs text-secondary ms-1">{t('nationality')}</label>
@@ -262,13 +262,13 @@ export const EditAd: React.FC = () => {
 
         <InputGroup label={t('short_desc')} placeholder={t('ph_description')} textarea value={description} onChange={setDescription} />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <InputGroup label={`${t('experience')} (${t('exp_years')})`} placeholder={t('ph_experience')} type="number" value={yearsExperience} onChange={setYearsExperience} />
           <InputGroup label={`${t('salary')} (KWD)`} placeholder={t('ph_salary')} type="number" value={salary} onChange={setSalary} />
         </div>
 
         {/* Gender & Availability */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1.5">
             <label className="text-xs text-secondary ms-1">{t('gender')}</label>
             <div className="grid grid-cols-2 gap-2">

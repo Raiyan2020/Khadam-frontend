@@ -185,14 +185,14 @@ export const OfficeProfile: React.FC = () => {
           </div>
 
           {isLoadingAds ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />
               ))}
             </div>
           ) : ads.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 {ads.map(ad => (
                   <div
                     key={ad.id}

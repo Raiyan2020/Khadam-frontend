@@ -25,7 +25,7 @@ const getStep2Schema = (t: any) =>
     title: z.string().min(3, t('v_title_min')).max(255, t('v_title_max')),
     worker_name: z.string().min(3, t('v_worker_name_min')).max(255, t('v_worker_name_max')),
     country_id: z.number({ message: t('v_nationality_required') }).min(1, t('v_nationality_required')),
-    age: z.number({ message: t('v_age_required') }).min(1, t('v_age_min')).max(99, t('v_age_max')),
+    age: z.number({ message: t('v_age_required') }).min(18, t('v_age_min')).max(99, t('v_age_max')),
     description: z.string().min(3, t('v_description_min')).max(500, t('v_description_max')),
     gender: z.enum(['male', 'female'], { message: t('v_gender_required') }),
   });
@@ -40,7 +40,7 @@ const getStep3Schema = (t: any, maxExperience: number) =>
 // ─── Component ───────────────────────────────────────────────────────────────
 export const PublishAd: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, dir, language } = useLanguage();
   // step 0 = subscription gate, steps 1-3 = ad form
   const [step, setStep] = useState(0);
   const [isSingleAd, setIsSingleAd] = useState(false);
@@ -365,6 +365,7 @@ export const PublishAd: React.FC = () => {
             <InputGroup
               label={t('ad_title')}
               placeholder={t('ph_ad_title')}
+              dir={dir}
               value={title}
               error={errors.title}
               onChange={v => { setTitle(v); clearError('title'); }}
@@ -372,6 +373,7 @@ export const PublishAd: React.FC = () => {
             <InputGroup
               label={t('worker_name')}
               placeholder={t('ph_worker_name')}
+              dir={dir}
               value={workerName}
               error={errors.worker_name}
               onChange={v => { setWorkerName(v); clearError('worker_name'); }}
@@ -435,11 +437,13 @@ export const PublishAd: React.FC = () => {
               {errors.country_id && <FieldError message={errors.country_id} />}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <InputGroup
                 label={t('age')}
                 placeholder={t('ph_age')}
                 type="tel"
+                dir="ltr"
+                rtlPlaceholder={language === 'ar'}
                 value={age}
                 error={errors.age}
                 onChange={(val) => {
@@ -449,8 +453,8 @@ export const PublishAd: React.FC = () => {
                   const num = parseInt(cleaned, 10);
                   if (num <= 99) {
                     setAge(num.toString());
-                    // Clamp experience to (age - 10)
-                    const maxExp = Math.max(0, num - 10);
+                    // Clamp experience to (age - 18)
+                    const maxExp = Math.max(0, num - 18);
                     if (yearsExperience && Number(yearsExperience) > maxExp) {
                       setYearsExperience(maxExp.toString());
                       clearError('years_experience');
@@ -485,6 +489,7 @@ export const PublishAd: React.FC = () => {
               label={t('short_desc')}
               placeholder={t('ph_description')}
               textarea
+              dir={dir}
               value={description}
               error={errors.description}
               onChange={v => { setDescription(v); clearError('description'); }}
@@ -495,16 +500,18 @@ export const PublishAd: React.FC = () => {
         {/* ── Step 3: Experience, Salary, Languages ── */}
         {step === 3 && (
           <div className="space-y-5 animate-in fade-in slide-in-from-start-4 duration-300">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <InputGroup
-                label={`${t('experience')} (${t('exp_years')})${age ? ` · max ${Math.max(0, Number(age) - 10)}` : ''}`}
+                label={`${t('experience')} (${t('exp_years')})${age ? ` · max ${Math.max(0, Number(age) - 18)}` : ''}`}
                 placeholder={t('ph_experience')}
                 type="tel"
+                dir="ltr"
+                rtlPlaceholder={language === 'ar'}
                 value={yearsExperience}
                 error={errors.years_experience}
                 onChange={v => {
                   const cleaned = normalizeArabicNumbers(v);
-                  const maxExp = age ? Math.max(0, Number(age) - 10) : 100;
+                  const maxExp = age ? Math.max(0, Number(age) - 18) : 100;
                   const num = Number(cleaned);
                   if (cleaned === '' || num <= maxExp) {
                     setYearsExperience(cleaned);
@@ -516,6 +523,8 @@ export const PublishAd: React.FC = () => {
                 label={`${t('salary')} (KWD)`}
                 placeholder={t('ph_salary')}
                 type="tel"
+                dir="ltr"
+                rtlPlaceholder={language === 'ar'}
                 value={salary}
                 error={errors.salary}
                 onChange={v => { setSalary(normalizeArabicNumbers(v)); clearError('salary'); }}
@@ -621,15 +630,19 @@ const InputGroup: React.FC<{
   placeholder: string;
   type?: string;
   textarea?: boolean;
+  dir?: 'ltr' | 'rtl';
+  /** When true, aligns placeholder text to the right (for numeric ltr inputs with Arabic placeholders) */
+  rtlPlaceholder?: boolean;
   value: string;
   error?: string;
   onChange: (val: string) => void;
-}> = ({ label, placeholder, type = 'text', textarea, value, error, onChange }) => (
+}> = ({ label, placeholder, type = 'text', textarea, dir, rtlPlaceholder, value, error, onChange }) => (
   <div className="space-y-1.5">
     <label className="text-xs text-secondary ms-1">{label}</label>
     {textarea ? (
       <textarea
-        className={`w-full h-24 bg-glass border rounded-xl p-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:bg-glassHigh resize-none transition-colors ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
+        dir={dir}
+        className={`w-full h-24 bg-glass border rounded-xl p-3 text-sm text-primary placeholder-secondary/50 placeholder:text-xs focus:outline-none focus:bg-glassHigh resize-none transition-colors ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -637,7 +650,8 @@ const InputGroup: React.FC<{
     ) : (
       <input
         type={type}
-        className={`w-full h-12 bg-glass border rounded-xl px-3 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:bg-glassHigh transition-colors ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
+        dir={dir}
+        className={`w-full h-12 bg-glass border rounded-xl px-3 text-sm text-primary placeholder-secondary/50 placeholder:text-xs focus:outline-none focus:bg-glassHigh transition-colors ${rtlPlaceholder ? 'placeholder:text-right text-left' : ''} ${error ? 'border-red-500/60 focus:border-red-500/60' : 'border-border focus:border-accent/50'}`}
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
