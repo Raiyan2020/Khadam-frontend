@@ -215,7 +215,7 @@ export const PublishAd: React.FC = () => {
 
   // ─── UI ───────────────────────────────────────────────────────────────────
   return (
-    <div className="px-4 pt-8">
+    <div className="px-4 pt-8 max-w-xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary transition-colors">

@@ -313,7 +313,7 @@ export const SearchResults: React.FC = () => {
         </div>{/* /max-w-5xl */}
       </div>
 
-      <div className="p-5 max-w-5xl mx-auto space-y-4">
+      <div className="p-5 space-y-4">
         {/* Results count */}
         {!isPending && (
           <p className="text-sm text-secondary">

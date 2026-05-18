@@ -288,8 +288,6 @@ export const Home: React.FC = () => {
         </div>
         </div>{/* /max-w-5xl header inner */}
       </div>
-      {/* Page body */}
-      <div className="max-w-5xl mx-auto">
       {/* Company Dashboard */}
       {isCompany && (
         <div className="px-4 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -702,7 +700,6 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
       </div>
-      </div>{/* /max-w-5xl body */}
     </div>
   );
 };
