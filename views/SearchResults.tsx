@@ -202,6 +202,7 @@ export const SearchResults: React.FC = () => {
   return (
     <div className="pb-10 min-h-screen bg-background">
       <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
+        <div className="max-w-5xl mx-auto">
         {/* Header row */}
         <div className="flex items-center gap-3">
           <button
@@ -309,9 +310,10 @@ export const SearchResults: React.FC = () => {
             )}
           </div>
         </div>
+        </div>{/* /max-w-5xl */}
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-5 max-w-5xl mx-auto space-y-4">
         {/* Results count */}
         {!isPending && (
           <p className="text-sm text-secondary">
@@ -320,14 +322,14 @@ export const SearchResults: React.FC = () => {
         )}
 
         {isPending ? (
-          <div className="space-y-4">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="w-full h-36 rounded-[18px]" />
             ))}
           </div>
         ) : results.length > 0 ? (
           <>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {results.map(ad => (
                 <AdCard
                   key={ad.id}

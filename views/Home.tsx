@@ -200,6 +200,7 @@ export const Home: React.FC = () => {
   return (
     <div className="pb-10">
       <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
+        <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -285,12 +286,15 @@ export const Home: React.FC = () => {
             )}
           </div>
         </div>
+        </div>{/* /max-w-5xl header inner */}
       </div>
+      {/* Page body */}
+      <div className="max-w-5xl mx-auto">
       {/* Company Dashboard */}
       {isCompany && (
         <div className="px-4 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* WhatsApp Redirects */}
             <GlassCard className="p-4 flex flex-col gap-2 relative overflow-hidden">
               <div className="absolute -end-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl pointer-events-none" />
@@ -375,7 +379,7 @@ export const Home: React.FC = () => {
             </GlassCard>
 
             {/* Subscription */}
-            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 relative overflow-hidden">
+            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 lg:col-span-4 relative overflow-hidden">
               <div className="absolute end-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0">
@@ -414,7 +418,7 @@ export const Home: React.FC = () => {
       {!isSeeker && !isCompany && (
         <div className="px-4 mt-6 mb-4 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h2 className="text-sm font-bold text-primary">{t('analytics_dashboard') || 'Overview Analytics'}</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* WhatsApp Redirects */}
             <GlassCard className="p-4 flex flex-col gap-2 relative overflow-hidden">
               <div className="absolute -end-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl pointer-events-none" />
@@ -538,7 +542,7 @@ export const Home: React.FC = () => {
             </GlassCard>
 
             {/* Package Expiry */}
-            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 relative overflow-hidden">
+            <GlassCard className="p-4 flex flex-col justify-center gap-3 col-span-2 lg:col-span-4 relative overflow-hidden">
               <div className="absolute end-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 flex items-center justify-center shrink-0">
@@ -560,13 +564,13 @@ export const Home: React.FC = () => {
         </div>
       )}
 
-      <div className="space-y-8 mt-6">
+      <div className="space-y-8 mt-6 pb-4">
         {/* Nationality Section */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-4">
             <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
           </div>
-          <div className="flex gap-6 overflow-x-auto no-scrollbar px-4 pb-2">
+          <div className="flex md:flex-wrap gap-6 overflow-x-auto md:overflow-x-visible no-scrollbar px-4 pb-2">
             {isLoadingCountries ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 shrink-0">
@@ -608,7 +612,7 @@ export const Home: React.FC = () => {
           const historyData = isCompany ? companyHomeData?.history : homeData?.history;
           return historyData && historyData.length > 0 && (
             <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
-              <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
+              <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
                 {historyData.map((worker: any) => (
                   <CompactCard
                     key={worker.id}
@@ -629,7 +633,7 @@ export const Home: React.FC = () => {
           const availableAds = isCompany ? companyHomeData?.available_ads : homeData?.available_ads;
           return isLoading ? (
             <SectionContainer title={t('section_available')} canShowAll={false}>
-              <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
+              <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
                 ))}
@@ -638,7 +642,7 @@ export const Home: React.FC = () => {
           ) : (
             availableAds && availableAds.length > 0 && (
               <SectionContainer title={t('section_available')} canShowAll={false}>
-                <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
+                <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
                   {availableAds.map((worker: any) => (
                     <CompactCard
                       key={worker.id}
@@ -656,9 +660,9 @@ export const Home: React.FC = () => {
 
         {/* Latest ads */}
         <SectionContainer title={t('section_newest')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'newest', latest: 1 } } as any)}>
-          <div className="px-4 space-y-4">
+          <div className="px-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
-              Array.from({ length: 3 }).map((_, i) => (
+              Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
               ))
             ) : (
@@ -678,9 +682,9 @@ export const Home: React.FC = () => {
 
         {/* Most experienced ads */}
         <SectionContainer title={t('section_experience')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'experience', experience: 1 } } as any)}>
-          <div className="px-4 space-y-4">
+          <div className="px-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             {(isCompany ? isLoadingCompanyHome : isLoadingHome) ? (
-              Array.from({ length: 3 }).map((_, i) => (
+              Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="w-full h-40 rounded-[18px]" />
               ))
             ) : (
@@ -698,7 +702,7 @@ export const Home: React.FC = () => {
           </div>
         </SectionContainer>
       </div>
-
+      </div>{/* /max-w-5xl body */}
     </div>
   );
 };
