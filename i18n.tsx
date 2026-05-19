@@ -467,7 +467,6 @@ export const translations = {
     apply_filters: "تطبيق التصفية",
     any: "الكل",
     optional: "اختياري",
-    kwd: "د.ك",
     results_found: "نتائج",
     no_results: "لا توجد نتائج.",
     search_results: "نتائج البحث",
