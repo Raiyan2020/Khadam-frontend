@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from './theme';
 import { UserRoleProvider } from './UserRoleContext';
 import { Toaster } from 'sonner';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { NotificationHandler } from './components/NotificationHandler';
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,8 @@ const App: React.FC = () => {
           <UserRoleProvider>
             <RouterProvider router={router} />
             <ThemedToaster />
+            {/* Handles FCM token registration + native push notifications */}
+            <NotificationHandler />
           </UserRoleProvider>
         </LanguageProvider>
       </ThemeProvider>
