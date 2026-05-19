@@ -43,7 +43,7 @@ export const useVerifyOtp = () => {
       }
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       const { user, token } = data.data;
 
       // Save user type for profile completion page
@@ -58,7 +58,8 @@ export const useVerifyOtp = () => {
       } else {
         // Sign-up flow OR incomplete profile: go to complete-profile
         // Do NOT store token here (there is none in sign-up response)
-        navigate({ to: '/complete-profile', search: { phone: user.phone, country_id: user.country_id } });
+        const countryId = variables.get('country_id') as string | undefined || user.country_id;
+        navigate({ to: '/complete-profile', search: { phone: user.phone, country_id: countryId } });
       }
     },
     onError: (error: any) => {

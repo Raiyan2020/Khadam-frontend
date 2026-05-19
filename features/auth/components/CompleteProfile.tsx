@@ -71,7 +71,7 @@ export const CompleteProfile: React.FC = () => {
 
   const [nationalNumberManager, setNationalNumberManager] = useState('');
   const [phoneManager, setPhoneManager] = useState('+965');
-  const [phoneCountryId, setPhoneCountryId] = useState<number>(1);
+  const [phoneCountryId, setPhoneCountryId] = useState<number>(() => search.country_id ? Number(search.country_id) : 1);
   const [phoneManagerCountryId, setPhoneManagerCountryId] = useState<number>(1);
 
   const [managerIdImageFile, setManagerIdImageFile] = useState<File | null>(null);
