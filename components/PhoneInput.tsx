@@ -92,8 +92,8 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   if (isLoading || !selectedCountry) {
     return (
       <div className={`flex gap-2 ${className ?? ''}`}>
-        <div className="h-12 w-[90px] bg-glass border border-border rounded-xl animate-pulse" />
         <div className="h-12 flex-1 min-w-0 bg-glass border border-border rounded-xl animate-pulse" />
+        <div className="h-12 w-[90px] bg-glass border border-border rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -130,7 +130,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         </button>
 
         {isOpen && (
-          <div className={`absolute top-full ${dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-56 max-h-64 overflow-y-auto bg-white border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200`}>
+          <div className={`absolute top-full ${dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-56 max-h-64 overflow-y-auto bg-white dark:bg-black/90 border border-border rounded-xl shadow-xl z-50 p-1 no-scrollbar animate-in fade-in zoom-in-95 duration-200`}>
             {apiCountries!.map((country) => (
               <button
                 key={country.id}
@@ -146,9 +146,9 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
                     className="w-6 h-4 object-contain rounded-sm flex-shrink-0"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
-                  <span className="font-medium">{country.name}</span>
+                  <span className="font-medium text-black dark:text-white">{country.name}</span>
                 </div>
-                <span className="text-xs text-secondary font-mono" dir="ltr">{country.phone_code}</span>
+                <span className="text-xs text-secondary font-mono text-black dark:text-white" dir="ltr">{country.phone_code}</span>
               </button>
             ))}
           </div>
