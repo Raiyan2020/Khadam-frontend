@@ -19,6 +19,7 @@ export interface VerifyOtpResponse {
       type: string;
       type_text: string;
       phone: string;
+      country_id?: string;
     };
     token?: string; // Only present on login, not on sign-up
     is_completed_profile?: number;
@@ -57,7 +58,7 @@ export const useVerifyOtp = () => {
       } else {
         // Sign-up flow OR incomplete profile: go to complete-profile
         // Do NOT store token here (there is none in sign-up response)
-        navigate({ to: '/complete-profile', search: { phone: user.phone } });
+        navigate({ to: '/complete-profile', search: { phone: user.phone, country_id: user.country_id } });
       }
     },
     onError: (error: any) => {

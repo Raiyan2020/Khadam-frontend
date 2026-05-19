@@ -67,6 +67,9 @@ export const VerifyOtp: React.FC = () => {
       formData.append('otp', otp);
       formData.append('device_id', deviceId);
       formData.append('device_type', 'web');
+      if (search.country_id != null) {
+        formData.append('country_id', String(search.country_id));
+      }
 
       verifyMutation.mutate(formData);
     }
