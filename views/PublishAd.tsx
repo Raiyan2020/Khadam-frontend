@@ -10,6 +10,7 @@ import { useCountries } from '../features/auth/hooks/useCountries';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useStoreAd } from '../features/auth/hooks/useStoreAd';
 import { useProfile } from '../features/auth/hooks/useProfile';
+import { useSettings } from '../features/auth/hooks/useSettings';
 import { normalizeArabicNumbers } from '../lib/numbers';
 import { normalizeImageForUpload } from '../lib/imageUtils';
 
@@ -49,6 +50,7 @@ export const PublishAd: React.FC = () => {
   const { data: categories, isLoading: loadingCats } = useCategories();
   const { data: countries, isLoading: loadingCountries } = useCountries();
   const { data: languages, isLoading: loadingLangs } = useLanguages();
+  const { data: settings } = useSettings();
   const storeAd = useStoreAd();
 
   // Auto-skip the subscription gate if the user is already subscribed
@@ -254,7 +256,7 @@ export const PublishAd: React.FC = () => {
                 {/* Single Ad Option */}
                 <button
                   onClick={() => { setIsSingleAd(true); setStep(1); }}
-                  className="w-full text-start p-5 rounded-2xl bg-glass border border-border hover:border-accent/60 hover:bg-accent/5 transition-all duration-200 group"
+                  className="w-full relative text-start p-5 rounded-2xl bg-glass border border-border hover:border-accent/60 hover:bg-accent/5 transition-all duration-200 group"
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:bg-accent/20 transition-colors">
@@ -264,6 +266,16 @@ export const PublishAd: React.FC = () => {
                       <p className="font-semibold text-primary text-sm">{t('single_ad') || 'Single Ad'}</p>
                       <p className="text-xs text-secondary mt-0.5">{t('single_ad_desc') || 'Publish one ad without a subscription'}</p>
                     </div>
+                  </div>
+
+                  <div className="absolute top-2 end-2 text-xs text-white bg-accent rounded-full px-2 py-0.5">
+                    {settings ? (
+                      Number(settings.single_ad_price) === 0
+                        ? (t('free') || 'Free')
+                        : `${settings.single_ad_price} ${t('kwd') || 'KWD'}`
+                    ) : (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    )}
                   </div>
                 </button>
 
