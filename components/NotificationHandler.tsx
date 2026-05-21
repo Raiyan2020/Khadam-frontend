@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { router } from '../router';
 import { usePollingNotifications } from '../features/auth/hooks/usePollingNotifications';
+import { useFcmToken } from '../features/auth/hooks/useFcmToken';
+import { onMessageListener } from '../lib/firebase';
 
 const SHOWN_IDS_KEY = 'khadam_shown_notif_ids';
 const MAX_STORED_IDS = 100;
@@ -25,15 +27,53 @@ function saveShownIds(ids: Set<string>) {
 /**
  * NotificationHandler
  *
- * Polls /notifications/unread every 30 s.
- * The first poll sets a baseline (no toast shown for existing notifications).
- * Every subsequent poll that has a new unread notification shows a Sonner toast.
- * Clicking the toast navigates to /notifications.
+ * 1. Initializes FCM token registration and service worker registration using useFcmToken().
+ * 2. Polls /notifications/unread every 30 s as a fallback.
+ * 3. Listens to Firebase Cloud Messaging onMessageListener for real-time foreground pushes.
+ * 4. Displays a Sonner toast with navigatability.
  */
 export const NotificationHandler: React.FC = () => {
   const isFirstPoll = useRef(true);
   const { data: pollData } = usePollingNotifications();
+  
+  // Initialize FCM (registers service worker, gets token, updates backend)
+  useFcmToken();
 
+  // Foreground push notification handler
+  useEffect(() => {
+    const unsubscribe = onMessageListener((payload: any) => {
+      console.log('[NotificationHandler] Foreground push received:', payload);
+      
+      const notif = payload.notification || {};
+      const data = payload.data || {};
+      const title = notif.title || data.title || 'إشعار جديد';
+      const body = notif.body || data.body || data.description || data.message || '';
+      const clickUrl = data.url || '/notifications';
+
+      toast(title, {
+        description: body || undefined,
+        duration: 8000,
+        action: {
+          label: 'عرض',
+          onClick: () => {
+            try {
+              router.navigate({ to: clickUrl } as any);
+            } catch {
+              window.location.href = clickUrl;
+            }
+          },
+        },
+      });
+    });
+
+    return () => {
+      if (unsubscribe && typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, []);
+
+  // Polling fallback handler
   useEffect(() => {
     if (!pollData?.data) return;
 
@@ -60,6 +100,7 @@ export const NotificationHandler: React.FC = () => {
     const target = newItems[0];
     const title   = target.data?.title       || 'إشعار جديد';
     const body    = target.data?.description || target.data?.message || '';
+    const clickUrl = target.data?.ad_id ? `/ads/${target.data.ad_id}` : '/notifications';
 
     toast(title, {
       description: body || undefined,
@@ -68,9 +109,9 @@ export const NotificationHandler: React.FC = () => {
         label: 'عرض',
         onClick: () => {
           try {
-            router.navigate({ to: '/notifications' } as any);
+            router.navigate({ to: clickUrl } as any);
           } catch {
-            window.location.href = '/notifications';
+            window.location.href = clickUrl;
           }
         },
       },
@@ -95,3 +136,4 @@ export const NotificationHandler: React.FC = () => {
 
   return null;
 };
+

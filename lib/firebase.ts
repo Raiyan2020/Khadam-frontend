@@ -27,12 +27,13 @@ try {
   console.error("Firebase Messaging not supported", error);
 }
 
-export const requestForToken = async () => {
+export const requestForToken = async (serviceWorkerRegistration?: ServiceWorkerRegistration) => {
   if (!messaging) return null;
   
   try {
     const currentToken = await getToken(messaging, {
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration
     });
     
     if (currentToken) {

@@ -31,6 +31,7 @@ export const useLogout = () => {
       // Clear auth-related local storage data
       localStorage.removeItem('token');
       localStorage.removeItem('user_type');
+      localStorage.removeItem('khadam_fcm_registered_token');
 
       // Navigate to login
       navigate({ to: '/login' });
@@ -40,6 +41,7 @@ export const useLogout = () => {
       queryClient.clear();
       localStorage.removeItem('token');
       localStorage.removeItem('user_type');
+      localStorage.removeItem('khadam_fcm_registered_token');
       navigate({ to: '/login' });
       toast.error(error.message || 'An error occurred during logout');
     }
