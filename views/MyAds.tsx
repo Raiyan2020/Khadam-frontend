@@ -84,7 +84,7 @@ export const MyAds: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       <Switch
-                        checked={ad.is_available === 1}
+                        checked={!!ad.is_available}
                         onChange={() => handleToggleActive(ad.id)}
                         disabled={toggleAvailability.isPending && toggleAvailability.variables === ad.id}
                       />

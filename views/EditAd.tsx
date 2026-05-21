@@ -80,7 +80,7 @@ export const EditAd: React.FC = () => {
       setDescription(adData.description || '');
       setYearsExperience(String(adData.years_experience || ''));
       setSalary(String(adData.salary || ''));
-      setIsAvailable(adData.is_available === 1);
+      setIsAvailable(!!adData.is_available);
 
       // Map gender string to enum
       if (adData.gender?.includes('انثى') || adData.gender?.toLowerCase() === 'female') {

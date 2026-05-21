@@ -23,7 +23,7 @@ export interface AdDetail {
   description: string;
   years_experience: number;
   salary: string;
-  is_available: number;
+  is_available: boolean | number;
   gender: string;
   languages: {
     id: number;

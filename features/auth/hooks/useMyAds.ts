@@ -10,7 +10,7 @@ export interface MyAd {
   worker_name: string;
   image: string;
   category_name: string;
-  is_available: number;
+  is_available: boolean | number;
   created_at: string;
 }
 

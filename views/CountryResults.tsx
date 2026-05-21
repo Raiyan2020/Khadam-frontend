@@ -17,7 +17,12 @@ export const CountryResults: React.FC = () => {
   const { t, dir, language } = useLanguage();
 
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-  const { mutate: fetchResults, data: apiResponse, isPending } = useAdFilter();
+  const [queryParams, setQueryParams] = useState<AdFilterParams>(() => ({
+    country_id: searchParams.country_id,
+    page: 1,
+  }));
+
+  const { data: apiResponse, isPending } = useAdFilter(queryParams);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -49,8 +54,8 @@ export const CountryResults: React.FC = () => {
       page: overrides?.page ?? currentPage,
       ...overrides,
     };
-    fetchResults(params);
-  }, [searchQuery, activeCategory, searchParams.country_id, filters, currentPage, fetchResults]);
+    setQueryParams(params);
+  }, [searchQuery, activeCategory, searchParams.country_id, filters, currentPage]);
 
   useEffect(() => {
     doSearch();
