@@ -239,6 +239,132 @@
           ]
         },
         {
+          "name": "country-codes",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "en",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{url}}/country-codes",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "country-codes"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "country-codes",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "en",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": []
+                },
+                "url": {
+                  "raw": "{{url}}/country-codes",
+                  "host": [
+                    "{{url}}"
+                  ],
+                  "path": [
+                    "country-codes"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Date",
+                  "value": "Mon, 04 May 2026 19:20:00 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Server",
+                  "value": "cloudflare"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "*"
+                },
+                {
+                  "key": "Report-To",
+                  "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=%2FSuWFBNWzhHF9I1LlmXcksLx74a%2BbFAZ5Oo1HFly4tG4C7ku5OQq%2FWiwaJWyD4gU8mfurqxDvH5krNJ0R3EYx11BQTR3e%2FdHBBjkZ34YaWZKoTYb%2FS%2FhkmIBS1uLwONEzp0%3D\"}]}"
+                },
+                {
+                  "key": "Nel",
+                  "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+                },
+                {
+                  "key": "cf-cache-status",
+                  "value": "DYNAMIC"
+                },
+                {
+                  "key": "Content-Encoding",
+                  "value": "br"
+                },
+                {
+                  "key": "CF-RAY",
+                  "value": "9f69dc3c1d40536f-CAI"
+                },
+                {
+                  "key": "alt-svc",
+                  "value": "h3=\":443\"; ma=86400"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": true,\n    \"message\": \"Countries retrieved successfully\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"name\": \"الكويت\",\n            \"country_code\": \"KW\",\n            \"phone_code\": \"+965\",\n            \"image\": \"https://portal.khdm.net/storage/flags/kw.png\"\n        },\n        {\n            \"id\": 2,\n            \"name\": \"البحرين\",\n            \"country_code\": \"BH\",\n            \"phone_code\": \"+973\",\n            \"image\": \"https://portal.khdm.net/storage/flags/bh.png\"\n        },\n        {\n            \"id\": 3,\n            \"name\": \"دولة الإمارات العربية المتحدة\",\n            \"country_code\": \"AE\",\n            \"phone_code\": \"+971\",\n            \"image\": \"https://portal.khdm.net/storage/flags/ae.png\"\n        },\n        {\n            \"id\": 4,\n            \"name\": \"المغرب\",\n            \"country_code\": \"MA\",\n            \"phone_code\": \"+212\",\n            \"image\": \"https://portal.khdm.net/storage/flags/ma.png\"\n        },\n        {\n            \"id\": 5,\n            \"name\": \"سوريا\",\n            \"country_code\": \"SY\",\n            \"phone_code\": \"+963\",\n            \"image\": \"https://portal.khdm.net/storage/flags/sy.png\"\n        },\n        {\n            \"id\": 6,\n            \"name\": \"لبنان\",\n            \"country_code\": \"LB\",\n            \"phone_code\": \"+961\",\n            \"image\": \"https://portal.khdm.net/storage/flags/lb.png\"\n        },\n        {\n            \"id\": 7,\n            \"name\": \"المملكة العربية السعودية\",\n            \"country_code\": \"SA\",\n            \"phone_code\": \"+966\",\n            \"image\": \"https://portal.khdm.net/storage/flags/sa.png\"\n        },\n        {\n            \"id\": 8,\n            \"name\": \"ليبيا\",\n            \"country_code\": \"LY\",\n            \"phone_code\": \"+218\",\n            \"image\": \"https://portal.khdm.net/storage/flags/ly.png\"\n        },\n        {\n            \"id\": 9,\n            \"name\": \"تونس\",\n            \"country_code\": \"TN\",\n            \"phone_code\": \"+216\",\n            \"image\": \"https://portal.khdm.net/storage/flags/tn.png\"\n        },\n        {\n            \"id\": 10,\n            \"name\": \"قطر\",\n            \"country_code\": \"QA\",\n            \"phone_code\": \"+974\",\n            \"image\": \"https://portal.khdm.net/storage/flags/qa.png\"\n        },\n        {\n            \"id\": 11,\n            \"name\": \"الأردن\",\n            \"country_code\": \"JO\",\n            \"phone_code\": \"+962\",\n            \"image\": \"https://portal.khdm.net/storage/flags/jo.png\"\n        },\n        {\n            \"id\": 12,\n            \"name\": \"العراق\",\n            \"country_code\": \"IQ\",\n            \"phone_code\": \"+964\",\n            \"image\": \"https://portal.khdm.net/storage/flags/iq.png\"\n        }\n    ],\n    \"errors\": []\n}"
+            }
+          ]
+        },
+        {
           "name": "states",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -561,6 +687,63 @@
               "body": "{\n    \"status\": true,\n    \"message\": \"Settings retrieved successfully\",\n    \"data\": {\n        \"site_name\": \"My Blog Platform\",\n        \"site_logo\": null,\n        \"site_favicon\": null,\n        \"social_media\": {\n            \"facebook\": \"https://facebook.com/example\",\n            \"twitter\": \"https://twitter.com/example\",\n            \"instagram\": \"https://instagram.com/example\",\n            \"phone_support\": \"123456789\"\n        }\n    },\n    \"errors\": []\n}"
             }
           ]
+        },
+        {
+          "name": "fcm-token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "ar",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "device_id",
+                  "value": "23123123",
+                  "description": " ['required', 'string']",
+                  "type": "text",
+                  "uuid": "de7f2ef3-4db0-4852-84ef-30efa912a30c"
+                },
+                {
+                  "key": "device_type",
+                  "value": "web",
+                  "description": "['required', 'in:android,ios,web']",
+                  "type": "text",
+                  "uuid": "43070551-aa4c-44b2-8cdf-362257a30244"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/fcm-token",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "fcm-token"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -650,60 +833,72 @@
                       "type": "text"
                     },
                     {
+                      "key": "image",
+                      "type": "file",
+                      "uuid": "051f423a-dc40-48fa-9e4d-6552358bf625",
+                      "src": [
+                        "",
+                        "/C:/Users/hp/Pictures/New folder/wello.jpg"
+                      ]
+                    },
+                    {
                       "key": "state_id",
                       "value": "1",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "lat",
                       "value": "22.23",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "lng",
                       "value": "18.23",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "map_desc",
                       "value": "طلخا بلد الجدعنه",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "website",
                       "value": "https://khadam.vercel.app/sign-up",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "whatsapp",
                       "value": "+201068331570",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "email",
                       "value": "mw250@gmail.com",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "national_number_manager",
                       "value": "1234567899",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "phone_manager",
                       "value": "123456789",
-                      "type": "text"
+                      "type": "text",
+                      "disabled": true
                     },
                     {
                       "key": "description",
                       "value": "description",
-                      "type": "text"
-                    },
-                    {
-                      "key": "image",
-                      "type": "file",
-                      "uuid": "051f423a-dc40-48fa-9e4d-6552358bf625",
-                      "value": "",
+                      "type": "text",
                       "disabled": true
                     }
                   ]
@@ -744,7 +939,7 @@
               "formdata": [
                 {
                   "key": "phone",
-                  "value": "01068335371",
+                  "value": "01068335370",
                   "description": "['required', 'numeric', 'digits_between:8,15']",
                   "type": "text",
                   "uuid": "a771ffe1-7e68-4e6a-90b8-2f38325b8b5e"
@@ -755,6 +950,12 @@
                   "description": "  case USER = 1;\n  case COMPANY = 2;",
                   "type": "text",
                   "uuid": "740c6795-81f6-45d2-a84d-6921c83ac9ed"
+                },
+                {
+                  "key": "country_id",
+                  "value": "10",
+                  "type": "text",
+                  "uuid": "4863b3e1-352b-42cb-a929-3683fe696bf9"
                 }
               ]
             },
@@ -960,10 +1161,16 @@
               "formdata": [
                 {
                   "key": "phone",
-                  "value": "01068335373",
+                  "value": "01068335370",
                   "description": "'required|numeric|digits_between:8,15',",
                   "type": "text",
                   "uuid": "fa647627-53c2-4963-9367-ab12b948e636"
+                },
+                {
+                  "key": "country_id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "8a2c1ac8-2c08-4209-8ef0-666b81cefd33"
                 },
                 {
                   "key": "",
@@ -1225,14 +1432,20 @@
               "formdata": [
                 {
                   "key": "phone",
-                  "value": "01068335371",
+                  "value": "456456456",
                   "description": " ['required', 'numeric', 'digits_between:9,15']",
                   "type": "text",
                   "uuid": "95413142-5a85-4526-8742-392057fe6491"
                 },
                 {
+                  "key": "country_id",
+                  "value": "3",
+                  "type": "text",
+                  "uuid": "0c10bb2b-47d1-409e-aeab-af9d8c2b63b1"
+                },
+                {
                   "key": "otp",
-                  "value": "1234",
+                  "value": "7027",
                   "description": "['required', 'string', 'size:4', 'regex:/^[0-9]{4}$/']",
                   "type": "text",
                   "uuid": "47d07d00-fdc9-4017-85d9-66ce704955c3"
@@ -1603,6 +1816,20 @@
                   "description": "['required', 'string']",
                   "type": "text",
                   "uuid": "2746807e-6f34-4cce-a965-71f6dac876bb"
+                },
+                {
+                  "key": "phone",
+                  "value": "01068335374",
+                  "description": "'required|numeric|digits_between:8,15',",
+                  "type": "text",
+                  "uuid": "4fe56468-6d49-4d30-9dbc-7eaa32c159d9"
+                },
+                {
+                  "key": "country_id",
+                  "value": "1",
+                  "description": "['required', 'exists:countries,id']",
+                  "type": "text",
+                  "uuid": "b1ffe9c8-79d8-4392-84cc-04a741c903ab"
                 }
               ]
             },
@@ -2207,18 +2434,17 @@
               "formdata": [
                 {
                   "key": "phone",
-                  "value": "01068335371",
+                  "value": "456456456",
                   "description": " ['required', 'numeric', 'digits_between:9,15']",
                   "type": "text",
                   "uuid": "de7f2ef3-4db0-4852-84ef-30efa912a30c"
                 },
                 {
-                  "key": "",
-                  "value": "",
+                  "key": "country_id",
+                  "value": "3",
                   "description": "after call verify-otp end point",
                   "type": "text",
-                  "uuid": "43070551-aa4c-44b2-8cdf-362257a30244",
-                  "disabled": true
+                  "uuid": "43070551-aa4c-44b2-8cdf-362257a30244"
                 }
               ]
             },
@@ -3545,14 +3771,14 @@
                       "formdata": [
                         {
                           "key": "type",
-                          "value": "ad",
+                          "value": "office",
                           "description": "['required', 'string', 'in:ad,office']",
                           "type": "text",
                           "uuid": "62c3b2ef-163e-4098-b842-af9fe760f77c"
                         },
                         {
                           "key": "id",
-                          "value": "22",
+                          "value": "1",
                           "description": "['required', 'integer']",
                           "type": "text",
                           "uuid": "f8b8b802-3d9b-4933-9cfc-8c88f6f0bbf2"
@@ -3703,7 +3929,7 @@
                       "variable": [
                         {
                           "key": "type",
-                          "value": "ad",
+                          "value": "office",
                           "description": "in ad or office"
                         }
                       ]
@@ -6431,6 +6657,128 @@
               ]
             },
             {
+              "name": "read-all",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Accept-Language",
+                    "value": "ar",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": []
+                },
+                "url": {
+                  "raw": "{{url}}/notifications/read-all",
+                  "host": [
+                    "{{url}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    "read-all"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "notifications",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json",
+                        "type": "text"
+                      },
+                      {
+                        "key": "Accept-Language",
+                        "value": "ar",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "formdata",
+                      "formdata": []
+                    },
+                    "url": {
+                      "raw": "{{url}}/notifications",
+                      "host": [
+                        "{{url}}"
+                      ],
+                      "path": [
+                        "notifications"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": null,
+                  "header": [
+                    {
+                      "key": "Server",
+                      "value": "nginx/1.25.2"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    },
+                    {
+                      "key": "Transfer-Encoding",
+                      "value": "chunked"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Accept-Encoding"
+                    },
+                    {
+                      "key": "X-Powered-By",
+                      "value": "PHP/8.4.11"
+                    },
+                    {
+                      "key": "Cache-Control",
+                      "value": "no-cache, private"
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Sun, 05 Apr 2026 23:37:54 GMT"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "*"
+                    },
+                    {
+                      "key": "Content-Encoding",
+                      "value": "gzip"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"status\": true,\n    \"message\": \"All notifications\",\n    \"data\": [\n        {\n            \"id\": \"5a7fa1bc-3148-11f1-850e-ec8eb5389000\",\n            \"type\": \"ad_approved\",\n            \"data\": {\n                \"title\": \"تم قبول إعلانك\",\n                \"message\": \"تمت الموافقة على إعلانك ويمكن للمستخدمين مشاهدته الآن\",\n                \"ad_id\": 15,\n                \"type\": \"ad_approved\"\n            },\n            \"read_at\": null,\n            \"created_at\": \"2026-04-06T01:37:48.000000Z\",\n            \"created_at_diff\": \"ساعة من الآن\"\n        }\n    ],\n    \"errors\": [],\n    \"pagination\": {\n        \"currentPage\": 1,\n        \"lastPage\": 1,\n        \"perPage\": 10,\n        \"total\": 1\n    }\n}"
+                }
+              ]
+            },
+            {
               "name": "notifications unread",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
@@ -6563,6 +6911,31 @@
                   "path": [
                     "notifications",
                     ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "read single",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{url}}/notifications/:id/read",
+                  "host": [
+                    "{{url}}"
+                  ],
+                  "path": [
+                    "notifications",
+                    ":id",
+                    "read"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": ""
+                    }
                   ]
                 }
               },

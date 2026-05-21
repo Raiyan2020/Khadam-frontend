@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { requestForToken } from '../../../lib/firebase';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
@@ -11,13 +11,18 @@ const FCM_REGISTERED_TOKEN_KEY = 'khadam_fcm_registered_token';
  * device_type = 'web'
  */
 async function registerTokenWithBackend(fcmToken: string): Promise<void> {
+  const formData = new FormData();
+  formData.append('device_id', fcmToken);
+  formData.append('device_type', 'web');
+
+  console.log('%c[FCM] 📡 Sending FCM Token to backend...', 'color: #3b82f6; font-weight: bold;', {
+    device_id: fcmToken,
+    device_type: 'web'
+  });
+
   const response = await apiFetch(`${API_BASE_URL}/fcm-token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      device_id: fcmToken,
-      device_type: 'web',
-    }),
+    body: formData,
   });
 
   if (!response.ok) {
@@ -36,7 +41,29 @@ async function registerTokenWithBackend(fcmToken: string): Promise<void> {
  * 4. POSTs it to /fcm-token (only when the token is new/changed).
  */
 export const useFcmToken = () => {
-  const isAuthenticated = !!localStorage.getItem('token');
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('token'));
+
+  // Keep authToken reactive to changes (e.g. login/logout)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken !== authToken) {
+        setAuthToken(currentToken);
+      }
+    }, 1000);
+
+    const handleStorageChange = () => {
+      setAuthToken(localStorage.getItem('token'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [authToken]);
+
+  const isAuthenticated = !!authToken;
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -65,6 +92,8 @@ export const useFcmToken = () => {
           return;
         }
 
+        console.log('%c[FCM] 🔥 FCM Token Retrieved:', 'color: #10b981; font-weight: bold; font-size: 1.1em;', fcmToken);
+
         // 4. Only register with backend when the token is new / changed
         const storedToken = localStorage.getItem(FCM_REGISTERED_TOKEN_KEY);
         if (fcmToken === storedToken) {
@@ -74,7 +103,7 @@ export const useFcmToken = () => {
 
         await registerTokenWithBackend(fcmToken);
         localStorage.setItem(FCM_REGISTERED_TOKEN_KEY, fcmToken);
-        console.log('[FCM] Token successfully registered with backend');
+        console.log('%c[FCM] ✅ Token successfully registered with backend and saved locally!', 'color: #10b981; font-weight: bold;');
       } catch (err) {
         console.error('[FCM] Initialization error:', err);
       }
