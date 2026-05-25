@@ -230,7 +230,7 @@ export const WorkerProfile: React.FC = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-[85px] sm:absolute sm:bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent pointer-events-none flex justify-center w-full max-w-[430px] mx-auto z-30">
+      <div className="p-4 bg-gradient-to-t from-background to-transparent pointer-events-none flex justify-center w-full max-w-[430px] mx-auto z-30">
         <div className="w-full pointer-events-auto">
           <Button
             fullWidth
