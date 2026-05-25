@@ -47,8 +47,17 @@ export const WorkerProfile: React.FC = () => {
     const whatsappMessage = t('whatsapp_interest')
       .replace('{name}', worker.worker_name)
       .replace('{id}', String(worker.id));
-    const whatsappLink = `https://wa.me/${worker.office.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
-    window.open(whatsappLink, '_blank', 'noopener,noreferrer');
+    const phone = String(worker.office.whatsapp).replace(/\D/g, '');
+    const encodedMessage = encodeURIComponent(whatsappMessage);
+    // Use whatsapp:// deep link to open the native app directly on mobile.
+    // Falls back to the wa.me web link after a short delay (for desktop browsers).
+    const deepLink = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+    const webFallback = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+    window.location.href = deepLink;
+    setTimeout(() => {
+      window.open(webFallback, '_blank', 'noopener,noreferrer');
+    }, 1500);
   };
 
   const handleShare = async () => {
