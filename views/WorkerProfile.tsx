@@ -49,15 +49,21 @@ export const WorkerProfile: React.FC = () => {
       .replace('{id}', String(worker.id));
     const phone = String(worker.office.whatsapp).replace(/\D/g, '');
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    // Use whatsapp:// deep link to open the native app directly on mobile.
-    // Falls back to the wa.me web link after a short delay (for desktop browsers).
-    const deepLink = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
-    const webFallback = `https://wa.me/${phone}?text=${encodedMessage}`;
+    const ua = navigator.userAgent;
 
-    window.location.href = deepLink;
-    setTimeout(() => {
-      window.open(webFallback, '_blank', 'noopener,noreferrer');
-    }, 1500);
+    if (/android/i.test(ua)) {
+      // Android WebView: use the intent:// scheme so the OS launches WhatsApp directly.
+      // whatsapp:// causes ERR_UNKNOWN_URL_SCHEME inside WebView.
+      window.location.href =
+        `intent://send?phone=${phone}&text=${encodedMessage}` +
+        `#Intent;scheme=whatsapp;package=com.whatsapp;end`;
+    } else if (/iphone|ipad|ipod/i.test(ua)) {
+      // iOS: whatsapp:// is handled by WKWebView if LSApplicationQueriesSchemes is set.
+      window.location.href = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+    } else {
+      // Desktop browser fallback.
+      window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleShare = async () => {
