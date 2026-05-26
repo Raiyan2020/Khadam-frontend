@@ -49,21 +49,7 @@ export const WorkerProfile: React.FC = () => {
       .replace('{id}', String(worker.id));
     const phone = String(worker.office.whatsapp).replace(/\D/g, '');
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    const ua = navigator.userAgent;
-
-    if (/android/i.test(ua)) {
-      // Android WebView: use the intent:// scheme so the OS launches WhatsApp directly.
-      // whatsapp:// causes ERR_UNKNOWN_URL_SCHEME inside WebView.
-      window.location.href =
-        `intent://send?phone=${phone}&text=${encodedMessage}` +
-        `#Intent;scheme=whatsapp;package=com.whatsapp;end`;
-    } else if (/iphone|ipad|ipod/i.test(ua)) {
-      // iOS: whatsapp:// is handled by WKWebView if LSApplicationQueriesSchemes is set.
-      window.location.href = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
-    } else {
-      // Desktop browser fallback.
-      window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank', 'noopener,noreferrer');
-    }
+    window.location.href = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
   };
 
   const handleShare = async () => {
@@ -207,7 +193,7 @@ export const WorkerProfile: React.FC = () => {
         <div className="grid grid-cols-2 gap-3">
           <StatCard icon={<Globe size={18} />} label={t('nationality')} value={worker.country_name} />
           <StatCard icon={<Clock size={18} />} label={t('experience')} value={`${worker.years_experience} ${t('exp_years')}`} />
-          <StatCard icon={<Wallet size={18} />} label={t('salary')} value={`${worker.salary} KWD`} />
+          <StatCard icon={<Wallet size={18} />} label={t('salary')} value={`${worker.salary} ${t('kwd')}`} />
           <StatCard icon={<MapPin size={18} />} label={t('available')} value={worker.is_available ? t('yes') : t('no')} />
         </div>
 
