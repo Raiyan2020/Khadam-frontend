@@ -199,7 +199,7 @@ export const Home: React.FC = () => {
 
   return (
     <div className="pb-10">
-      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
+      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 transition-all duration-500 ease-in-out ${showSearch ? 'pb-4' : 'pb-2'}`}>
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between px-4">
             <div className="flex items-center gap-3">
@@ -251,7 +251,7 @@ export const Home: React.FC = () => {
             initialCriteria={filterCriteria}
           />
 
-          <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[200px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
+          <div className={`space-y-4 overflow-hidden transition-all duration-500 ease-in-out ${showSearch ? 'max-h-[200px] opacity-100 mt-4 translate-y-0 pointer-events-auto' : 'max-h-0 opacity-0 mt-0 -translate-y-2 pointer-events-none'}`}>
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
