@@ -63,7 +63,6 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { data: countries, isLoading: isLoadingCountries } = useCountries();
-  const [activeCategory, setActiveCategory] = useState<any>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [showSearch, setShowSearch] = useState<boolean>(() => {
@@ -144,7 +143,7 @@ export const Home: React.FC = () => {
   });
 
   const baseFilter = (worker: Worker) => {
-    const matchesCategory = activeCategory === 'All' || worker.category === activeCategory;
+
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
       worker.name[language].toLowerCase().includes(searchLower) ||
@@ -177,7 +176,7 @@ export const Home: React.FC = () => {
       if (!hasMatch) matchesFilters = false;
     }
 
-    return matchesCategory && matchesSearch && matchesFilters;
+    return matchesSearch && matchesFilters;
   };
 
   const continueViewed = useMemo(() => {
@@ -186,32 +185,32 @@ export const Home: React.FC = () => {
       .filter(baseFilter)
       .sort((a, b) => lastViewedIds.indexOf(a.id) - lastViewedIds.indexOf(b.id))
       .slice(0, 10);
-  }, [lastViewedIds, activeCategory, searchQuery, language]);
+  }, [lastViewedIds, searchQuery, language]);
 
   const availableNow = useMemo(() => {
     return MOCK_WORKERS
       .filter(w => w.availability === 'Available')
       .filter(baseFilter)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [activeCategory, searchQuery, language]);
+  }, [searchQuery, language]);
 
   const newestListings = useMemo(() => {
     return MOCK_WORKERS
       .filter(baseFilter)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [activeCategory, searchQuery, language]);
+  }, [searchQuery, language]);
 
   const budgetListings = useMemo(() => {
     return MOCK_WORKERS
       .filter(baseFilter)
       .sort((a, b) => a.salary - b.salary);
-  }, [activeCategory, searchQuery, language]);
+  }, [searchQuery, language]);
 
   const experiencedListings = useMemo(() => {
     return MOCK_WORKERS
       .filter(baseFilter)
       .sort((a, b) => b.experienceYears - a.experienceYears);
-  }, [activeCategory, searchQuery, language]);
+  }, [searchQuery, language]);
 
   const getTranslatedCategory = (cat: ServiceCategory | 'All') => {
     if (cat === 'All') return t('cat_all');
@@ -297,7 +296,6 @@ export const Home: React.FC = () => {
                 to: '/search',
                 search: {
                   query: searchQuery || undefined,
-                  category_id: activeCategory !== 'All' ? activeCategory : undefined,
                 }
               } as any)}
               onFilterClick={() => setIsFilterModalOpen(true)}
@@ -313,7 +311,7 @@ export const Home: React.FC = () => {
                   <CategoryChip
                     key={cat.id}
                     label={cat.name}
-                    isActive={activeCategory === cat.id}
+                    isActive={false}
                     onClick={() => navigate({
                       to: '/search',
                       search: { category_id: cat.id }
