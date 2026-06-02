@@ -66,8 +66,23 @@ export const Home: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<any>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [showSearch, setShowSearch] = useState(true);
-  //scroll to top on mount
+  const [showSearch, setShowSearch] = useState<boolean>(() => {
+    try {
+      const saved = sessionStorage.getItem('khadam_show_search');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  // Persist showSearch whenever it changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('khadam_show_search', String(showSearch));
+    } catch { /* ignore */ }
+  }, [showSearch]);
+
+  // Show/hide search bar based on scroll position
   useEffect(() => {
     const scrollContainer = document.querySelector('main');
     if (!scrollContainer) return;
@@ -79,14 +94,36 @@ export const Home: React.FC = () => {
       } else if (scrollTop < 50) {
         setShowSearch(true);
       }
+      // Save scroll position on every scroll so any navigation restores it
+      saveScrollPosition('home', scrollTop);
     };
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Restore scroll position when returning from a worker profile
+  // Restore scroll position when returning from any route
   useEffect(() => {
-    restoreScrollPosition('home');
+    const pos = (() => {
+      try {
+        const store = JSON.parse(sessionStorage.getItem('khadam_scroll') || '{}');
+        return store['home'] ?? 0;
+      } catch {
+        return 0;
+      }
+    })();
+    if (!pos) return;
+    // Retry until the container is mounted and can actually scroll
+    let attempts = 0;
+    const tryRestore = () => {
+      const container = document.querySelector('main');
+      if (container && container.scrollHeight > container.clientHeight) {
+        container.scrollTop = pos;
+      } else if (attempts < 20) {
+        attempts++;
+        requestAnimationFrame(tryRestore);
+      }
+    };
+    requestAnimationFrame(tryRestore);
   }, []);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
   const { t, dir, language } = useLanguage();
