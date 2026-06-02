@@ -96,26 +96,28 @@ export const SearchInput: React.FC<{
 }> = ({ value, onChange, onSearch, onFilterClick, placeholder, className = '' }) => {
   const { t } = useLanguage();
   return (
-    <div className={`relative group ${className}`}>
-      <input
-        type="text"
-        placeholder={placeholder || t('search_placeholder')}
-        className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-1 focus:ring-[var(--focus-ring)] transition-all"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && onSearch) onSearch();
-        }}
-      />
-      <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
-      {onFilterClick && (
-        <button
-          onClick={onFilterClick}
-          className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1.5 rounded-md hover:bg-brand-300 transition-colors"
-        >
-          <Filter size={14} />
-        </button>
-      )}
+    <div className="px-4">
+      <div className={`relative group ${className}`}>
+        <input
+          type="text"
+          placeholder={placeholder || t('search_placeholder')}
+          className="w-full h-11 bg-glass border border-border rounded-[14px] ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:bg-glassHigh focus:ring-1 focus:ring-[var(--focus-ring)] transition-all"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && onSearch) onSearch();
+          }}
+        />
+        <Search className="absolute start-3.5 top-3 text-secondary/70 group-focus-within:text-brand-500 transition-colors" size={18} />
+        {onFilterClick && (
+          <button
+            onClick={onFilterClick}
+            className="absolute end-3 top-2.5 text-accent-text bg-accent-subtle p-1.5 rounded-md hover:bg-brand-300 transition-colors"
+          >
+            <Filter size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 };

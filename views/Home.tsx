@@ -199,93 +199,93 @@ export const Home: React.FC = () => {
 
   return (
     <div className="pb-10">
-      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
+      <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
         <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <img
-                src="https://raiyansoft.com/wp-content/uploads/2026/02/icon-s-d.png"
-                alt="Logo"
-                className="h-[40px] w-auto max-w-[135px] object-contain"
-              />
+          <div className="flex items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <img
+                  src="https://raiyansoft.com/wp-content/uploads/2026/02/icon-s-d.png"
+                  alt="Logo"
+                  className="h-[40px] w-auto max-w-[135px] object-contain"
+                />
+              </div>
+              <div className="hidden min-[360px]:block">
+                <h1 className="text-lg font-bold text-primary leading-tight">{t('app_name')}</h1>
+                <p className="text-[10px] text-secondary">{t('subtitle')}</p>
+              </div>
             </div>
-            <div className="hidden min-[360px]:block">
-              <h1 className="text-lg font-bold text-primary leading-tight">{t('app_name')}</h1>
-              <p className="text-[10px] text-secondary">{t('subtitle')}</p>
-            </div>
+            <button
+              onClick={() => navigate({ to: '/notifications' })}
+              className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
+              aria-label={t('nav_notifications')}
+            >
+              <Bell size={20} />
+              {hasUnreadNotifications && (
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
+              )}
+            </button>
           </div>
-          <button
-            onClick={() => navigate({ to: '/notifications' })}
-            className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
-            aria-label={t('nav_notifications')}
-          >
-            <Bell size={20} />
-            {hasUnreadNotifications && (
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
-            )}
-          </button>
-        </div>
 
 
-        {/* FilterModal triggers navigation on apply */}
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(criteria) => {
-            setFilterCriteria(criteria);
-            navigate({
-              to: '/search',
-              search: {
-                query: searchQuery || undefined,
-                category_id: criteria.category,
-                country_id: undefined,
-                gender: criteria.gender !== 'Any' ? criteria.gender?.toLowerCase() : undefined,
-                salary: criteria.maxSalary,
-                age: criteria.maxAge,
-                years_experience: criteria.minExperience,
-                languages: criteria.languages as number[] | undefined,
-              }
-            } as any);
-          }}
-          initialCriteria={filterCriteria}
-        />
-
-        <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[200px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('search_placeholder')}
-            onSearch={() => navigate({
-              to: '/search',
-              search: {
-                query: searchQuery || undefined,
-                category_id: activeCategory !== 'All' ? activeCategory : undefined,
-              }
-            } as any)}
-            onFilterClick={() => setIsFilterModalOpen(true)}
+          {/* FilterModal triggers navigation on apply */}
+          <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={(criteria) => {
+              setFilterCriteria(criteria);
+              navigate({
+                to: '/search',
+                search: {
+                  query: searchQuery || undefined,
+                  category_id: criteria.category,
+                  country_id: undefined,
+                  gender: criteria.gender !== 'Any' ? criteria.gender?.toLowerCase() : undefined,
+                  salary: criteria.maxSalary,
+                  age: criteria.maxAge,
+                  years_experience: criteria.minExperience,
+                  languages: criteria.languages as number[] | undefined,
+                }
+              } as any);
+            }}
+            initialCriteria={filterCriteria}
           />
 
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-            {isLoadingCategories ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
-              ))
-            ) : (
-              categories?.map(cat => (
-                <CategoryChip
-                  key={cat.id}
-                  label={cat.name}
-                  isActive={activeCategory === cat.id}
-                  onClick={() => navigate({
-                    to: '/search',
-                    search: { category_id: cat.id }
-                  } as any)}
-                />
-              ))
-            )}
+          <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[200px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('search_placeholder')}
+              onSearch={() => navigate({
+                to: '/search',
+                search: {
+                  query: searchQuery || undefined,
+                  category_id: activeCategory !== 'All' ? activeCategory : undefined,
+                }
+              } as any)}
+              onFilterClick={() => setIsFilterModalOpen(true)}
+            />
+
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1 px-4">
+              {isLoadingCategories ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+                ))
+              ) : (
+                categories?.map(cat => (
+                  <CategoryChip
+                    key={cat.id}
+                    label={cat.name}
+                    isActive={activeCategory === cat.id}
+                    onClick={() => navigate({
+                      to: '/search',
+                      search: { category_id: cat.id }
+                    } as any)}
+                  />
+                ))
+              )}
+            </div>
           </div>
-        </div>
         </div>{/* /max-w-5xl header inner */}
       </div>
       {/* Company Dashboard */}
