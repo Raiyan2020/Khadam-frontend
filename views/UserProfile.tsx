@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, FileText, Loader2 } from 'lucide-react';
+import { Settings as SettingsIcon, LogOut, HelpCircle, Edit, User, FileText, Loader2, KeyRound } from 'lucide-react';
 import { GlassCard, Avatar } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { UserRole } from '../types';
@@ -59,6 +59,7 @@ export const UserProfile: React.FC = () => {
         <MenuButton icon={<SettingsIcon size={20} />} label={t('settings')} onClick={() => navigate({ to: '/settings' })} />
         <MenuButton icon={<HelpCircle size={20} />} label={t('help_support')} onClick={() => navigate({ to: '/help-support' })} />
         <MenuButton icon={<FileText size={20} />} label={t('terms_conditions')} onClick={() => navigate({ to: '/terms' })} />
+        <MenuButton icon={<KeyRound size={20} />} label={t('change_password') || 'Change Password'} onClick={() => navigate({ to: '/change-password' })} />
         <div className="pt-4">
           <MenuButton
             icon={logoutMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} className={`${language == "en" ? "rotate-180" : ""}`} />}

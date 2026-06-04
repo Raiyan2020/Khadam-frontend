@@ -16,7 +16,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const isSeeker = userRole === UserRole.SEEKER;
-  const hideNav = location.pathname === '/login' || location.pathname === '/sign-up' || location.pathname === '/verify-otp' || location.pathname === '/complete-profile';
+  const hideNav = location.pathname === '/login' || location.pathname === '/sign-up' || location.pathname === '/verify-otp' || location.pathname === '/complete-profile' || location.pathname === '/forgot-password' || location.pathname === '/reset-otp' || location.pathname === '/new-password';
 
   const isHomeActive = location.pathname === '/' || location.pathname.startsWith('/country') || location.pathname.startsWith('/search');
   const isProfileActive = location.pathname === '/profile' || location.pathname === '/settings';

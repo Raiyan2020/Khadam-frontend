@@ -17,6 +17,9 @@ import { Login } from './features/auth/components/Login';
 import { VerifyOtp } from './features/auth/components/VerifyOtp';
 import { SignUp } from './features/auth/components/SignUp';
 import { CompleteProfile } from './features/auth/components/CompleteProfile';
+import { ForgotPassword } from './features/auth/components/ForgotPassword';
+import { ResetOtp } from './features/auth/components/ResetOtp';
+import { NewPassword } from './features/auth/components/NewPassword';
 import { Favorites } from './views/Favorites';
 import { HelpSupport } from './views/HelpSupport';
 import { EditProfile } from './views/EditProfile';
@@ -24,6 +27,7 @@ import { EditAd } from './views/EditAd';
 import { Checkout } from './views/Checkout';
 import { TermsConditions } from './views/TermsConditions';
 import { SplashScreen } from './components/SplashScreen';
+import { ChangePassword } from './views/ChangePassword';
 
 export interface SearchParams {
   query?: string;
@@ -67,7 +71,7 @@ const AppLayout = () => {
 export const rootRoute = createRootRoute({
   component: AppLayout,
   beforeLoad: ({ location }) => {
-    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile'];
+    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile', '/forgot-password', '/reset-otp', '/new-password'];
     const isPublic = publicPaths.includes(location.pathname);
     const token = localStorage.getItem('token');
 
@@ -217,6 +221,40 @@ export const completeProfileRoute = createRoute({
   },
 });
 
+export const forgotPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/forgot-password',
+  component: ForgotPassword,
+});
+
+export const resetOtpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/reset-otp',
+  component: ResetOtp,
+  validateSearch: (search: Record<string, unknown>): { phone?: string; country_id?: number } => {
+    const rawId = search.country_id;
+    const parsedId = rawId !== undefined && rawId !== '' ? Number(rawId) : NaN;
+    return {
+      phone: typeof search.phone === 'string' ? search.phone : undefined,
+      country_id: !isNaN(parsedId) ? parsedId : undefined,
+    };
+  },
+});
+
+export const newPasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/new-password',
+  component: NewPassword,
+  validateSearch: (search: Record<string, unknown>): { phone?: string; country_id?: number } => {
+    const rawId = search.country_id;
+    const parsedId = rawId !== undefined && rawId !== '' ? Number(rawId) : NaN;
+    return {
+      phone: typeof search.phone === 'string' ? search.phone : undefined,
+      country_id: !isNaN(parsedId) ? parsedId : undefined,
+    };
+  },
+});
+
 export const favoritesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/favorites',
@@ -253,6 +291,12 @@ export const termsRoute = createRoute({
   component: TermsConditions,
 });
 
+export const changePasswordRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/change-password',
+  component: ChangePassword,
+});
+
 export const categoryResultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/category/$category',
@@ -283,6 +327,10 @@ const routeTree = rootRoute.addChildren([
   editAdRoute,
   checkoutRoute,
   termsRoute,
+  forgotPasswordRoute,
+  resetOtpRoute,
+  newPasswordRoute,
+  changePasswordRoute,
 ]);
 
 export const router = createRouter({ routeTree });

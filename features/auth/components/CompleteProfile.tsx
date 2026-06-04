@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
-import { Camera, Image as ImageIcon, User, Building, Phone, Globe, FileText, CreditCard, Mail, X, MapPin, Loader2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, User, Building, Globe, FileText, CreditCard, Mail, MapPin, Loader2 } from 'lucide-react';
 import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
 import { ApiCountry } from '../../../lib/useCountryCodes';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import { LocationPicker, LatLng } from '../../../components/LocationPicker';
 import { useCompleteProfile } from '../hooks/useCompleteProfile';
 import { useStates, StateOption } from '../hooks/useStates';

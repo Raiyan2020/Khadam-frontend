@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
-import { ChevronLeft, Phone, User, Building, Loader2 } from 'lucide-react';
+import { ChevronLeft, User, Building, Loader2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
 import { ApiCountry } from '../../../lib/useCountryCodes';
@@ -15,14 +14,11 @@ type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE';
 export const SignUp: React.FC = () => {
   const navigate = useNavigate();
   const { t, dir } = useLanguage();
-
   const [step, setStep] = useState<SignUpStep>('ACCOUNT_TYPE');
   const [accountType, setAccountType] = useState<'1' | '2' | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('+965');
   const [selectedCountry, setSelectedCountry] = useState<ApiCountry | null>(null);
-
   const registerMutation = useRegister();
-
   const signUpSchema = z.object({
     phoneNumber: z.string().min(8, t('phone_min_length') || 'Phone number must be at least 8 digits'),
     accountType: z.enum(['1', '2'], { message: t('account_type_required') || 'Account type is required' }),
