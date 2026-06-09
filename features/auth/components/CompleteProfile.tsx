@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
-import { Camera, Image as ImageIcon, User, Building, Globe, FileText, CreditCard, Mail, MapPin, Loader2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, User, Building, Globe, FileText, CreditCard, Mail, MapPin, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
 import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
 import { ApiCountry } from '../../../lib/useCountryCodes';
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -64,6 +64,15 @@ export const CompleteProfile: React.FC = () => {
   const [whatsapp, setWhatsapp] = useState('+965');
   const [email, setEmail] = useState('');
 
+  // Password fields (both user types)
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+
+  // Seeker-specific email (userType 1)
+  const [seekerEmail, setSeekerEmail] = useState('');
+
   const [commercialLicenseFile, setCommercialLicenseFile] = useState<File | null>(null);
   const [commercialLicensePreview, setCommercialLicensePreview] = useState<string | null>(null);
   const commercialLicenseRef = useRef<HTMLInputElement>(null);
@@ -92,6 +101,12 @@ export const CompleteProfile: React.FC = () => {
   const seekerSchema = z.object({
     name: z.string().min(3, t('name_required')),
     profileImage: z.any().refine((file) => file !== null, t('profile_image_required')),
+    seekerEmail: z.string().email(t('invalid_email') || 'Invalid email'),
+    password: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
+    passwordConfirmation: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
+  }).refine((data) => data.password === data.passwordConfirmation, {
+    message: t('passwords_do_not_match') || 'Passwords do not match',
+    path: ['passwordConfirmation'],
   });
 
   // Company Schema (User Type 2)
@@ -116,6 +131,11 @@ export const CompleteProfile: React.FC = () => {
     ),
     managerIdImage: z.any().refine((file) => file !== null, t('manager_id_image_required')),
     description: z.string().min(1, t('description_required')),
+    password: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
+    passwordConfirmation: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
+  }).refine((data) => data.password === data.passwordConfirmation, {
+    message: t('passwords_do_not_match') || 'Passwords do not match',
+    path: ['passwordConfirmation'],
   });
 
   const compressFile = async (file: File) => {
@@ -140,6 +160,11 @@ export const CompleteProfile: React.FC = () => {
     const dataToValidate = {
       name,
       profileImage: profileImageFile,
+      password,
+      passwordConfirmation,
+      ...(userType === '1' && {
+        seekerEmail,
+      }),
       ...(userType === '2' && {
         coverImage: coverImageFile,
         stateId,
@@ -225,6 +250,14 @@ export const CompleteProfile: React.FC = () => {
         formData.append('phone_manager', mgrLocal);
         formData.append('manager_id_image', compressedManagerId);
         formData.append('description', description);
+        formData.append('password', password);
+        formData.append('password_confirmation', passwordConfirmation);
+      }
+
+      if (userType === '1') {
+        formData.append('email', seekerEmail);
+        formData.append('password', password);
+        formData.append('password_confirmation', passwordConfirmation);
       }
 
       completeProfileMutation.mutate(formData);
@@ -311,6 +344,103 @@ export const CompleteProfile: React.FC = () => {
               </div>
               {errors.name && <p className="text-xs text-red-500 px-1">{errors.name}</p>}
             </div>
+
+            {/* Seeker Specific Fields (userType === '1') */}
+            {userType === '1' && (
+              <>
+                {/* Seeker Email */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-primary px-1">
+                    {t('email') || 'Email'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                      <Mail size={18} />
+                    </div>
+                    <input
+                      id="field-seekerEmail"
+                      type="email"
+                      value={seekerEmail}
+                      onChange={(e) => {
+                        setSeekerEmail(e.target.value);
+                        clearError('seekerEmail');
+                      }}
+                      placeholder="example@mail.com"
+                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-4 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      dir="ltr"
+                      required
+                    />
+                  </div>
+                  {errors.seekerEmail && <p className="text-xs text-red-500 px-1">{errors.seekerEmail}</p>}
+                </div>
+
+                {/* Seeker Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-primary px-1">
+                    {t('password') || 'Password'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      id="field-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        clearError('password');
+                      }}
+                      placeholder="••••••••"
+                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      dir="ltr"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 end-0 flex items-center pe-3 text-secondary hover:text-primary transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-red-500 px-1">{errors.password}</p>}
+                </div>
+
+                {/* Seeker Password Confirmation */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-primary px-1">
+                    {t('password_confirmation') || 'Confirm Password'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      id="field-passwordConfirmation"
+                      type={showPasswordConfirmation ? 'text' : 'password'}
+                      value={passwordConfirmation}
+                      onChange={(e) => {
+                        setPasswordConfirmation(e.target.value);
+                        clearError('passwordConfirmation');
+                      }}
+                      placeholder="••••••••"
+                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      dir="ltr"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordConfirmation((v) => !v)}
+                      className="absolute inset-y-0 end-0 flex items-center pe-3 text-secondary hover:text-primary transition-colors"
+                    >
+                      {showPasswordConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.passwordConfirmation && <p className="text-xs text-red-500 px-1">{errors.passwordConfirmation}</p>}
+                </div>
+              </>
+            )}
 
             {/* Company Specific Fields */}
             {userType === '2' && (
@@ -592,6 +722,72 @@ export const CompleteProfile: React.FC = () => {
                     required
                   />
                   {errors.description && <p className="text-xs text-red-500 px-1">{errors.description}</p>}
+                </div>
+
+                {/* Company Password */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-primary px-1">
+                    {t('password') || 'Password'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      id="field-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        clearError('password');
+                      }}
+                      placeholder="••••••••"
+                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      dir="ltr"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 end-0 flex items-center pe-3 text-secondary hover:text-primary transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-red-500 px-1">{errors.password}</p>}
+                </div>
+
+                {/* Company Password Confirmation */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-primary px-1">
+                    {t('password_confirmation') || 'Confirm Password'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-secondary">
+                      <Lock size={18} />
+                    </div>
+                    <input
+                      id="field-passwordConfirmation"
+                      type={showPasswordConfirmation ? 'text' : 'password'}
+                      value={passwordConfirmation}
+                      onChange={(e) => {
+                        setPasswordConfirmation(e.target.value);
+                        clearError('passwordConfirmation');
+                      }}
+                      placeholder="••••••••"
+                      className="w-full h-12 bg-background border border-border rounded-xl ps-10 pe-10 text-sm text-primary placeholder-secondary/50 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      dir="ltr"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordConfirmation((v) => !v)}
+                      className="absolute inset-y-0 end-0 flex items-center pe-3 text-secondary hover:text-primary transition-colors"
+                    >
+                      {showPasswordConfirmation ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.passwordConfirmation && <p className="text-xs text-red-500 px-1">{errors.passwordConfirmation}</p>}
                 </div>
               </>
             )}
