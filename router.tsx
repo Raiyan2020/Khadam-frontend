@@ -78,6 +78,9 @@ export const rootRoute = createRootRoute({
     if (!token && !isPublic) {
       throw redirect({
         to: '/login',
+        search: {
+          redirect: `${location.pathname}${location.searchStr}`,
+        } as any,
       });
     }
 
@@ -193,14 +196,6 @@ export const verifyOtpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/verify-otp',
   component: VerifyOtp,
-  validateSearch: (search: Record<string, unknown>): { phone?: string; country_id?: number } => {
-    const rawId = search.country_id;
-    const parsedId = rawId !== undefined && rawId !== '' ? Number(rawId) : NaN;
-    return {
-      phone: typeof search.phone === 'string' ? search.phone : undefined,
-      country_id: !isNaN(parsedId) ? parsedId : undefined,
-    };
-  },
 });
 
 export const signUpRoute = createRoute({

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Twitter, Facebook, MessageCircle, Loader2 } from 'lucide-react';
-import { GlassCard, Button } from '../components/GlassUI';
+import { GlassCard, Button, Modal } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
@@ -45,6 +45,7 @@ export const HelpSupport: React.FC = () => {
   };
 
   const social = settings?.social_media;
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
 
   return (
     <div className="pb-20 min-h-screen bg-background">
@@ -62,7 +63,7 @@ export const HelpSupport: React.FC = () => {
         {/* Contact Number */}
         <div className="space-y-2">
           <h2 className="text-sm font-bold text-primary px-1">{t('support_number')}</h2>
-          <GlassCard className="p-4 flex items-center justify-between group cursor-pointer hover:border-brand-400 transition-colors" onClick={() => social?.phone_support && (window.location.href = `tel:${social.phone_support}`)}>
+          <GlassCard className="p-4 flex items-center justify-between group cursor-pointer hover:border-brand-400 transition-colors" onClick={() => setIsSupportModalOpen(true)}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:bg-brand-500 group-hover:text-white transition-colors">
                 <Phone size={20} />
@@ -147,11 +148,50 @@ export const HelpSupport: React.FC = () => {
           </div>
         </div>
       </div>
+      <Modal
+        isOpen={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+        title={t('contact_support')}
+        description={t('choose_contact_method')}
+      >
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <button
+            onClick={() => {
+              if (social?.phone_support) {
+                window.location.href = `tel:${social.phone_support}`;
+              }
+              setIsSupportModalOpen(false);
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-border bg-glass hover:bg-glassHigh hover:border-brand-500 hover:scale-105 active:scale-95 transition-all duration-200"
+          >
+            <div className="w-10 h-10 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500">
+              <Phone size={20} />
+            </div>
+            <span className="text-xs font-bold text-primary">{t('phone_call')}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (social?.phone_support) {
+                const phone = social.phone_support.replace(/\D/g, '');
+                window.open(`https://wa.me/${phone}`, '_blank');
+              }
+              setIsSupportModalOpen(false);
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-border bg-glass hover:bg-glassHigh hover:border-brand-500 hover:scale-105 active:scale-95 transition-all duration-200"
+          >
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+              <MessageCircle size={20} />
+            </div>
+            <span className="text-xs font-bold text-primary">{t('whatsapp') || 'WhatsApp'}</span>
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-const SocialButton: React.FC<{ icon: React.ReactNode; color: string; bg: string; hover: string; onClick: () => void }> = ({ icon, color, bg, hover, onClick }) => (
+const SocialButton: React.FC<{ icon: React.ReactNode; color: string; bg?: string; hover?: string; onClick: () => void }> = ({ icon, color, bg = '', hover = '', onClick }) => (
   <button
     onClick={onClick}
     className={`aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 bg-glass border border-border ${color} ${hover}`}

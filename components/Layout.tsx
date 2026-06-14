@@ -31,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="w-full flex justify-center bg-[var(--bg-app)] transition-colors duration-300 overflow-hidden" style={{ height: 'var(--app-height, 100dvh)' }} dir={dir}>
       <div className="w-full  bg-background relative flex flex-col shadow-2xl overflow-hidden sm:rounded-[28px] sm:border sm:border-border transition-colors duration-300" style={{ height: 'var(--app-height, 100dvh)' }}>
-        <main className="flex-1 overflow-y-auto no-scrollbar relative pb-[calc(20px+env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)]">
+        <main className="flex-1 overflow-y-auto no-scrollbar relative">
           <div className="absolute inset-0 bg-gradient-to-b from-brand-500/10 to-transparent pointer-events-none h-64" />
           <div className="relative max-w-5xl mx-auto">
             {children}

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
@@ -51,6 +51,7 @@ interface LoginResponse {
 
 export const useLogin = () => {
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { redirect?: string };
   const { setUserRole } = useUserRole();
   const { t } = useLanguage();
 
@@ -88,9 +89,13 @@ export const useLogin = () => {
       setUserRole(user.type === '2' ? UserRole.OFFICE : UserRole.SEEKER);
 
       if (user.is_completed_profile === 1) {
-        // Profile is complete → go home
+        // Profile is complete → go home or to the redirect URL
         toast.success(t('welcome_back'), { description: t('login_success') });
-        navigate({ to: '/' });
+        if (search.redirect && search.redirect !== '/login') {
+          navigate({ to: search.redirect } as any);
+        } else {
+          navigate({ to: '/' });
+        }
       } else {
         // Profile incomplete → redirect to complete-profile step
         navigate({

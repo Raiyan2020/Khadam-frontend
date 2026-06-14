@@ -2,15 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { ShadcnOTPInput } from '../../../components/OTPInput';
 import { useLanguage } from '../../../i18n';
-import { Lock, Loader2 } from 'lucide-react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { Loader2 } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 import { useVerifyOtp } from '../hooks/useVerifyOtp';
 import { useResendOtp } from '../hooks/useResendOtp';
 import { requestForToken } from '../../../lib/firebase';
 
 export const VerifyOtp: React.FC = () => {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/verify-otp' }) as { phone?: string; country_id?: number };
+  // Lazy initializers: read sessionStorage ONCE on first mount.
+  // Plain `const` would re-read on every render, so after StrictMode's
+  // effect-cleanup cycle deletes the keys the component would see undefined.
+  const [phone] = useState<string | undefined>(() => sessionStorage.getItem('otp_phone') ?? undefined);
+  const [country_id] = useState<number | undefined>(() => {
+    const raw = sessionStorage.getItem('otp_country_id');
+    return raw ? Number(raw) : undefined;
+  });
   const { t } = useLanguage();
   const [otp, setOtp] = useState('');
   const [deviceId, setDeviceId] = useState('');
@@ -44,31 +51,31 @@ export const VerifyOtp: React.FC = () => {
     getDeviceId();
 
     // If no phone number is provided, redirect back to login
-    if (!search.phone) {
+    if (!phone) {
       navigate({ to: '/login' });
     }
-  }, [search.phone, navigate]);
+  }, [phone, navigate]);
 
   const verifyMutation = useVerifyOtp();
   const resendMutation = useResendOtp();
 
   const handleResendOtp = () => {
-    if (search.phone && search.country_id != null) {
-      resendMutation.mutate({ phone: search.phone, country_id: search.country_id });
+    if (phone && country_id != null) {
+      resendMutation.mutate({ phone, country_id });
       setTimer(40);
     }
   };
 
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length >= 4 && search.phone) {
+    if (otp.length >= 4 && phone) {
       const formData = new FormData();
-      formData.append('phone', search.phone);
+      formData.append('phone', phone);
       formData.append('otp', otp);
       formData.append('device_id', deviceId);
       formData.append('device_type', 'web');
-      if (search.country_id != null) {
-        formData.append('country_id', String(search.country_id));
+      if (country_id != null) {
+        formData.append('country_id', String(country_id));
       }
 
       verifyMutation.mutate(formData);
@@ -94,7 +101,7 @@ export const VerifyOtp: React.FC = () => {
           </h1>
           <p className="text-sm text-secondary">
             {t('enter_otp_desc') || 'Enter the code sent to your phone'}
-            {search.phone && <span className="block mt-1 font-bold text-brand-500" dir="ltr">{search.phone}</span>}
+            {phone && <span className="block mt-1 font-bold text-brand-500" dir="ltr">{phone}</span>}
           </p>
         </div>
 
@@ -137,7 +144,7 @@ export const VerifyOtp: React.FC = () => {
               <div>
                 <button
                   type="button"
-                  onClick={() => navigate({ to: '/login' })}
+                  onClick={() => navigate({ to: '/sign-up' })}
                   className="text-xs text-secondary hover:text-primary transition-colors"
                 >
                   {t('change_phone') || 'Change phone number'}

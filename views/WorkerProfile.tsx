@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ArrowLeft, ArrowRight, MessageCircle, Share2, MapPin, Globe, Clock, CheckCircle, Wallet, Heart } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MessageCircle, Share2, MapPin, Globe, Clock, CheckCircle, Wallet, Heart, ZoomIn } from 'lucide-react';
 import { GlassCard, Button, Skeleton } from '../components/GlassUI';
 import { useUserRole } from '../UserRoleContext';
 import { useLanguage } from '../i18n';
@@ -7,6 +7,9 @@ import { useAdDetails } from '../features/auth/hooks/useAdDetails';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { useWhatsappTransfer } from '../features/auth/hooks/useWhatsappTransfer';
+import { Fancybox } from '@fancyapps/ui';
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import { toast } from 'sonner';
 
 export const WorkerProfile: React.FC = () => {
   const { workerId } = useParams({ strict: false }) as { workerId: string };
@@ -18,6 +21,16 @@ export const WorkerProfile: React.FC = () => {
   const { data: worker, isLoading, error } = useAdDetails(workerId);
   const { mutate: toggleLike, isPending, variables } = useToggleLike();
   const { mutate: recordTransfer, isPending: isRecordingTransfer } = useWhatsappTransfer();
+
+  const handleViewImage = () => {
+    if (!worker) return;
+    Fancybox.show([
+      {
+        src: worker.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png',
+        type: 'image',
+      }
+    ]);
+  };
 
   const handleToggleLike = () => {
     const id = parseInt(workerId);
@@ -40,6 +53,10 @@ export const WorkerProfile: React.FC = () => {
 
   const handleWhatsappContact = () => {
     if (!worker) return;
+    if (!worker.is_available) {
+      toast.warning(t('worker_not_available'));
+      return;
+    }
     recordTransfer({
       company_id: worker.office.id,
       ad_id: worker.id
@@ -49,7 +66,26 @@ export const WorkerProfile: React.FC = () => {
       .replace('{id}', String(worker.id));
     const phone = String(worker.office.whatsapp).replace(/\D/g, '');
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    window.location.href = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+
+    const appUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+    const webUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+    // Detect mobile vs desktop
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      const start = Date.now();
+      window.location.href = appUrl;
+
+      // Fallback if native app is not installed/doesn't open
+      setTimeout(() => {
+        if (!document.hidden && Date.now() - start < 1500) {
+          window.location.href = webUrl;
+        }
+      }, 1200);
+    } else {
+      window.open(webUrl, '_blank');
+    }
   };
 
   const handleShare = async () => {
@@ -114,18 +150,23 @@ export const WorkerProfile: React.FC = () => {
     <div className="relative pb-24">
       {/* Top Image Area */}
       <div className="relative h-[480px] w-full bg-glass overflow-hidden">
-        <img
-          src={worker.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
-          alt={worker.worker_name}
-          onError={handleImageError}
-          className="w-full h-full object-cover"
-        />
-
-        {/* Bottom-focused gradient overlay */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.62) 100%)' }}
-        />
+          onClick={handleViewImage}
+          className="absolute inset-0 cursor-zoom-in group z-10"
+        >
+          <img
+            src={worker.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
+            alt={worker.worker_name}
+            onError={handleImageError}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+
+          {/* Bottom-focused gradient overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.62) 100%)' }}
+          />
+        </div>
 
         {/* Nav Header */}
         <div className="fixed top-0 left-0 right-0 p-5 flex justify-between items-center z-40 pointer-events-none">
@@ -154,10 +195,10 @@ export const WorkerProfile: React.FC = () => {
         </div>
 
         {/* Improved Info Container Area */}
-        <div className="absolute bottom-6 start-5 end-5 z-10 flex flex-col items-start gap-3">
+        <div className="absolute bottom-6 start-5 end-5 z-20 flex flex-col items-start gap-3 pointer-events-none">
           {/* Glass Text Container */}
           <div
-            className="max-w-[78%] p-[10px_12px] rounded-[14px] border border-white/20 backdrop-blur-[6px] animate-in fade-in slide-in-from-bottom-3 duration-700"
+            className="max-w-[78%] p-[10px_12px] rounded-[14px] border border-white/20 backdrop-blur-[6px] animate-in fade-in slide-in-from-bottom-3 duration-700 pointer-events-auto"
             style={{ background: 'rgba(10,16,28,0.42)' }}
           >
             <h1 className="text-xl sm:text-2xl font-extrabold text-white leading-tight line-clamp-2">
@@ -174,6 +215,18 @@ export const WorkerProfile: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Zoom Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewImage();
+          }}
+          className="absolute bottom-6 end-5 z-30 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/40 hover:scale-110 active:scale-95 transition-all shadow-lg pointer-events-auto"
+          aria-label="Zoom image"
+        >
+          <ZoomIn size={20} />
+        </button>
       </div>
 
       <div className="px-4 mt-6 space-y-6">
@@ -221,7 +274,7 @@ export const WorkerProfile: React.FC = () => {
           <Button
             fullWidth
             variant="primary"
-            className="gap-2"
+            className={`gap-2 ${!worker.is_available ? 'opacity-60 cursor-not-allowed' : ''}`}
             onClick={handleWhatsappContact}
             disabled={isRecordingTransfer}
           >

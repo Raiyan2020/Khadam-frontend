@@ -44,8 +44,8 @@ export const CountryResults: React.FC = () => {
       worker_name: searchQuery || undefined,
       category_id: activeCategory === 'All' ? undefined : activeCategory,
       country_id: searchParams.country_id,
-      gender: (filters.gender && filters.gender !== 'Any')
-        ? (filters.gender.toLowerCase() as 'male' | 'female' | 'all')
+      gender: (filters.gender === 'Male' || filters.gender === 'Female')
+        ? (filters.gender.toLowerCase() as 'male' | 'female')
         : undefined,
       salary: filters.maxSalary,
       age: filters.maxAge,

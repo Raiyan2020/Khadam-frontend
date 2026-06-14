@@ -33,10 +33,12 @@ export const useCheckResetCode = () => {
     },
 
     onSuccess: (_data, variables) => {
+      toast.success(_data.message || 'Code verified successfully');
       navigate({
         to: '/new-password',
         search: { phone: variables.phone, country_id: variables.country_id },
       });
+
     },
 
     onError: (error: any) => {

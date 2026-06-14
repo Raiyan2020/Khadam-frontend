@@ -30,7 +30,8 @@ export const useForgotPassword = () => {
       return data;
     },
 
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      toast.success(data.message || 'Registration successful');
       navigate({
         to: '/reset-otp',
         search: { phone: variables.phone, country_id: variables.country_id },

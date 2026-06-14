@@ -32,11 +32,11 @@ export const useRegister = () => {
       }
       return result;
     },
-    onSuccess: (_, variables) => {
-      navigate({
-        to: '/verify-otp',
-        search: { phone: `${variables.phone}`, country_id: variables.country_id }
-      });
+    onSuccess: (data, variables) => {
+      sessionStorage.setItem('otp_phone', variables.phone);
+      sessionStorage.setItem('otp_country_id', String(variables.country_id));
+      toast.success(data.message || 'Registration successful');
+      navigate({ to: '/verify-otp' });
     },
     onError: (error: any) => {
       toast.error(error.message || 'An error occurred during registration');

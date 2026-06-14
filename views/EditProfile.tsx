@@ -107,7 +107,14 @@ export const EditProfile: React.FC = () => {
     }
 
     const data = new FormData();
+    const isSeeker = profile?.type === '1';
+
     Object.keys(formData).forEach(key => {
+      // If user is seeker (type 1), only pass name, phone, and email fields
+      if (isSeeker && !['name', 'phone', 'email'].includes(key)) {
+        return;
+      }
+
       if (formData[key] !== null && formData[key] !== undefined) {
         if (key === 'phone') {
           // Split phone into numeric country_id + local number
@@ -123,7 +130,7 @@ export const EditProfile: React.FC = () => {
     if (images.image) {
       data.append('image', images.image);
     }
-    if (images.cover_image) {
+    if (images.cover_image && !isSeeker) {
       data.append('cover_image', images.cover_image);
     }
 

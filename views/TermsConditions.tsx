@@ -40,7 +40,10 @@ export const TermsConditions: React.FC = () => {
                 <ShieldCheck size={32} />
               </div>
               <h2 className="text-lg font-bold text-primary">{term.title}</h2>
-              <p className="text-sm text-secondary mt-1">{term.description}</p>
+              <div
+                className="text-sm text-secondary mt-1"
+                dangerouslySetInnerHTML={{ __html: term.description }}
+              />
             </div>
 
             <div className="space-y-4">
@@ -48,15 +51,21 @@ export const TermsConditions: React.FC = () => {
                 <GlassCard key={feature.id} className="p-5 space-y-3">
                   <div className="flex items-center gap-3 text-brand-500">
                     {index === 2 ? <AlertCircle size={20} className="text-red-500" /> : <ScrollText size={20} />}
-                    <h3 className={`font-bold ${index === 2 ? 'text-red-500' : ''}`}>
-                      {index + 1}. {feature.description.split(':')[0]}
-                    </h3>
+                    <h3
+                      className={`font-bold ${index === 2 ? 'text-red-500' : ''}`}
+                      dangerouslySetInnerHTML={{
+                        __html: `${index + 1}. ${feature.description.split(':')[0]}`
+                      }}
+                    />
                   </div>
-                  <p className="text-sm text-secondary leading-relaxed">
-                    {feature.description.includes(':')
-                      ? feature.description.split(':').slice(1).join(':').trim()
-                      : feature.description}
-                  </p>
+                  <div
+                    className="text-sm text-secondary leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: feature.description.includes(':')
+                        ? feature.description.split(':').slice(1).join(':').trim()
+                        : feature.description
+                    }}
+                  />
                 </GlassCard>
               ))}
             </div>

@@ -46,6 +46,10 @@ export const useVerifyOtp = () => {
     onSuccess: (data, variables) => {
       const { user, token } = data.data;
 
+      // Clear OTP session data now that it's been used
+      sessionStorage.removeItem('otp_phone');
+      sessionStorage.removeItem('otp_country_id');
+
       // Save user type for profile completion page
       localStorage.setItem('user_type', user.type);
       setUserRole(user.type === '2' ? UserRole.OFFICE : UserRole.SEEKER);

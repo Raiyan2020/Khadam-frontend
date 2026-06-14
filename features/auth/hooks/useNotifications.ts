@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
+import { toast } from 'sonner';
 
 export interface NotificationData {
   id: string;
@@ -33,7 +34,6 @@ export interface NotificationsResponse {
 
 export const useNotifications = () => {
   const { language } = useLanguage();
-
   return useInfiniteQuery({
     queryKey: ['notifications', language],
     queryFn: async ({ pageParam = 1 }) => {
@@ -94,7 +94,7 @@ export const useUnreadNotifications = () => {
 
 export const useDeleteNotification = () => {
   const queryClient = useQueryClient();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -110,6 +110,7 @@ export const useDeleteNotification = () => {
       if (!response.ok) throw new Error('Failed to delete notification');
     },
     onSuccess: () => {
+      toast.success(t('notification_deleted_successfully'));
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
     },
@@ -118,7 +119,7 @@ export const useDeleteNotification = () => {
 
 export const useDeleteAllNotifications = () => {
   const queryClient = useQueryClient();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   return useMutation({
     mutationFn: async () => {
@@ -134,6 +135,7 @@ export const useDeleteAllNotifications = () => {
       if (!response.ok) throw new Error('Failed to delete all notifications');
     },
     onSuccess: () => {
+      toast.success(t('all_notifications_deleted_successfully'));
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
     },

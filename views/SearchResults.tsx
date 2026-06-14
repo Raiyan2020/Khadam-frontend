@@ -88,7 +88,7 @@ export const SearchResults: React.FC = () => {
       category_id: filters.category,
       country_id: filters.country_id ?? searchParams.country_id,
       gender: (filters.gender && filters.gender !== 'Any')
-        ? (filters.gender.toLowerCase() as 'male' | 'female' | 'all')
+        ? (filters.gender.toLowerCase() as 'male' | 'female')
         : undefined,
       salary: filters.maxSalary,
       age: filters.maxAge,
@@ -141,10 +141,18 @@ export const SearchResults: React.FC = () => {
     setFilters(newFilters);
     setCurrentPage(1);
     doSearch({
-      ...newFilters,
       worker_name: searchQuery || undefined,
+      category_id: newFilters.category,
+      country_id: newFilters.country_id ?? searchParams.country_id,
+      gender: (newFilters.gender === 'Male' || newFilters.gender === 'Female')
+        ? (newFilters.gender.toLowerCase() as 'male' | 'female')
+        : undefined,
+      salary: newFilters.maxSalary,
+      age: newFilters.maxAge,
+      years_experience: newFilters.minExperience,
+      languages: newFilters.languages as number[] | undefined,
       page: 1,
-    } as any);
+    });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -162,7 +170,19 @@ export const SearchResults: React.FC = () => {
     if (key === 'nationality') updated.country_id = undefined;
     setFilters(updated);
     setCurrentPage(1);
-    doSearch({ ...updated, page: 1 } as any);
+    doSearch({
+      worker_name: searchQuery || undefined,
+      category_id: updated.category,
+      country_id: updated.country_id ?? searchParams.country_id,
+      gender: (updated.gender === 'Male' || updated.gender === 'Female')
+        ? (updated.gender.toLowerCase() as 'male' | 'female')
+        : undefined,
+      salary: updated.maxSalary,
+      age: updated.maxAge,
+      years_experience: updated.minExperience,
+      languages: updated.languages as number[] | undefined,
+      page: 1,
+    });
   };
 
   const results: AdFilterResult[] = apiResponse?.data || [];
@@ -203,113 +223,113 @@ export const SearchResults: React.FC = () => {
     <div className="pb-10 min-h-screen bg-background">
       <div className={`sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pt-6 px-4 transition-all duration-300 ${showSearch ? 'pb-4' : 'pb-2'}`}>
         <div className="max-w-5xl mx-auto">
-        {/* Header row */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate({ to: '/' })}
-            className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
-          >
-            {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
+          {/* Header row */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate({ to: '/' })}
+              className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
+            >
+              {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
 
-          {isCountryView ? (
-            /* Country header: flag + name */
-            <div className="flex items-center gap-2.5">
-              {searchParams.country_image && (
-                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
-                  <img
-                    src={searchParams.country_image}
-                    alt={searchParams.country_name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                </div>
-              )}
-              <h1 className="text-xl font-bold text-primary">{searchParams.country_name}</h1>
-            </div>
-          ) : (
-            <h1 className="text-xl font-bold text-primary">{getTitle()}</h1>
-          )}
-        </div>
-
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={handleApplyFilters}
-          initialCriteria={filters}
-        />
-
-        <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[300px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
-            onFilterClick={() => setIsFilterModalOpen(true)}
-          />
-
-          {/* Active filter chips */}
-          {activeChips.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              {activeChips.map((chip, i) => (
-                <div
-                  key={`${chip.key}-${i}`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex-shrink-0"
-                >
-                  <span>{chip.label}</span>
-                  <button
-                    onClick={() => {
-                      if (chip.key === 'languages') {
-                        // Remove all language filters at once
-                        const updated = { ...filters, languages: undefined };
-                        setFilters(updated);
-                        setCurrentPage(1);
-                        doSearch({
-                          ...updated,
-                          page: 1,
-                          worker_name: searchQuery || undefined,
-                          history: searchParams.history,
-                          latest: searchParams.latest,
-                          experience: searchParams.experience,
-                        } as any);
-                      } else {
-                        removeFilter(chip.key);
-                      }
-                    }}
-                    className="hover:text-red-500 transition-colors ml-0.5"
-                    aria-label="remove filter"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Category chips from API */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
-            {isLoadingCategories ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
-              ))
+            {isCountryView ? (
+              /* Country header: flag + name */
+              <div className="flex items-center gap-2.5">
+                {searchParams.country_image && (
+                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-border flex-shrink-0">
+                    <img
+                      src={searchParams.country_image}
+                      alt={searchParams.country_name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+                <h1 className="text-xl font-bold text-primary">{searchParams.country_name}</h1>
+              </div>
             ) : (
-              <>
-                <CategoryChip
-                  label={t('cat_all')}
-                  isActive={activeCategory === 'All'}
-                  onClick={() => setActiveCategory('All')}
-                />
-                {categories?.map(cat => (
-                  <CategoryChip
-                    key={cat.id}
-                    label={cat.name}
-                    isActive={activeCategory === cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                  />
-                ))}
-              </>
+              <h1 className="text-xl font-bold text-primary">{getTitle()}</h1>
             )}
           </div>
-        </div>
+
+          <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={handleApplyFilters}
+            initialCriteria={filters}
+          />
+
+          <div className={`space-y-4 overflow-hidden transition-all duration-300 ease-in-out ${showSearch ? 'max-h-[300px] opacity-100 mt-4' : 'max-h-0 opacity-0 mt-0 invisible'}`}>
+            <SearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={() => { setCurrentPage(1); doSearch({ page: 1 }); }}
+              onFilterClick={() => setIsFilterModalOpen(true)}
+            />
+
+            {/* Active filter chips */}
+            {activeChips.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                {activeChips.map((chip, i) => (
+                  <div
+                    key={`${chip.key}-${i}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex-shrink-0"
+                  >
+                    <span>{chip.label}</span>
+                    <button
+                      onClick={() => {
+                        if (chip.key === 'languages') {
+                          // Remove all language filters at once
+                          const updated = { ...filters, languages: undefined };
+                          setFilters(updated);
+                          setCurrentPage(1);
+                          doSearch({
+                            ...updated,
+                            page: 1,
+                            worker_name: searchQuery || undefined,
+                            history: searchParams.history,
+                            latest: searchParams.latest,
+                            experience: searchParams.experience,
+                          } as any);
+                        } else {
+                          removeFilter(chip.key);
+                        }
+                      }}
+                      className="hover:text-red-500 transition-colors ml-0.5"
+                      aria-label="remove filter"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Category chips from API */}
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+              {isLoadingCategories ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+                ))
+              ) : (
+                <>
+                  <CategoryChip
+                    label={t('cat_all')}
+                    isActive={activeCategory === 'All'}
+                    onClick={() => setActiveCategory('All')}
+                  />
+                  {categories?.map(cat => (
+                    <CategoryChip
+                      key={cat.id}
+                      label={cat.name}
+                      isActive={activeCategory === cat.id}
+                      onClick={() => setActiveCategory(cat.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
         </div>{/* /max-w-5xl */}
       </div>
 

@@ -56,7 +56,7 @@ export const Badge: React.FC<{ children: React.ReactNode; color?: 'accent' | 'gr
   );
 };
 
-export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }> = ({ src, alt, size = 'md', className = '' }) => {
+export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string; onClick?: () => void }> = ({ src, alt, size = 'md', className = '', onClick }) => {
   const sizes = {
     sm: "w-8 h-8",
     md: "w-12 h-12",
@@ -64,7 +64,12 @@ export const Avatar: React.FC<{ src: string; alt: string; size?: 'sm' | 'md' | '
     xl: "w-24 h-24"
   };
   return (
-    <img src={src} alt={alt} className={`${sizes[size]} rounded-full object-cover border border-border ${className}`} />
+    <img
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      className={`${sizes[size]} rounded-full object-cover border border-border ${className} ${onClick ? 'cursor-zoom-in hover:scale-105 active:scale-95 transition-all duration-200' : ''}`}
+    />
   );
 };
 

@@ -26,7 +26,7 @@ interface FilterModalProps {
 }
 
 export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, initialCriteria }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { data: countries, isLoading: isLoadingCountries } = useCountries();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { data: languagesData, isLoading: isLoadingLanguages } = useLanguages();

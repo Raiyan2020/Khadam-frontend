@@ -7,6 +7,8 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { useOfficeDetails, useOfficeAds } from '../features/auth/hooks/useOfficeDetails';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
+import { Fancybox } from '@fancyapps/ui';
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
 
 export const OfficeProfile: React.FC = () => {
   const { officeId } = useParams({ strict: false }) as { officeId: string };
@@ -62,8 +64,10 @@ export const OfficeProfile: React.FC = () => {
       id: 'location',
       icon: <MapPin size={22} />,
       label: 'Location',
-      href: office.map_desc || null, // Assuming map_desc contains URL or using a fallback
-      active: !!office.map_desc
+      href: (office.lat && office.lng && office.lat !== 'null' && office.lng !== 'null')
+        ? `https://www.google.com/maps/search/?api=1&query=${office.lat},${office.lng}`
+        : office.map_desc || null,
+      active: !!(office.lat && office.lng && office.lat !== 'null' && office.lng !== 'null') || !!office.map_desc
     },
     {
       id: 'call',
@@ -98,17 +102,30 @@ export const OfficeProfile: React.FC = () => {
   const isThisPending = isPending && variables?.id === office.id;
   const isFavorited = isThisPending ? !office.is_liked : office.is_liked;
 
+  const handleViewImage = (src: string) => {
+    Fancybox.show([
+      {
+        src,
+        type: 'image',
+      }
+    ]);
+  };
+
   return (
     <div className="pb-20">
       {/* Header Image Area */}
-      <div className="h-44 w-full relative">
-        <img
-          src={office.cover_image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
-          alt="Cover"
-          className="w-full h-full object-cover"
-          onError={(e) => { e.currentTarget.src = 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'; }}
-        />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+      <div className="h-44 w-full relative overflow-hidden bg-glass">
+        {
+          office.cover_image ? (
+            <img
+              src={office.cover_image}
+              alt="Cover"
+              className="w-full h-full object-cover cursor-zoom-in hover:scale-105 transition-transform duration-500"
+              onClick={() => handleViewImage(office.cover_image!)}
+            />
+          ) : null
+        }
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] pointer-events-none" />
 
         <div className="absolute top-5 start-5 z-20">
           <button
@@ -136,12 +153,16 @@ export const OfficeProfile: React.FC = () => {
       <div className="-mt-12 px-4 relative z-10">
         {/* Avatar Section */}
         <div className="mb-4">
-          <Avatar
-            src={office.image || 'https://raiyansoft.com/wp-content/uploads/2026/02/icon-s.png'}
-            alt={office.name}
-            size="xl"
-            className="border-4 border-background shadow-lg shrink-0"
-          />
+          {
+            office.image ?
+              <Avatar
+                src={office.image}
+                alt={office.name}
+                size="xl"
+                className="border-4 border-background shadow-lg shrink-0 cursor-pointer"
+                onClick={() => handleViewImage(office.image!)}
+              /> : null
+          }
         </div>
 
         {/* Office Info Block */}

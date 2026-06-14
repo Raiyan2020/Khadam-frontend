@@ -8,7 +8,7 @@ export interface AdFilterParams {
   category_id?: number;
   years_experience?: number;
   country_id?: number;
-  gender?: 'male' | 'female' | 'all';
+  gender?: 'male' | 'female';
   salary?: number;
   age?: number;
   languages?: number[];
@@ -63,7 +63,7 @@ export const useAdFilter = (params: AdFilterParams) => {
       if (params.category_id !== undefined) formData.append('category_id', String(params.category_id));
       if (params.years_experience !== undefined) formData.append('years_experience', String(params.years_experience));
       if (params.country_id !== undefined) formData.append('country_id', String(params.country_id));
-      if (params.gender) formData.append('gender', params.gender);
+      if (params.gender === 'male' || params.gender === 'female') formData.append('gender', params.gender);
       if (params.salary !== undefined) formData.append('salary', String(params.salary));
       if (params.age !== undefined) formData.append('age', String(params.age));
       if (params.languages && params.languages.length > 0) {
