@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Twitter, Facebook, MessageCircle, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Phone, Mail, Send, Instagram, Facebook, MessageCircle, Loader2 } from 'lucide-react';
 import { GlassCard, Button, Modal } from '../components/GlassUI';
 import { useLanguage } from '../i18n';
 import { toast } from 'sonner';
@@ -51,7 +51,7 @@ export const HelpSupport: React.FC = () => {
     <div className="pb-20 min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
         <button
-          onClick={() => navigate({ to: '/profile' })}
+          onClick={() => window.history.back()}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -143,7 +143,15 @@ export const HelpSupport: React.FC = () => {
           <div className="grid grid-cols-4 gap-3">
             <SocialButton icon={<MessageCircle size={24} />} color="text-green-500" onClick={() => social?.phone_support && window.open(`https://wa.me/${social.phone_support}`, '_blank')} />
             <SocialButton icon={<Instagram size={24} />} color="text-pink-500" onClick={() => social?.instagram && window.open(social.instagram, '_blank')} />
-            <SocialButton icon={<Twitter size={24} />} color="text-blue-400" onClick={() => social?.twitter && window.open(social.twitter, '_blank')} />
+            <SocialButton
+              icon={
+                <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] fill-current" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                </svg>
+              }
+              color="text-primary"
+              onClick={() => social?.twitter && window.open(social.twitter, '_blank')}
+            />
             <SocialButton icon={<Facebook size={24} />} color="text-blue-600" onClick={() => social?.facebook && window.open(social.facebook, '_blank')} />
           </div>
         </div>

@@ -34,8 +34,12 @@ const getStep2Schema = (t: any) =>
 const getStep3Schema = (t: any, maxExperience: number) =>
   z.object({
     languages: z.array(z.number()).min(1, t('v_languages_min')),
-    years_experience: z.number().min(0, t('v_experience_min')).max(maxExperience, `${t('v_experience_max') || 'Max experience'} ${maxExperience}`),
-    salary: z.number().min(0, t('v_salary_min')).max(1000000, t('v_salary_max')),
+    years_experience: z.number({ message: t('v_experience_required') })
+      .min(0, t('v_experience_min'))
+      .max(maxExperience, `${t('v_experience_max') || 'Max experience'} ${maxExperience}`),
+    salary: z.number({ message: t('v_salary_required') })
+      .min(0, t('v_salary_min'))
+      .max(9999, t('v_salary_max')),
   });
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -156,11 +160,11 @@ export const PublishAd: React.FC = () => {
         gender: gender || undefined,
       });
     } else {
-      const maxExp = age ? Math.max(0, Number(age) - 10) : 100;
+      const maxExp = age ? Math.max(0, Number(age) - 18) : 100;
       result = getStep3Schema(t, maxExp).safeParse({
         languages: selectedLanguages,
-        years_experience: yearsExperience ? Number(yearsExperience) : 0,
-        salary: salary ? Number(salary) : 0,
+        years_experience: yearsExperience === '' ? undefined : Number(yearsExperience),
+        salary: salary === '' ? undefined : Number(salary),
       });
     }
 
@@ -220,7 +224,7 @@ export const PublishAd: React.FC = () => {
     <div className="px-4 pt-8 max-w-xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary transition-colors">
+        <button onClick={() => window.history.back()} className="text-secondary hover:text-primary transition-colors">
           <X size={24} />
         </button>
         <h1 className="text-2xl font-bold text-primary">{t('new_listing')}</h1>
@@ -268,13 +272,20 @@ export const PublishAd: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="absolute top-2 end-2 text-xs text-white bg-accent rounded-full px-2 py-0.5">
+                  <div className="absolute top-2 end-2 flex gap-1.5 items-center">
                     {settings ? (
-                      Number(settings.single_ad_price) === 0
-                        ? (t('free') || 'Free')
-                        : `${settings.single_ad_price} ${t('kwd') || 'KWD'}`
+                      <>
+                        <div className="text-xs text-white bg-accent rounded-full px-2 py-0.5">
+                          {Number(settings.single_ad_price) === 0
+                            ? (t('free') || 'Free')
+                            : `${settings.single_ad_price} ${t('kwd') || 'KWD'}`}
+                        </div>
+                        <div className="text-[10px] font-semibold text-primary bg-accent/10 border border-accent/20 rounded-full px-2 py-0.5">
+                          {settings.single_ad_duration} {t('days')}
+                        </div>
+                      </>
                     ) : (
-                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <Loader2 className="w-3 h-3 animate-spin text-accent" />
                     )}
                   </div>
                 </button>
@@ -514,7 +525,7 @@ export const PublishAd: React.FC = () => {
           <div className="space-y-5 animate-in fade-in slide-in-from-start-4 duration-300">
             <div className="grid grid-cols-2 gap-2">
               <InputGroup
-                label={`${t('experience')} (${t('exp_years')})${age ? ` · max ${Math.max(0, Number(age) - 18)}` : ''}`}
+                label={`${t('experience')} (${t('exp_years')})${age ? ` · ${t('max')} ${Math.max(0, Number(age) - 18)}` : ''} *`}
                 placeholder={t('ph_experience')}
                 type="tel"
                 dir="ltr"
@@ -532,14 +543,18 @@ export const PublishAd: React.FC = () => {
                 }}
               />
               <InputGroup
-                label={`${t('salary')} (KWD)`}
+                label={`${t('salary')} (KWD) *`}
                 placeholder={t('ph_salary')}
                 type="tel"
                 dir="ltr"
                 rtlPlaceholder={language === 'ar'}
                 value={salary}
                 error={errors.salary}
-                onChange={v => { setSalary(normalizeArabicNumbers(v)); clearError('salary'); }}
+                onChange={v => {
+                  const cleaned = normalizeArabicNumbers(v).replace(/\D/g, '').slice(0, 4);
+                  setSalary(cleaned);
+                  clearError('salary');
+                }}
               />
             </div>
 

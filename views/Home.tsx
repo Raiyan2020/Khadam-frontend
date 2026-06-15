@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MapPin, ChevronRight, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock } from 'lucide-react';
+import { MapPin, ChevronRight, ChevronLeft, Bell, Globe, Heart, MessageCircle, Eye, Users, CheckCircle, Clock, Sun, Moon, Smartphone } from 'lucide-react';
 import { GlassCard, Badge, Avatar, Skeleton, SearchInput } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
 import { useUserRole } from '../UserRoleContext';
 import { ServiceCategory, Ad, Office, Worker } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
+import { useTheme } from '../theme';
 
 import { useNavigate } from '@tanstack/react-router';
 import { useCategories } from '../features/auth/hooks/useCategories';
@@ -125,7 +126,8 @@ export const Home: React.FC = () => {
     requestAnimationFrame(tryRestore);
   }, []);
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>({});
-  const { t, dir, language } = useLanguage();
+  const { t, dir, language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const { userRole } = useUserRole();
   const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
 
@@ -251,16 +253,45 @@ export const Home: React.FC = () => {
                 <p className="text-[10px] text-secondary">{t('subtitle')}</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate({ to: '/notifications' })}
-              className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
-              aria-label={t('nav_notifications')}
-            >
-              <Bell size={20} />
-              {hasUnreadNotifications && (
-                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
-              )}
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Language Switcher */}
+              <button
+                onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+                className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0 text-xs font-bold"
+                title={language === 'ar' ? 'English' : 'العربية'}
+                aria-label={language === 'ar' ? 'Switch to English' : 'تغيير إلى العربية'}
+              >
+                {language === 'ar' ? 'EN' : 'AR'}
+              </button>
+
+              {/* Theme Switcher */}
+              <button
+                onClick={() => {
+                  if (theme === 'light') setTheme('dark');
+                  else if (theme === 'dark') setTheme('system');
+                  else setTheme('light');
+                }}
+                className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
+                title={`${t('theme')}: ${t(`theme_${theme}`)}`}
+                aria-label={t('theme')}
+              >
+                {theme === 'light' && <Sun size={16} />}
+                {theme === 'dark' && <Moon size={16} />}
+                {theme === 'system' && <Smartphone size={16} />}
+              </button>
+
+              {/* Notifications */}
+              <button
+                onClick={() => navigate({ to: '/notifications' })}
+                className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary relative hover:bg-glassHigh transition-colors flex-shrink-0"
+                aria-label={t('nav_notifications')}
+              >
+                <Bell size={16} />
+                {hasUnreadNotifications && (
+                  <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background"></span>
+                )}
+              </button>
+            </div>
           </div>
 
 

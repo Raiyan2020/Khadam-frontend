@@ -12,6 +12,8 @@ import { useProfile } from '../features/auth/hooks/useProfile';
 import { useUpdateProfile } from '../features/auth/hooks/useUpdateProfile';
 import { useCountryCodes } from '../lib/useCountryCodes';
 import { toast } from 'sonner';
+import { LocationPicker, LatLng } from '../components/LocationPicker';
+import { useStates, StateOption } from '../features/auth/hooks/useStates';
 
 export const EditProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +23,14 @@ export const EditProfile: React.FC = () => {
   const updateProfileMutation = useUpdateProfile();
   const { data: apiCountries } = useCountryCodes();
   const [phoneCountryId, setPhoneCountryId] = useState<number>(1);
+  const isCompany = profile?.type === '2';
+  const { data: statesResponse } = useStates(isCompany);
+  const states: StateOption[] = statesResponse?.data || [];
+
+  const [stateId, setStateId] = useState('');
+  const [locationData, setLocationData] = useState<{ position: LatLng | null }>({
+    position: null,
+  });
 
   const [formData, setFormData] = useState<any>({
     name: '',
@@ -75,10 +85,26 @@ export const EditProfile: React.FC = () => {
         image: profile.image || null,
         cover_image: profile.cover_image || null,
       });
+
+      if (profile.lat && profile.lng) {
+        setLocationData({
+          position: {
+            lat: Number(profile.lat),
+            lng: Number(profile.lng),
+          },
+        });
+      }
     }
   }, [profile, apiCountries]);
 
-  const isCompany = profile?.type === '2';
+  useEffect(() => {
+    if (profile && states.length && !stateId) {
+      const matchedState = states.find(s => s.name === profile.state_name);
+      if (matchedState) {
+        setStateId(matchedState.id.toString());
+      }
+    }
+  }, [profile, states, stateId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -115,6 +141,11 @@ export const EditProfile: React.FC = () => {
         return;
       }
 
+      // Skip state_name since we send state_id for companies
+      if (!isSeeker && key === 'state_name') {
+        return;
+      }
+
       if (formData[key] !== null && formData[key] !== undefined) {
         if (key === 'phone') {
           // Split phone into numeric country_id + local number
@@ -126,6 +157,16 @@ export const EditProfile: React.FC = () => {
         }
       }
     });
+
+    if (!isSeeker) {
+      if (stateId) {
+        data.append('state_id', stateId);
+      }
+      if (locationData.position) {
+        data.append('lat', locationData.position.lat.toString());
+        data.append('lng', locationData.position.lng.toString());
+      }
+    }
 
     if (images.image) {
       data.append('image', images.image);
@@ -154,7 +195,7 @@ export const EditProfile: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 flex items-center gap-4">
         <button
-          onClick={() => navigate({ to: '/profile' })}
+          onClick={() => window.history.back()}
           className="w-10 h-10 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors"
         >
           {dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -259,14 +300,44 @@ export const EditProfile: React.FC = () => {
           {/* Business Specific Fields */}
           {isCompany && (
             <>
+              {/* State Selection */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-primary px-1">{t('location') || 'Location'}</label>
+                <label className="text-sm font-medium text-primary px-1">{t('state') || 'State'} *</label>
+                <div className="relative">
+                  <select
+                    value={stateId}
+                    onChange={(e) => setStateId(e.target.value)}
+                    className="w-full bg-glass border border-border rounded-xl px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all appearance-none"
+                    required
+                  >
+                    <option value="" disabled>{t('select_state') || 'Select State'}</option>
+                    {states.map((state) => (
+                      <option key={state.id} value={state.id}>{state.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Map Location */}
+              <div className="space-y-1.5">
+                <LocationPicker
+                  value={locationData}
+                  onChange={(loc) => setLocationData(loc)}
+                  selectedStateName={states.find(s => s.id.toString() === stateId)?.name}
+                />
+              </div>
+
+              {/* Map Description */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-primary px-1">{t('map_desc') || 'Address Details'} *</label>
                 <input
                   type="text"
-                  name="state_name"
-                  value={formData.state_name}
+                  name="map_desc"
+                  value={formData.map_desc}
                   onChange={handleChange}
+                  placeholder='e.g. "الفروانيه شارع حبيب المناور "'
                   className="w-full bg-glass border border-border rounded-xl px-4 py-3 text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all"
+                  required
                 />
               </div>
 

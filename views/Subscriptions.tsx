@@ -34,7 +34,7 @@ export const Subscriptions: React.FC = () => {
       <div className="relative sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border pb-4 pt-6 px-4 transition-colors">
         <div className="flex items-center justify-between mb-2">
           <button
-            onClick={() => navigate({ to: '/profile' })}
+            onClick={() => window.history.back()}
             className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-glassHigh transition-colors"
           >
             {dir === 'rtl' ? <ArrowRight size={22} /> : <ArrowLeft size={22} />}
@@ -73,7 +73,7 @@ export const Subscriptions: React.FC = () => {
                 <h3 className="text-lg font-bold text-primary">{pkg.name}</h3>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-2xl font-black text-brand-500">{pkg.price}</span>
-                  <span className="text-xs text-secondary font-medium">KWD / {pkg.duration} {t('months') || 'Months'}</span>
+                  <span className="text-xs text-secondary font-medium">{t('kwd')} / {pkg.duration} {t('months') || 'Months'}</span>
                 </div>
               </div>
             </div>

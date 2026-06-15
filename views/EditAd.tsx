@@ -174,7 +174,7 @@ export const EditAd: React.FC = () => {
   return (
     <div className="px-4 pt-8">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={() => navigate({ to: '/my-ads' })} className="text-secondary hover:text-primary transition-colors">
+        <button onClick={() => window.history.back()} className="text-secondary hover:text-primary transition-colors">
           <X size={24} />
         </button>
         <h1 className="text-2xl font-bold text-primary">{t('edit_ad')}</h1>
