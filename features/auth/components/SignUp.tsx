@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { GlassCard, Button } from '../../../components/GlassUI';
 import { useLanguage } from '../../../i18n';
-import { ChevronLeft, User, Building, Loader2 } from 'lucide-react';
+import { ChevronLeft, User, Building, Loader2, Sun, Moon, Smartphone } from 'lucide-react';
+import { useTheme } from '../../../theme';
 import { useNavigate } from '@tanstack/react-router';
 import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
 import { ApiCountry } from '../../../lib/useCountryCodes';
@@ -13,7 +14,8 @@ type SignUpStep = 'ACCOUNT_TYPE' | 'PHONE';
 
 export const SignUp: React.FC = () => {
   const navigate = useNavigate();
-  const { t, dir } = useLanguage();
+  const { t, dir, language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [step, setStep] = useState<SignUpStep>('ACCOUNT_TYPE');
   const [accountType, setAccountType] = useState<'1' | '2' | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('+965');
@@ -112,6 +114,37 @@ export const SignUp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden">
+      {/* Top Switcher Buttons */}
+      <div className="absolute top-20 right-8 flex items-center gap-1.5 z-50">
+        {/* Language Switcher */}
+        <button
+          type="button"
+          onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+          className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0 text-xs font-bold"
+          title={language === 'ar' ? 'English' : 'العربية'}
+          aria-label={language === 'ar' ? 'Switch to English' : 'تغيير إلى العربية'}
+        >
+          {language === 'ar' ? 'EN' : 'AR'}
+        </button>
+
+        {/* Theme Switcher */}
+        <button
+          type="button"
+          onClick={() => {
+            if (theme === 'light') setTheme('dark');
+            else if (theme === 'dark') setTheme('system');
+            else setTheme('light');
+          }}
+          className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
+          title={`${t('theme')}: ${t(`theme_${theme}`)}`}
+          aria-label={t('theme')}
+        >
+          {theme === 'light' && <Sun size={16} />}
+          {theme === 'dark' && <Moon size={16} />}
+          {theme === 'system' && <Smartphone size={16} />}
+        </button>
+      </div>
+
       {/* Background decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 

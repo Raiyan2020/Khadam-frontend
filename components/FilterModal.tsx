@@ -80,6 +80,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
     setMinExperience('');
     setMaxAge('');
     setSelectedLanguages([]);
+    onApply({});
+    onClose();
   };
 
   // Lock background scroll and signal Layout while modal is open

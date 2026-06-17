@@ -208,12 +208,6 @@ export const completeProfileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/complete-profile',
   component: CompleteProfile,
-  validateSearch: (search: Record<string, unknown>): { phone?: string; country_id?: string } => {
-    return {
-      phone: typeof search.phone === 'string' ? search.phone : undefined,
-      country_id: typeof search.country_id === 'string' ? search.country_id : undefined,
-    };
-  },
 });
 
 export const forgotPasswordRoute = createRoute({

@@ -612,7 +612,6 @@ export const PublishAd: React.FC = () => {
                 <Check size={20} className="text-green-500 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-green-600 dark:text-green-300">{t('ready_publish')}</p>
-                  <p className="text-xs text-green-600/60 dark:text-green-300/60 mt-0.5">{t('ready_publish_desc')}</p>
                 </div>
               </div>
             </GlassCard>

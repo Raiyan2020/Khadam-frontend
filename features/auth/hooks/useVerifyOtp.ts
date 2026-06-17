@@ -62,8 +62,13 @@ export const useVerifyOtp = () => {
       } else {
         // Sign-up flow OR incomplete profile: go to complete-profile
         // Do NOT store token here (there is none in sign-up response)
+        toast.success(data.message);
         const countryId = variables.get('country_id') as string | undefined || user.country_id;
-        navigate({ to: '/complete-profile', search: { phone: user.phone, country_id: countryId } });
+        sessionStorage.setItem('complete_profile_phone', user.phone);
+        if (countryId) {
+          sessionStorage.setItem('complete_profile_country_id', String(countryId));
+        }
+        navigate({ to: '/complete-profile' });
       }
     },
     onError: (error: any) => {

@@ -5,6 +5,38 @@ import { useLanguage } from '../i18n';
 import { GlassCard } from '../components/GlassUI';
 import { useTerms } from '../features/auth/hooks/useTerms';
 
+const formatFeature = (description: string, index: number) => {
+  if (!description.includes(':')) {
+    return {
+      title: `${index + 1}.`,
+      desc: description,
+    };
+  }
+
+  const parts = description.split(':');
+  const rawTitle = parts[0];
+  const rawDesc = parts.slice(1).join(':').trim();
+
+  // Strip all HTML tags from the title part to avoid block elements forcing a newline
+  const cleanTitle = rawTitle.replace(/<\/?[^>]+(>|$)/g, "").trim();
+
+  // If rawTitle contains an opening <p> and rawDesc has a trailing </p> but no opening <p>,
+  // strip the trailing </p> to prevent broken HTML tags.
+  let cleanDesc = rawDesc;
+  if (
+    rawTitle.toLowerCase().includes('<p>') &&
+    !rawDesc.toLowerCase().includes('<p>') &&
+    rawDesc.toLowerCase().endsWith('</p>')
+  ) {
+    cleanDesc = rawDesc.substring(0, rawDesc.length - 4).trim();
+  }
+
+  return {
+    title: `${index + 1}. ${cleanTitle}`,
+    desc: cleanDesc,
+  };
+};
+
 export const TermsConditions: React.FC = () => {
   const { t, dir } = useLanguage();
   const navigate = useNavigate();
@@ -47,27 +79,23 @@ export const TermsConditions: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {term.features.map((feature, index) => (
-                <GlassCard key={feature.id} className="p-5 space-y-3">
-                  <div className="flex items-center gap-3 text-brand-500">
-                    {index === 2 ? <AlertCircle size={20} className="text-red-500" /> : <ScrollText size={20} />}
-                    <h3
-                      className={`font-bold ${index === 2 ? 'text-red-500' : ''}`}
-                      dangerouslySetInnerHTML={{
-                        __html: `${index + 1}. ${feature.description.split(':')[0]}`
-                      }}
+              {term.features.map((feature, index) => {
+                const { title, desc } = formatFeature(feature.description, index);
+                return (
+                  <GlassCard key={feature.id} className="p-5 space-y-3">
+                    <div className="flex items-center gap-3 text-brand-500">
+                      {index === 2 ? <AlertCircle size={20} className="text-red-500" /> : <ScrollText size={20} />}
+                      <h3 className={`font-bold ${index === 2 ? 'text-red-500' : ''}`}>
+                        {title}
+                      </h3>
+                    </div>
+                    <div
+                      className="text-sm text-secondary leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: desc }}
                     />
-                  </div>
-                  <div
-                    className="text-sm text-secondary leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: feature.description.includes(':')
-                        ? feature.description.split(':').slice(1).join(':').trim()
-                        : feature.description
-                    }}
-                  />
-                </GlassCard>
-              ))}
+                  </GlassCard>
+                );
+              })}
             </div>
           </React.Fragment>
         ))}

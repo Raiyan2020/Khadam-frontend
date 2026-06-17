@@ -65,10 +65,20 @@ export const Subscriptions: React.FC = () => {
             )}
 
             <div className="flex items-start gap-4 mb-6">
-              <div className={`p-3 rounded-2xl ${index === 1 ? 'bg-brand-500/10' : index === 2 ? 'bg-purple-500/10' : 'bg-zinc-500/10'
-                }`}>
-                {getPackageIcon(index)}
-              </div>
+              {pkg.image ? (
+                <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0 border border-border bg-glass">
+                  <img
+                    src={pkg.image}
+                    alt={pkg.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className={`p-3 rounded-2xl ${index === 1 ? 'bg-brand-500/10' : index === 2 ? 'bg-purple-500/10' : 'bg-zinc-500/10'
+                  }`}>
+                  {getPackageIcon(index)}
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-bold text-primary">{pkg.name}</h3>
                 <div className="flex items-baseline gap-1 mt-1">

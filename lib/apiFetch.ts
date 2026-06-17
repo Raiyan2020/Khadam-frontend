@@ -1,4 +1,5 @@
 import { router } from "@/router";
+import { toast } from "sonner";
 
 /**
  * Drop-in replacement for `fetch` that:
@@ -32,6 +33,32 @@ export async function apiFetch(
   };
 
   const response = await fetch(url, options);
+
+  // Check if response is JSON and has a block status
+  try {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const clone = response.clone();
+      const body = await clone.json();
+      if (body && body.status === 'block') {
+        // Clear auth state
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Push toast notification
+        toast.error(body.message || 'Account blocked');
+
+        // Redirect — use the TanStack router if available, fall back to hard redirect
+        try {
+          router.navigate({ to: '/login' } as any);
+        } catch {
+          window.location.href = '/login';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing response in apiFetch block check:', error);
+  }
 
   if (response.status === 401) {
     // Clear auth state

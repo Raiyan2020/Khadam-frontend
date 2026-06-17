@@ -38,6 +38,9 @@ export const useCompleteProfile = () => {
     onSuccess: (data) => {
       const token = data.data?.token;
 
+      sessionStorage.removeItem('complete_profile_phone');
+      sessionStorage.removeItem('complete_profile_country_id');
+
       if (token) {
         // User (type 1): token returned → save it and go home
         localStorage.setItem('token', token);

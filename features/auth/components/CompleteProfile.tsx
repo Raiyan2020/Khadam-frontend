@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { normalizeArabicNumbers } from '../../../lib/numbers';
 import { GlassCard, Button } from '../../../components/GlassUI';
-import { Camera, Image as ImageIcon, User, Building, Globe, FileText, CreditCard, Mail, MapPin, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
+import { Camera, Image as ImageIcon, User, Building, Globe, FileText, CreditCard, Mail, MapPin, Loader2, Lock, Eye, EyeOff, Sun, Moon, Smartphone } from 'lucide-react';
+import { useTheme } from '../../../theme';
 import { PhoneInput, splitPhone } from '../../../components/PhoneInput';
 import { ApiCountry } from '../../../lib/useCountryCodes';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { LocationPicker, LatLng } from '../../../components/LocationPicker';
 import { useCompleteProfile } from '../hooks/useCompleteProfile';
 import { useStates, StateOption } from '../hooks/useStates';
@@ -16,8 +17,8 @@ import { z } from 'zod';
 
 export const CompleteProfile: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const search = useSearch({ from: '/complete-profile' }) as { phone?: string; country_id?: string };
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
 
   const [userType, setUserType] = useState<'1' | '2' | null>(null);
 
@@ -79,7 +80,10 @@ export const CompleteProfile: React.FC = () => {
 
   const [nationalNumberManager, setNationalNumberManager] = useState('');
   const [phoneManager, setPhoneManager] = useState('+965');
-  const [phoneCountryId, setPhoneCountryId] = useState<number>(() => search.country_id ? Number(search.country_id) : 1);
+  const [phoneCountryId, setPhoneCountryId] = useState<number>(() => {
+    const savedCountryId = sessionStorage.getItem('complete_profile_country_id');
+    return savedCountryId ? Number(savedCountryId) : 1;
+  });
   const [phoneManagerCountryId, setPhoneManagerCountryId] = useState<number>(1);
 
   const [managerIdImageFile, setManagerIdImageFile] = useState<File | null>(null);
@@ -88,9 +92,8 @@ export const CompleteProfile: React.FC = () => {
 
   const [description, setDescription] = useState('');
 
-  // Pre-fill phone from previous OTP step
   const [phone, setPhone] = useState(() => {
-    const p = search.phone || '';
+    const p = sessionStorage.getItem('complete_profile_phone') || '';
     return p.startsWith('+') ? p : p ? '+' + p : '+965';
   });
 
@@ -105,7 +108,7 @@ export const CompleteProfile: React.FC = () => {
     password: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
     passwordConfirmation: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
   }).refine((data) => data.password === data.passwordConfirmation, {
-    message: t('passwords_do_not_match') || 'Passwords do not match',
+    message: t('passwords_not_match') || 'Passwords do not match',
     path: ['passwordConfirmation'],
   });
 
@@ -134,7 +137,7 @@ export const CompleteProfile: React.FC = () => {
     password: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
     passwordConfirmation: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
   }).refine((data) => data.password === data.passwordConfirmation, {
-    message: t('passwords_do_not_match') || 'Passwords do not match',
+    message: t('passwords_not_match') || 'Passwords do not match',
     path: ['passwordConfirmation'],
   });
 
@@ -274,6 +277,37 @@ export const CompleteProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-5 relative overflow-hidden">
+      {/* Top Switcher Buttons */}
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 z-50">
+        {/* Language Switcher */}
+        <button
+          type="button"
+          onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+          className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0 text-xs font-bold"
+          title={language === 'ar' ? 'English' : 'العربية'}
+          aria-label={language === 'ar' ? 'Switch to English' : 'تغيير إلى العربية'}
+        >
+          {language === 'ar' ? 'EN' : 'AR'}
+        </button>
+
+        {/* Theme Switcher */}
+        <button
+          type="button"
+          onClick={() => {
+            if (theme === 'light') setTheme('dark');
+            else if (theme === 'dark') setTheme('system');
+            else setTheme('light');
+          }}
+          className="w-8 h-8 rounded-full bg-glass border border-border flex items-center justify-center text-primary hover:bg-glassHigh transition-colors flex-shrink-0"
+          title={`${t('theme')}: ${t(`theme_${theme}`)}`}
+          aria-label={t('theme')}
+        >
+          {theme === 'light' && <Sun size={16} />}
+          {theme === 'dark' && <Moon size={16} />}
+          {theme === 'system' && <Smartphone size={16} />}
+        </button>
+      </div>
+
       <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[50%] bg-gradient-to-b from-brand-500/20 to-transparent rounded-[100%] blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md z-10 space-y-6 mt-10">

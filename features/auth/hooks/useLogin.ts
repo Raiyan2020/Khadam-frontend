@@ -98,9 +98,12 @@ export const useLogin = () => {
         }
       } else {
         // Profile incomplete → redirect to complete-profile step
+        sessionStorage.setItem('complete_profile_phone', user.phone);
+        if (user.country_id) {
+          sessionStorage.setItem('complete_profile_country_id', String(user.country_id));
+        }
         navigate({
           to: '/complete-profile',
-          search: { phone: user.phone, country_id: String(user.country_id) },
         });
       }
     },
