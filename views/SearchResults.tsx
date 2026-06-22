@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Heart, Clock, X } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { useUserRole } from '../UserRoleContext';
@@ -12,12 +12,18 @@ import { SearchParams } from '../router';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
+import { useDragScroll } from '../lib/useDragScroll';
 
 export const SearchResults: React.FC = () => {
   const { category: paramCategory } = useParams({ strict: false }) as { category?: string };
   const searchParams = useSearch({ strict: false }) as SearchParams;
   const navigate = useNavigate();
   const { t, dir, language } = useLanguage();
+  const { userRole } = useUserRole();
+
+  // Drag-scroll hooks for horizontally-scrollable chip rows
+  const chipsDrag = useDragScroll<HTMLDivElement>();
+  const catChipsDrag = useDragScroll<HTMLDivElement>();
 
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
@@ -269,7 +275,11 @@ export const SearchResults: React.FC = () => {
 
             {/* Active filter chips */}
             {activeChips.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              <div
+                ref={chipsDrag.ref}
+                {...chipsDrag.dragProps}
+                className="flex gap-2 overflow-x-auto no-scrollbar cursor-grab select-none"
+              >
                 {activeChips.map((chip, i) => (
                   <div
                     key={`${chip.key}-${i}`}
@@ -306,7 +316,11 @@ export const SearchResults: React.FC = () => {
             )}
 
             {/* Category chips from API */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+            <div
+              ref={catChipsDrag.ref}
+              {...catChipsDrag.dragProps}
+              className="flex gap-2 overflow-x-auto no-scrollbar pt-1 cursor-grab select-none"
+            >
               {isLoadingCategories ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />

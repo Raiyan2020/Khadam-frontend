@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { Button, Skeleton } from './GlassUI';
 import { useLanguage } from '../i18n';
@@ -6,6 +6,7 @@ import { NATIONALITIES, LANGUAGES } from '../constants';
 import { useCountries } from '../features/auth/hooks/useCountries';
 import { useCategories } from '../features/auth/hooks/useCategories';
 import { useLanguages } from '../features/auth/hooks/useLanguages';
+import { useDragScroll } from '../lib/useDragScroll';
 
 export interface FilterCriteria {
   maxSalary?: number;
@@ -30,6 +31,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
   const { data: countries, isLoading: isLoadingCountries } = useCountries();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { data: languagesData, isLoading: isLoadingLanguages } = useLanguages();
+
+  // Drag-scroll hooks for each chip row
+  const catDrag = useDragScroll<HTMLDivElement>();
+  const natDrag = useDragScroll<HTMLDivElement>();
+  const langDrag = useDragScroll<HTMLDivElement>();
 
   const [maxSalary, setMaxSalary] = useState<number | ''>(initialCriteria?.maxSalary || '');
   const [category, setCategory] = useState<number | 'Any'>(initialCriteria?.category || 'Any');
@@ -142,7 +148,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
             {/* Category */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">{t('select_category')}</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div
+                ref={catDrag.ref}
+                {...catDrag.dragProps}
+                className="flex gap-2 overflow-x-auto no-scrollbar pb-1 cursor-grab select-none"
+              >
 
                 {isLoadingCategories ? (
                   Array.from({ length: 4 }).map((_, i) => (
@@ -152,7 +162,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
                   categories?.map(cat => (
                     <button
                       key={cat.id}
-                      onClick={() => setCategory(cat.id)}
+                      onClick={catDrag.preventClickIfDragged(() => setCategory(cat.id))}
                       className={`flex-shrink-0 h-10 px-4 rounded-xl text-sm font-medium transition-colors ${category === cat.id ? 'bg-brand-500 text-white' : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'}`}
                     >
                       <span>{cat.name}</span>
@@ -165,7 +175,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
             {/* Nationality */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">{t('nationality')}</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div
+                ref={natDrag.ref}
+                {...natDrag.dragProps}
+                className="flex gap-2 overflow-x-auto no-scrollbar pb-1 cursor-grab select-none"
+              >
 
                 {isLoadingCountries ? (
                   Array.from({ length: 4 }).map((_, i) => (
@@ -175,10 +189,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
                   countries?.map(nat => (
                     <button
                       key={nat.id}
-                      onClick={() => {
+                      onClick={natDrag.preventClickIfDragged(() => {
                         setNationality(nat.name);
                         setCountryId(nat.id);
-                      }}
+                      })}
                       className={`flex-shrink-0 h-10 px-3 flex items-center gap-2 rounded-xl text-sm font-medium transition-colors ${nationality === nat.name ? 'bg-brand-500 text-white' : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'}`}
                     >
                       <img src={nat.image} alt={nat.name} className="w-5 h-5 rounded-full object-cover" />
@@ -192,7 +206,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
             {/* Languages */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-zinc-200">{t('filter_languages')}</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div
+                ref={langDrag.ref}
+                {...langDrag.dragProps}
+                className="flex gap-2 overflow-x-auto no-scrollbar pb-1 cursor-grab select-none"
+              >
                 {isLoadingLanguages ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <Skeleton key={i} className="h-10 w-24 shrink-0 rounded-xl" />
@@ -203,11 +221,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApp
                     return (
                       <button
                         key={lang.id}
-                        onClick={() => {
+                        onClick={langDrag.preventClickIfDragged(() => {
                           setSelectedLanguages(prev =>
                             isSelected ? prev.filter(id => id !== lang.id) : [...prev, lang.id]
                           );
-                        }}
+                        })}
                         className={`flex-shrink-0 h-10 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${isSelected
                           ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
                           : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800'

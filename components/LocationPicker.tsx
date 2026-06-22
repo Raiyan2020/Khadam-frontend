@@ -66,7 +66,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange,
   const { language } = useLanguage();
   const isAr = language === 'ar';
 
-  const selectedCity = KUWAIT_CITIES.find(c => 
+  const selectedCity = KUWAIT_CITIES.find(c =>
     selectedStateName && (c.nameAr === selectedStateName || c.nameEn === selectedStateName)
   ) ?? KUWAIT_CITIES[0];
 
@@ -80,7 +80,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange,
   useEffect(() => {
     const handler = setTimeout(async () => {
       if (!searchQuery.trim()) return;
-      
+
       setIsSearching(true);
       try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=kw`);
@@ -125,17 +125,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({ value, onChange,
                 placeholder={isAr ? 'ابحث عن شارع، مبنى، أو معلم' : 'Search for street, building, or landmark'}
                 className="w-full h-11 bg-background/95 backdrop-blur-md border border-border rounded-xl ps-4 pe-12 text-sm text-primary placeholder-secondary/70 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-sm"
               />
-              <button
-                type="submit"
-                disabled={isSearching}
-                className="absolute inset-y-0 end-0 px-3 flex items-center justify-center text-secondary hover:text-brand-500 transition-colors disabled:opacity-50"
-              >
-                {isSearching ? (
-                  <div className="w-4 h-4 border-y-2 border-brand-500 border-x-transparent rounded-full animate-spin" />
-                ) : (
-                  <Search size={16} />
-                )}
-              </button>
+
             </form>
           </div>
           <MapContainer

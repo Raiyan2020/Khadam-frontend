@@ -5,10 +5,45 @@ import { toast } from "sonner";
  * Drop-in replacement for `fetch` that:
  * - Automatically injects `Authorization`, `Accept-Language`, and `lang` headers
  *   from localStorage / i18n so individual hooks don't need to repeat them.
- * - Globally handles 401 Unauthorized: clears the stored token and redirects to /login.
+ * - Globally handles 401 Unauthorized and block status: clears the stored token
+ *   and redirects to /login, showing the toast only once even if multiple
+ *   concurrent requests fail at the same time.
  *
  * Caller-supplied headers always take precedence over the injected defaults.
  */
+
+/**
+ * Guards against showing multiple toasts / triggering multiple redirects when
+ * several concurrent requests all return 401 or block status at the same time.
+ * Reset when the user successfully navigates away from the login page.
+ */
+let isRedirecting = false;
+
+function handleAuthFailure(message?: string) {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  // Clear auth state
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+
+  // Show a single toast
+  if (message) {
+    toast.error(message);
+  }
+
+  // Redirect — use the TanStack router if available, fall back to hard redirect
+  try {
+    router.navigate({ to: '/login' } as any).finally(() => {
+      // Allow the flag to reset after navigation completes so the next
+      // real login attempt isn't blocked.
+      setTimeout(() => { isRedirecting = false; }, 1000);
+    });
+  } catch {
+    window.location.href = '/login';
+  }
+}
+
 export async function apiFetch(
   url: string,
   options: RequestInit = {}
@@ -41,19 +76,7 @@ export async function apiFetch(
       const clone = response.clone();
       const body = await clone.json();
       if (body && body.status === 'block') {
-        // Clear auth state
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-
-        // Push toast notification
-        toast.error(body.message || 'Account blocked');
-
-        // Redirect — use the TanStack router if available, fall back to hard redirect
-        try {
-          router.navigate({ to: '/login' } as any);
-        } catch {
-          window.location.href = '/login';
-        }
+        handleAuthFailure(body.message || 'Account blocked');
       }
     }
   } catch (error) {
@@ -61,17 +84,9 @@ export async function apiFetch(
   }
 
   if (response.status === 401) {
-    // Clear auth state
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-
-    // Redirect — use the TanStack router if available, fall back to hard redirect
-    try {
-      router.navigate({ to: '/login' } as any);
-    } catch {
-      window.location.href = '/login';
-    }
+    handleAuthFailure();
   }
 
   return response;
 }
+

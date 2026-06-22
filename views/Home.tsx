@@ -16,6 +16,7 @@ import { useCompanyHomeData } from '../features/auth/hooks/useCompanyHomeData';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { useUnreadNotifications } from '../features/auth/hooks/useNotifications';
 import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
+import { useDragScroll } from '../lib/useDragScroll';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -332,25 +333,11 @@ export const Home: React.FC = () => {
               onFilterClick={() => setIsFilterModalOpen(true)}
             />
 
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1 px-4">
-              {isLoadingCategories ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
-                ))
-              ) : (
-                categories?.map(cat => (
-                  <CategoryChip
-                    key={cat.id}
-                    label={cat.name}
-                    isActive={false}
-                    onClick={() => navigate({
-                      to: '/search',
-                      search: { category_id: cat.id }
-                    } as any)}
-                  />
-                ))
-              )}
-            </div>
+            <CategoryChipsRow
+              isLoading={isLoadingCategories}
+              categories={categories}
+              onCategoryClick={(id) => navigate({ to: '/search', search: { category_id: id } } as any)}
+            />
           </div>
         </div>{/* /max-w-5xl header inner */}
       </div>
@@ -634,41 +621,11 @@ export const Home: React.FC = () => {
           <div className="flex items-center justify-between px-4">
             <h2 className="text-sm font-bold text-primary">{t('section_nationality')}</h2>
           </div>
-          <div className="flex md:flex-wrap gap-6 overflow-x-auto md:overflow-x-visible no-scrollbar px-4 pb-2">
-            {isLoadingCountries ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 shrink-0">
-                  <Skeleton className="w-14 h-14 rounded-full" />
-                  <Skeleton className="h-3 w-10 rounded" />
-                </div>
-              ))
-            ) : (
-              countries?.map(nat => (
-                <div
-                  key={nat.id}
-                  onClick={() => navigate({
-                    to: '/search',
-                    search: {
-                      country_id: nat.id,
-                      country_name: nat.name,
-                      country_image: nat.image,
-                    }
-                  } as any)}
-                  className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
-                >
-                  <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
-                    <img
-                      src={nat.image}
-                      alt={nat.name}
-                      onError={handleFlagError}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name}</span>
-                </div>
-              ))
-            )}
-          </div>
+          <NationalityRow
+            isLoading={isLoadingCountries}
+            countries={countries}
+            onCountryClick={(nat) => navigate({ to: '/search', search: { country_id: nat.id, country_name: nat.name, country_image: nat.image } } as any)}
+          />
         </section>
 
         {/* Continue watching / history */}
@@ -676,7 +633,7 @@ export const Home: React.FC = () => {
           const historyData = isCompany ? companyHomeData?.history : homeData?.history;
           return historyData && historyData.length > 0 && (
             <SectionContainer title={t('section_continue')} onViewAll={() => navigate({ to: '/search', search: { filterType: 'continue', history: 1 } })}>
-              <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
+              <HorizontalWorkerRow>
                 {historyData.map((worker: any) => (
                   <CompactCard
                     key={worker.id}
@@ -686,7 +643,7 @@ export const Home: React.FC = () => {
                     onClick={() => handleWorkerClick(worker.id.toString())}
                   />
                 ))}
-              </div>
+              </HorizontalWorkerRow>
             </SectionContainer>
           );
         })()}
@@ -697,16 +654,16 @@ export const Home: React.FC = () => {
           const availableAds = isCompany ? companyHomeData?.available_ads : homeData?.available_ads;
           return isLoading ? (
             <SectionContainer title={t('section_available')} canShowAll={false}>
-              <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
+              <HorizontalWorkerRow>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="w-32 aspect-[4/5] rounded-2xl shrink-0" />
                 ))}
-              </div>
+              </HorizontalWorkerRow>
             </SectionContainer>
           ) : (
             availableAds && availableAds.length > 0 && (
               <SectionContainer title={t('section_available')} canShowAll={false}>
-                <div className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4">
+                <HorizontalWorkerRow>
                   {availableAds.map((worker: any) => (
                     <CompactCard
                       key={worker.id}
@@ -716,7 +673,7 @@ export const Home: React.FC = () => {
                       onClick={() => handleWorkerClick(worker.id.toString())}
                     />
                   ))}
-                </div>
+                </HorizontalWorkerRow>
               </SectionContainer>
             )
           );
@@ -900,7 +857,7 @@ const FullListingCard: React.FC<{
 const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${isActive
+    className={`whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 shrink-0 ${isActive
       ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
       : 'bg-glass text-secondary border border-border hover:bg-glassHigh'
       }`}
@@ -908,3 +865,92 @@ const CategoryChip: React.FC<{ label: string; isActive: boolean; onClick: () => 
     {label}
   </button>
 );
+
+/** Draggable horizontal row of category chips. */
+const CategoryChipsRow: React.FC<{
+  isLoading: boolean;
+  categories: Array<{ id: number; name: string }> | undefined;
+  onCategoryClick: (id: number) => void;
+}> = ({ isLoading, categories, onCategoryClick }) => {
+  const { ref, dragProps, preventClickIfDragged } = useDragScroll<HTMLDivElement>();
+
+  return (
+    <div
+      ref={ref}
+      {...dragProps}
+      className="flex gap-2 overflow-x-auto no-scrollbar pt-1 px-4 cursor-grab select-none"
+    >
+      {isLoading ? (
+        Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-xl" />
+        ))
+      ) : (
+        categories?.map(cat => (
+          <CategoryChip
+            key={cat.id}
+            label={cat.name}
+            isActive={false}
+            onClick={preventClickIfDragged(() => onCategoryClick(cat.id))}
+          />
+        ))
+      )}
+    </div>
+  );
+};
+
+/** Draggable row for nationality flags. */
+const NationalityRow: React.FC<{
+  isLoading: boolean;
+  countries: Array<{ id: number; name: string; image: string }> | undefined;
+  onCountryClick: (nat: { id: number; name: string; image: string }) => void;
+}> = ({ isLoading, countries, onCountryClick }) => {
+  const { ref, dragProps, preventClickIfDragged } = useDragScroll<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      {...dragProps}
+      className="flex md:flex-wrap gap-6 overflow-x-auto md:overflow-x-visible no-scrollbar px-4 pb-2 cursor-grab select-none"
+    >
+      {isLoading ? (
+        Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-2 shrink-0">
+            <Skeleton className="w-14 h-14 rounded-full" />
+            <Skeleton className="h-3 w-10 rounded" />
+          </div>
+        ))
+      ) : (
+        countries?.map(nat => (
+          <div
+            key={nat.id}
+            onClick={preventClickIfDragged(() => onCountryClick(nat))}
+            className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
+          >
+            <div className="w-14 h-14 rounded-full overflow-hidden transition-all duration-300 border-2 border-border hover:border-brand-300">
+              <img
+                src={nat.image}
+                alt={nat.name}
+                onError={handleFlagError}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-[10px] font-bold transition-colors text-secondary">{nat.name}</span>
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+/** Generic draggable horizontal workers/cards row. */
+const HorizontalWorkerRow: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { ref, dragProps } = useDragScroll<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      {...dragProps}
+      className="flex md:flex-wrap gap-4 overflow-x-auto md:overflow-x-visible no-scrollbar px-4 cursor-grab select-none"
+    >
+      {children}
+    </div>
+  );
+};
