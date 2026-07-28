@@ -1,5 +1,6 @@
 import { router } from "@/router";
 import { toast } from "sonner";
+import { clearAuthStorage } from "./authBridge";
 
 /**
  * Drop-in replacement for `fetch` that:
@@ -23,9 +24,9 @@ function handleAuthFailure(message?: string) {
   if (isRedirecting) return;
   isRedirecting = true;
 
-  // Clear auth state
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+  // Clear auth state (token, user, user_type, FCM) and notify, so the role
+  // resets alongside it instead of surviving until the next reload.
+  clearAuthStorage();
 
   // Show a single toast
   if (message) {

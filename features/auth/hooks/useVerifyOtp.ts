@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { useUserRole } from '../../../UserRoleContext';
-import { UserRole } from '../../../types';
+import { useUserRole, roleFromUserType } from '../../../UserRoleContext';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
+import { notifyAuthChanged } from '../../../lib/authBridge';
 import { useLanguage } from '../../../i18n';
 
 export interface VerifyOtpResponse {
@@ -16,7 +16,8 @@ export interface VerifyOtpResponse {
       is_completed_profile: number;
       name: string | null;
       email: string | null;
-      type: string;
+      /** `'1'` seeker / `'2'` office — the API sends it as a string or a number. */
+      type: string | number;
       type_text: string;
       phone: string;
       country_id?: string;
@@ -51,12 +52,13 @@ export const useVerifyOtp = () => {
       sessionStorage.removeItem('otp_country_id');
 
       // Save user type for profile completion page
-      localStorage.setItem('user_type', user.type);
-      setUserRole(user.type === '2' ? UserRole.OFFICE : UserRole.SEEKER);
+      localStorage.setItem('user_type', String(user.type));
+      setUserRole(roleFromUserType(user.type));
 
       if (user.is_completed_profile === 1 && token) {
         // Login flow: profile complete + token given → go home
         localStorage.setItem('token', token);
+        notifyAuthChanged();
         toast.success(t('welcome_back'), { description: t('login_success') })
         navigate({ to: '/' });
       } else {

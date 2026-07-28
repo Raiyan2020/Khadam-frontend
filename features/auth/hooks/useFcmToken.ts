@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { requestForToken } from '../../../lib/firebase';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
+import { useIsAuthenticated } from '../../../lib/useIsAuthenticated';
 
 const FCM_REGISTERED_TOKEN_KEY = 'khadam_fcm_registered_token';
 
@@ -41,29 +42,7 @@ async function registerTokenWithBackend(fcmToken: string): Promise<void> {
  * 4. POSTs it to /fcm-token (only when the token is new/changed).
  */
 export const useFcmToken = () => {
-  const [authToken, setAuthToken] = useState(() => localStorage.getItem('token'));
-
-  // Keep authToken reactive to changes (e.g. login/logout)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentToken = localStorage.getItem('token');
-      if (currentToken !== authToken) {
-        setAuthToken(currentToken);
-      }
-    }, 1000);
-
-    const handleStorageChange = () => {
-      setAuthToken(localStorage.getItem('token'));
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [authToken]);
-
-  const isAuthenticated = !!authToken;
+  const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
     if (!isAuthenticated) return;

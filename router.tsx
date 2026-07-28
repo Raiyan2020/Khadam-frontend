@@ -28,6 +28,9 @@ import { Checkout } from './views/Checkout';
 import { TermsConditions } from './views/TermsConditions';
 import { SplashScreen } from './components/SplashScreen';
 import { ChangePassword } from './views/ChangePassword';
+import { requestLogin } from './lib/authBridge';
+import { LoginModal } from './components/LoginModal';
+import { PaymentSuccess, PaymentFail } from './views/PaymentResult';
 
 export interface SearchParams {
   query?: string;
@@ -64,31 +67,77 @@ const AppLayout = () => {
       <Layout>
         <Outlet />
       </Layout>
+      {/* Guest-mode login popup — opened by requestLogin() from anywhere. */}
+      <LoginModal />
     </>
   );
 };
 
+/** Auth screens — only reachable while signed out. */
+const AUTH_PATHS = [
+  '/login',
+  '/sign-up',
+  '/verify-otp',
+  '/complete-profile',
+  '/forgot-password',
+  '/reset-otp',
+  '/new-password',
+];
+
+/**
+ * Routes a guest may browse, mirroring the public API endpoints:
+ *   /            → GET  /home
+ *   /offices     → GET  /offices
+ *   /worker/:id  → GET  /ad/{ad}/details
+ *   /search      → POST /ad-filter
+ *   /category/:x → GET  /categories + POST /ad-filter
+ *   /country/:x  → GET  /countries  + POST /ad-filter
+ *   /terms       → GET  /terms
+ *   /help-support→ GET  /settings + POST /contact-us
+ *
+ * The payment result screens are here for a different reason: the gateway
+ * redirects the browser back cold, and bouncing that to a login popup would
+ * hide the outcome of a payment that already went through.
+ *
+ * Everything else (including /office/:id, which has no public endpoint) needs a token.
+ */
+const GUEST_PATHS = ['/', '/offices', '/search', '/terms', '/help-support'];
+const GUEST_PATH_PREFIXES = [
+  '/worker/',
+  '/category/',
+  '/country/',
+  '/payment-success/',
+  '/payment-fail/',
+];
+
+const isAuthPath = (pathname: string) => AUTH_PATHS.includes(pathname);
+
+const isGuestPath = (pathname: string) =>
+  GUEST_PATHS.includes(pathname) ||
+  GUEST_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
 export const rootRoute = createRootRoute({
   component: AppLayout,
   beforeLoad: ({ location }) => {
-    const publicPaths = ['/login', '/sign-up', '/verify-otp', '/complete-profile', '/forgot-password', '/reset-otp', '/new-password'];
-    const isPublic = publicPaths.includes(location.pathname);
     const token = localStorage.getItem('token');
 
-    if (!token && !isPublic) {
-      throw redirect({
-        to: '/login',
-        search: {
-          redirect: `${location.pathname}${location.searchStr}`,
-        } as any,
-      });
+    // Signed in — keep the user out of the auth screens.
+    if (token) {
+      if (isAuthPath(location.pathname)) {
+        throw redirect({ to: '/' });
+      }
+      return;
     }
 
-    if (token && isPublic) {
-      throw redirect({
-        to: '/',
-      });
+    // Guest — auth screens and public routes render as-is.
+    if (isAuthPath(location.pathname) || isGuestPath(location.pathname)) {
+      return;
     }
+
+    // Guest hitting a protected route: bounce to home and ask for the login
+    // popup, remembering where they were headed so we can resume after login.
+    requestLogin(`${location.pathname}${location.searchStr}`);
+    throw redirect({ to: '/' });
   },
 });
 
@@ -292,6 +341,18 @@ export const categoryResultsRoute = createRoute({
   component: SearchResults,
 });
 
+export const paymentSuccessRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/payment-success/$transactionId',
+  component: PaymentSuccess,
+});
+
+export const paymentFailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/payment-fail/$transactionId',
+  component: PaymentFail,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   workerRoute,
@@ -305,6 +366,8 @@ const routeTree = rootRoute.addChildren([
   notificationsRoute,
   countryResultsRoute,
   categoryResultsRoute,
+  paymentSuccessRoute,
+  paymentFailRoute,
   searchResultsRoute,
   loginRoute,
   verifyOtpRoute,

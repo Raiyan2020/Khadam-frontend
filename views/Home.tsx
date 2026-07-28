@@ -3,7 +3,7 @@ import { MapPin, ChevronRight, ChevronLeft, Bell, Globe, Heart, MessageCircle, E
 import { GlassCard, Badge, Avatar, Skeleton, SearchInput } from '../components/GlassUI';
 import { FilterModal, FilterCriteria } from '../components/FilterModal';
 import { useUserRole } from '../UserRoleContext';
-import { ServiceCategory, Ad, Office, Worker } from '../types';
+import { ServiceCategory, Ad, Office, Worker, UserRole } from '../types';
 import { MOCK_ADS, MOCK_OFFICES, MOCK_WORKERS, NATIONALITIES } from '../constants';
 import { useLanguage } from '../i18n';
 import { useTheme } from '../theme';
@@ -130,10 +130,10 @@ export const Home: React.FC = () => {
   const { t, dir, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { userRole } = useUserRole();
-  const isSeeker = userRole === 'seeker' || userRole === 'SEEKER';
-
-  const userType = localStorage.getItem('user_type');
-  const isCompany = userType === '2';
+  // Read the role from context, not localStorage — an inline read isn't
+  // reactive, so the seeker home stayed up after logging in as an office.
+  const isCompany = userRole === UserRole.OFFICE;
+  const isSeeker = !isCompany;
 
   const { data: homeData, isLoading: isLoadingHome } = useHomeData(!isCompany);
   const { data: companyHomeData, isLoading: isLoadingCompanyHome } = useCompanyHomeData(isCompany);
@@ -362,40 +362,64 @@ export const Home: React.FC = () => {
               </div>
             </GlassCard>
 
-            {/* Active / Inactive Ads */}
-            <GlassCard className="p-4 flex items-center gap-4 relative overflow-hidden">
-              <div className="absolute -end-4 -top-4 w-16 h-16 bg-brand-500/10 rounded-full blur-xl pointer-events-none" />
-              <div className="relative w-16 h-16 shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <path className="text-brand-500/20" stroke="currentColor" strokeWidth="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path
-                    className="text-brand-500 drop-shadow-sm"
-                    stroke="currentColor" strokeWidth="4"
-                    strokeDasharray={`${companyHomeData?.available_ads_percentage ?? 0}, 100`}
-                    strokeLinecap="round" fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
-                    <AnimatedNumber value={companyHomeData?.available_ads_percentage ?? 0} />%
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-brand-500" />
-                    <span className="text-base font-bold text-primary"><AnimatedNumber value={companyHomeData?.available_ads_count ?? 0} /></span>
+            {/* Active Ads out of total */}
+            {(() => {
+              const availableAdsCount = companyHomeData?.available_ads_count ?? 0;
+              const totalAdsCount = companyHomeData?.total_ads_count ?? 0;
+              const availablePercentage = companyHomeData?.available_ads_percentage ?? 0;
+              // Every ad is live — surface it with a check instead of a bare "100%".
+              const allAdsActive = totalAdsCount > 0 && availableAdsCount >= totalAdsCount;
+
+              return (
+                <GlassCard className="p-4 flex items-center gap-4 relative overflow-hidden">
+                  <div className={`absolute -end-4 -top-4 w-16 h-16 rounded-full blur-xl pointer-events-none ${allAdsActive ? 'bg-green-500/10' : 'bg-brand-500/10'}`} />
+                  <div className="relative w-16 h-16 shrink-0">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                      <path className={allAdsActive ? 'text-green-500/20' : 'text-brand-500/20'} stroke="currentColor" strokeWidth="4" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path
+                        className={`drop-shadow-sm transition-colors ${allAdsActive ? 'text-green-500' : 'text-brand-500'}`}
+                        stroke="currentColor" strokeWidth="4"
+                        strokeDasharray={`${availablePercentage}, 100`}
+                        strokeLinecap="round" fill="none"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {allAdsActive ? (
+                        <CheckCircle size={22} className="text-green-500 animate-in zoom-in duration-500" />
+                      ) : (
+                        <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
+                          <AnimatedNumber value={availablePercentage} />%
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 opacity-60">
-                    <div className="w-2 h-2 rounded-full bg-brand-500/40" />
-                    <span className="text-base font-bold text-primary"><AnimatedNumber value={companyHomeData?.unavailable_ads_count ?? 0} /></span>
+                  <div className="flex-1 min-w-0">
+                    {isLoadingCompanyHome ? (
+                      <Skeleton className="h-6 w-14" />
+                    ) : (
+                      // dir=ltr keeps the fraction reading available/total; w-fit keeps the
+                      // box hugging the inline-start edge in both LTR and RTL.
+                      <div className="flex items-baseline gap-0.5 w-fit" dir="ltr">
+                        <span className={`text-xl font-bold ${allAdsActive ? 'text-green-600 dark:text-green-400' : 'text-primary'}`}>
+                          <AnimatedNumber value={availableAdsCount} />
+                        </span>
+                        <span className="text-sm font-bold text-secondary">/</span>
+                        <span className="text-sm font-bold text-secondary">{totalAdsCount}</span>
+                      </div>
+                    )}
+                    {allAdsActive ? (
+                      <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                        <CheckCircle size={11} className="shrink-0" />
+                        <p className="text-[10px] font-bold leading-snug">{t('all_ads_active') || 'All ads are active'}</p>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-secondary leading-snug">{t('stat_active_ads') || 'Active Ads'}</p>
+                    )}
                   </div>
-                </div>
-                <p className="text-[10px] text-secondary leading-snug">{t('stat_status') || 'Active / Inactive'}</p>
-              </div>
-            </GlassCard>
+                </GlassCard>
+              );
+            })()}
 
             {/* Total Ads */}
             <GlassCard className="p-4 relative overflow-hidden group">

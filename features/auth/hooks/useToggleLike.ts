@@ -1,7 +1,10 @@
+import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
+import { useIsAuthenticated } from '../../../lib/useIsAuthenticated';
+import { requestLogin } from '../../../lib/authBridge';
 import { toast } from 'sonner';
 
 export interface ToggleLikeParams {
@@ -12,8 +15,9 @@ export interface ToggleLikeParams {
 export const useToggleLike = () => {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  const isAuthenticated = useIsAuthenticated();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ type, id }: ToggleLikeParams) => {
       const token = localStorage.getItem('token');
       const formData = new FormData();
@@ -49,4 +53,19 @@ export const useToggleLike = () => {
       queryClient.invalidateQueries({ queryKey: ['my-likes'] });
     },
   });
+
+  // Favourites are auth-only, but the heart renders on public screens. Prompt
+  // for login instead of firing a request that can only 401.
+  const mutate = useCallback(
+    (params: ToggleLikeParams) => {
+      if (!isAuthenticated) {
+        requestLogin();
+        return;
+      }
+      mutation.mutate(params);
+    },
+    [isAuthenticated, mutation]
+  );
+
+  return { ...mutation, mutate };
 };

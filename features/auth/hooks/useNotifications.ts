@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
+import { useIsAuthenticated } from '../../../lib/useIsAuthenticated';
 import { toast } from 'sonner';
 
 export interface NotificationData {
@@ -34,7 +35,11 @@ export interface NotificationsResponse {
 
 export const useNotifications = () => {
   const { language } = useLanguage();
+  const isAuthenticated = useIsAuthenticated();
+
   return useInfiniteQuery({
+    // Notifications are auth-only — never fetch for a guest.
+    enabled: isAuthenticated,
     queryKey: ['notifications', language],
     queryFn: async ({ pageParam = 1 }) => {
       const token = localStorage.getItem('token');
@@ -64,8 +69,12 @@ export const useNotifications = () => {
 
 export const useUnreadNotifications = () => {
   const { language } = useLanguage();
+  const isAuthenticated = useIsAuthenticated();
 
   return useInfiniteQuery({
+    // Auth-only. The unread dot renders on the public home screen, so without
+    // this a guest fires /notifications/unread and gets a 401.
+    enabled: isAuthenticated,
     queryKey: ['notifications-unread', language],
     queryFn: async ({ pageParam = 1 }) => {
       const token = localStorage.getItem('token');

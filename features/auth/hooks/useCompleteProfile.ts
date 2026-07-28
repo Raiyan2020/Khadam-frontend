@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '../../../i18n';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
+import { notifyAuthChanged } from '../../../lib/authBridge';
 
 export interface CompleteProfileResponse {
   status: boolean;
@@ -44,6 +45,7 @@ export const useCompleteProfile = () => {
       if (token) {
         // User (type 1): token returned → save it and go home
         localStorage.setItem('token', token);
+        notifyAuthChanged();
         navigate({ to: '/' });
       } else {
         // Company (type 2): no token → pending admin approval → go to login

@@ -7,6 +7,8 @@ import { useAdDetails } from '../features/auth/hooks/useAdDetails';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
 import { useWhatsappTransfer } from '../features/auth/hooks/useWhatsappTransfer';
+import { useIsAuthenticated } from '../lib/useIsAuthenticated';
+import { requestLogin } from '../lib/authBridge';
 import { Fancybox } from '@fancyapps/ui';
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { toast } from 'sonner';
@@ -21,6 +23,7 @@ export const WorkerProfile: React.FC = () => {
   const { data: worker, isLoading, error } = useAdDetails(workerId);
   const { mutate: toggleLike, isPending, variables } = useToggleLike();
   const { mutate: recordTransfer, isPending: isRecordingTransfer } = useWhatsappTransfer();
+  const isAuthenticated = useIsAuthenticated();
 
   const handleViewImage = () => {
     if (!worker) return;
@@ -53,6 +56,12 @@ export const WorkerProfile: React.FC = () => {
 
   const handleWhatsappContact = () => {
     if (!worker) return;
+    // Guest — /whatsapp-transfer/store needs a token, and we shouldn't hand out
+    // the office's number before sign-in either. Resume here after login.
+    if (!isAuthenticated) {
+      requestLogin(`/worker/${workerId}`);
+      return;
+    }
     if (!worker.is_available) {
       toast.warning(t('worker_not_available'));
       return;

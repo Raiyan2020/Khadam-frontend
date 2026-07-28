@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -)",
+      "Bash(echo \"=== exit: $? ===\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(npx esbuild *)",
+      "Bash(echo \"parse exit=$?\")",
+      "Read(//tmp/**)",
+      "Bash(npm run *)",
+      "Bash(unzip -l dist.zip)",
+      "Bash(unzip -l /tmp/prev-dist.zip)",
+      "Bash(rm -f dist.zip)",
+      "Bash(zip -r -q dist.zip dist -x \".DS_Store\" -x \"__MACOSX/*\")",
+      "Bash(echo \"tsc exit=$?\")"
+    ]
+  }
+}

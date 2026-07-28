@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { API_BASE_URL } from '../../../config';
 import { apiFetch } from '../../../lib/apiFetch';
+import { clearAuthStorage } from '../../../lib/authBridge';
 
 export const useLogout = () => {
   const navigate = useNavigate();
@@ -28,10 +29,8 @@ export const useLogout = () => {
       // Clear all cached query data
       queryClient.clear();
 
-      // Clear auth-related local storage data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_type');
-      localStorage.removeItem('khadam_fcm_registered_token');
+      // Drops token/user/user_type/FCM and notifies, so the role resets too.
+      clearAuthStorage();
 
       // Navigate to login
       navigate({ to: '/login' });
@@ -39,9 +38,7 @@ export const useLogout = () => {
     onError: (error: any) => {
       // Even if the server request fails, we should probably still log them out locally
       queryClient.clear();
-      localStorage.removeItem('token');
-      localStorage.removeItem('user_type');
-      localStorage.removeItem('khadam_fcm_registered_token');
+      clearAuthStorage();
       navigate({ to: '/login' });
       toast.error(error.message || 'An error occurred during logout');
     }
