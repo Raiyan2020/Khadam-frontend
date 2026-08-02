@@ -103,7 +103,6 @@ export const CompleteProfile: React.FC = () => {
   // Seeker Schema (User Type 1)
   const seekerSchema = z.object({
     name: z.string().min(3, t('name_required')),
-    profileImage: z.any().refine((file) => file !== null, t('profile_image_required')),
     seekerEmail: z.string().email(t('invalid_email') || 'Invalid email'),
     password: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
     passwordConfirmation: z.string().min(8, t('password_min_length') || 'Password must be at least 8 characters'),
@@ -115,7 +114,6 @@ export const CompleteProfile: React.FC = () => {
   // Company Schema (User Type 2)
   const companySchema = z.object({
     name: z.string().min(3, t('name_required')),
-    profileImage: z.any().refine((file) => file !== null, t('profile_image_required')),
     coverImage: z.any().refine((file) => file !== null, t('cover_image_required')),
     stateId: z.string().min(1, t('state_required')),
     location: z.any().refine((loc) => loc?.position !== null, t('location_required')),
@@ -162,7 +160,6 @@ export const CompleteProfile: React.FC = () => {
     // Prepare data for validation
     const dataToValidate = {
       name,
-      profileImage: profileImageFile,
       password,
       passwordConfirmation,
       ...(userType === '1' && {
@@ -228,8 +225,10 @@ export const CompleteProfile: React.FC = () => {
     formData.append('is_completed_profile', userType === '1' ? '1' : '0');
 
     try {
-      const compressedProfileImage = await compressFile(profileImageFile!);
-      formData.append('image', compressedProfileImage);
+      if (profileImageFile) {
+        const compressedProfileImage = await compressFile(profileImageFile);
+        formData.append('image', compressedProfileImage);
+      }
 
       if (userType === '2') {
         const [compressedCover, compressedLicense, compressedManagerId] = await Promise.all([
@@ -348,8 +347,7 @@ export const CompleteProfile: React.FC = () => {
                   <span className="text-white text-xs font-medium">{t('upload') || 'Upload'}</span>
                 </div>
               </div>
-              <span className="text-xs text-secondary">{t('profile_image') || 'Profile Image'} *</span>
-              {errors.profileImage && <p className="text-xs text-red-500">{errors.profileImage}</p>}
+              <span className="text-xs text-secondary">{t('profile_image') || 'Profile Image'}</span>
             </div>
 
             {/* Common: Name */}
