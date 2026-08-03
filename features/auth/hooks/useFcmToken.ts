@@ -8,16 +8,18 @@ const FCM_REGISTERED_TOKEN_KEY = 'khadam_fcm_registered_token';
 
 /**
  * Registers the FCM token with the Khadam backend.
- * device_id = the FCM push token (serves as the unique device identifier on web).
+ * fcm_token = the current field; device_id is the legacy alias the API still
+ * accepts, sent alongside so either backend build works.
  * device_type = 'web'
  */
 async function registerTokenWithBackend(fcmToken: string): Promise<void> {
   const formData = new FormData();
+  formData.append('fcm_token', fcmToken);
   formData.append('device_id', fcmToken);
   formData.append('device_type', 'web');
 
   console.log('%c[FCM] 📡 Sending FCM Token to backend...', 'color: #3b82f6; font-weight: bold;', {
-    device_id: fcmToken,
+    fcm_token: fcmToken,
     device_type: 'web'
   });
 
@@ -29,6 +31,26 @@ async function registerTokenWithBackend(fcmToken: string): Promise<void> {
   if (!response.ok) {
     const text = await response.text().catch(() => '');
     throw new Error(`FCM token registration failed: ${response.status} ${text}`);
+  }
+}
+
+/**
+ * Unregisters this device server-side so a logged-out browser stops receiving
+ * push. Best-effort: called during logout, where a failure must not block the
+ * user from signing out.
+ */
+export async function unregisterFcmToken(): Promise<void> {
+  const fcmToken = localStorage.getItem(FCM_REGISTERED_TOKEN_KEY);
+  if (!fcmToken) return;
+
+  try {
+    await apiFetch(`${API_BASE_URL}/fcm-token`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fcm_token: fcmToken, device_id: fcmToken }),
+    });
+  } catch (err) {
+    console.warn('[FCM] Failed to unregister token on logout:', err);
   }
 }
 

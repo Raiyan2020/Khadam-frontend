@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from '../router';
 import { useFcmToken } from '../features/auth/hooks/useFcmToken';
+import { NOTIFICATION_QUERY_KEYS } from '../features/auth/hooks/useNotifications';
 import { onMessageListener } from '../lib/firebase';
 import { useIsAuthenticated } from '../lib/useIsAuthenticated';
+import { resolveNotificationUrl } from '../lib/notificationRouting';
 
 /**
  * NotificationHandler
@@ -23,6 +26,8 @@ export const NotificationHandler: React.FC = () => {
 };
 
 const AuthenticatedNotifications: React.FC = () => {
+  const queryClient = useQueryClient();
+
   // Registers the service worker, requests permission, syncs the token to the backend.
   useFcmToken();
 
@@ -33,7 +38,11 @@ const AuthenticatedNotifications: React.FC = () => {
       const data = payload.data || {};
       const title = notif.title || data.title || 'إشعار جديد';
       const body = notif.body || data.body || data.description || data.message || '';
-      const clickUrl = data.url || (data.ad_id ? `/worker/${data.ad_id}` : '/notifications');
+      const clickUrl = resolveNotificationUrl(data);
+
+      // The push already landed in the inbox server-side — pull it in so the
+      // badge and any open list reflect it without a manual refresh.
+      NOTIFICATION_QUERY_KEYS.forEach(queryKey => queryClient.invalidateQueries({ queryKey }));
 
       toast(title, {
         description: body || undefined,
@@ -48,18 +57,19 @@ const AuthenticatedNotifications: React.FC = () => {
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   // Background notification taps arrive as a service worker message.
   useEffect(() => {
     const onSwMessage = (event: MessageEvent) => {
       if (event.data?.type === 'NOTIFICATION_CLICK') {
+        NOTIFICATION_QUERY_KEYS.forEach(queryKey => queryClient.invalidateQueries({ queryKey }));
         navigateTo(event.data.url || '/notifications');
       }
     };
     navigator.serviceWorker?.addEventListener('message', onSwMessage);
     return () => navigator.serviceWorker?.removeEventListener('message', onSwMessage);
-  }, []);
+  }, [queryClient]);
 
   return null;
 };

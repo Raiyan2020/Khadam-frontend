@@ -11,6 +11,8 @@ import {
   useMarkAllAsRead,
   useMarkAsRead,
   NotificationData,
+  getNotificationTitle,
+  getNotificationBody,
 } from '../features/auth/hooks/useNotifications';
 
 // ── Confirm dialog state ──────────────────────────────────────────────────────
@@ -170,7 +172,7 @@ export const Notifications: React.FC = () => {
 
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-sm truncate mb-0.5 ${!notif.is_read ? 'font-bold text-primary' : 'font-medium text-primary/80'}`}>
-                    {notif.data.title}
+                    {getNotificationTitle(notif)}
                   </h3>
                   <span className="text-[10px] text-secondary tabular-nums">
                     {notif.created_at_diff ?? notif.created_at}
@@ -221,10 +223,10 @@ export const Notifications: React.FC = () => {
             <div className="w-14 h-14 rounded-2xl bg-white border border-accent/20 flex items-center justify-center mb-4">
               <Bell size={26} className="text-accent" />
             </div>
-            <h2 className="text-lg font-bold text-primary mb-2 leading-snug">{selectedNotif.data.title}</h2>
+            <h2 className="text-lg font-bold text-primary mb-2 leading-snug">{getNotificationTitle(selectedNotif)}</h2>
             <span className="text-xs text-secondary mb-4 block">{selectedNotif.created_at_diff ?? selectedNotif.created_at}</span>
             <div className="border-t border-border mb-4" />
-            <p className="text-sm text-secondary leading-relaxed">{selectedNotif.data.description}</p>
+            <p className="text-sm text-secondary leading-relaxed">{getNotificationBody(selectedNotif)}</p>
           </div>
         </div>
       )}

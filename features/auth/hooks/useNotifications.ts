@@ -1,25 +1,52 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_BASE_URL } from '../../../config';
 import { useLanguage } from '../../../i18n';
 import { apiFetch } from '../../../lib/apiFetch';
 import { useIsAuthenticated } from '../../../lib/useIsAuthenticated';
 import { toast } from 'sonner';
 
+/**
+ * `NotificationResource` returns the copy at the top level (`title` /
+ * `description`) and leaves `data` for entity payloads — which is `{}` for
+ * admin broadcasts. Older builds nested the copy inside `data`, so both shapes
+ * are read through the accessors below.
+ */
 export interface NotificationData {
   id: string;
   type: string;
-  data: {
-    title: string;
-    description: string;
+  title?: string;
+  description?: string;
+  data?: {
+    title?: string;
+    description?: string;
     message?: string;
     ad_id?: number;
-    type: string;
-    data: any[];
-  };
+    type?: string;
+    data?: any[];
+  } | null;
   is_read?: boolean;
   created_at: string;
   created_at_diff?: string;
 }
+
+/** Title of an inbox row, whichever shape the API returned it in. */
+export const getNotificationTitle = (notif: NotificationData): string =>
+  notif.title || notif.data?.title || '';
+
+/** Body of an inbox row, whichever shape the API returned it in. */
+export const getNotificationBody = (notif: NotificationData): string =>
+  notif.description || notif.data?.description || notif.data?.message || '';
+
+/** Every cache key that changes when a notification is read/deleted/received. */
+export const NOTIFICATION_QUERY_KEYS = [
+  ['notifications'],
+  ['notifications-unread'],
+  ['notifications-unread-count'],
+] as const;
+
+const invalidateNotificationQueries = (queryClient: ReturnType<typeof useQueryClient>) => {
+  NOTIFICATION_QUERY_KEYS.forEach(queryKey => queryClient.invalidateQueries({ queryKey }));
+};
 
 export interface NotificationsResponse {
   status: boolean;
@@ -101,6 +128,40 @@ export const useUnreadNotifications = () => {
   });
 };
 
+export interface UnreadCountResponse {
+  status: boolean;
+  message: string;
+  data: { count: number };
+  errors: any[];
+}
+
+/**
+ * Badge counter. Cheaper than paging the unread list just to read
+ * `pagination.total`, and it's the endpoint the contract designates for badges.
+ */
+export const useUnreadCount = () => {
+  const { language } = useLanguage();
+  const isAuthenticated = useIsAuthenticated();
+
+  return useQuery({
+    enabled: isAuthenticated,
+    queryKey: ['notifications-unread-count', language],
+    queryFn: async () => {
+      const response = await apiFetch(`${API_BASE_URL}/notifications/unread-count`, {
+        headers: { 'Accept-Language': language },
+      });
+      const data: UnreadCountResponse = await response.json();
+      if (!response.ok || !data.status) {
+        throw new Error(data.message || 'Failed to fetch unread count');
+      }
+      return data.data?.count ?? 0;
+    },
+    // Push already invalidates this; the refetch covers a tab left open.
+    refetchOnWindowFocus: true,
+    staleTime: 60_000,
+  });
+};
+
 export const useDeleteNotification = () => {
   const queryClient = useQueryClient();
   const { language, t } = useLanguage();
@@ -120,8 +181,7 @@ export const useDeleteNotification = () => {
     },
     onSuccess: () => {
       toast.success(t('notification_deleted_successfully'));
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
+      invalidateNotificationQueries(queryClient);
     },
   });
 };
@@ -145,8 +205,7 @@ export const useDeleteAllNotifications = () => {
     },
     onSuccess: () => {
       toast.success(t('all_notifications_deleted_successfully'));
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
+      invalidateNotificationQueries(queryClient);
     },
   });
 };
@@ -169,8 +228,7 @@ export const useMarkAllAsRead = () => {
       if (!response.ok) throw new Error('Failed to mark notifications as read');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
+      invalidateNotificationQueries(queryClient);
     },
   });
 };
@@ -193,8 +251,7 @@ export const useMarkAsRead = () => {
       // Ignore response errors — this is a silent background call
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications-unread'] });
+      invalidateNotificationQueries(queryClient);
     },
   });
 };

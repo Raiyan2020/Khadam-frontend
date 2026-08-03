@@ -17,9 +17,11 @@ self.addEventListener('activate', (event) => {
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
+// Keep in sync with lib/firebase.ts
 firebase.initializeApp({
   apiKey: "AIzaSyAuajcC5Bf6jn-B_BcQtKOzak63dpajzyM",
   authDomain: "khadam-f693b.firebaseapp.com",
+  databaseURL: "https://khadam-f693b-default-rtdb.firebaseio.com",
   projectId: "khadam-f693b",
   storageBucket: "khadam-f693b.firebasestorage.app",
   messagingSenderId: "1080039978592",
@@ -28,6 +30,35 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+
+// ── Routing ────────────────────────────────────────────────────────
+// Mirror of lib/notificationRouting.ts — a service worker can't import from
+// the app bundle, so keep the two in sync. Admin broadcasts (`admin_notify`
+// / `general`) carry no related_data and always land on the inbox.
+const INBOX_ONLY_TYPES = ['general', 'admin_notify'];
+
+function resolveNotificationUrl(data) {
+  if (data.url) return String(data.url);
+
+  const type = String(data.notification_type || data.type || '').toLowerCase();
+  if (INBOX_ONLY_TYPES.includes(type)) return '/notifications';
+
+  const raw = data.related_data || data.ad_id || '';
+  const trimmed = String(raw).trim();
+  if (!trimmed || trimmed === 'null' || trimmed === '{}' || trimmed === '[]') return '/notifications';
+
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const id = Array.isArray(parsed) ? (parsed[0] && parsed[0].id) : (parsed.ad_id || parsed.id);
+      return id ? `/worker/${id}` : '/notifications';
+    } catch (e) {
+      return '/notifications';
+    }
+  }
+
+  return `/worker/${trimmed}`;
+}
 
 // ── Universal background push handler ──────────────────────────────
 // This handles background messages (when the tab is closed or minimized)
@@ -38,7 +69,7 @@ messaging.onBackgroundMessage((payload) => {
   const data = payload.data || {};
   const title = notif.title || data.title || 'إشعار جديد';
   const body = notif.body || data.body || data.description || data.message || '';
-  const clickUrl = data.url || '/notifications';
+  const clickUrl = resolveNotificationUrl(data);
 
   return self.registration.showNotification(title, {
     body,

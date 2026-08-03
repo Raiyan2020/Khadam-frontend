@@ -14,9 +14,10 @@ import { useCountries } from '../features/auth/hooks/useCountries';
 import { useHomeData, HomeAdFull } from '../features/auth/hooks/useHomeData';
 import { useCompanyHomeData } from '../features/auth/hooks/useCompanyHomeData';
 import { useToggleLike } from '../features/auth/hooks/useToggleLike';
-import { useUnreadNotifications } from '../features/auth/hooks/useNotifications';
+import { useUnreadCount } from '../features/auth/hooks/useNotifications';
 import { saveScrollPosition, getScrollContainer, restoreScrollPosition } from '../lib/scrollStore';
 import { useDragScroll } from '../lib/useDragScroll';
+import { APP_STORE_URL, GOOGLE_PLAY_URL } from '../config';
 
 // Global Image Fallback Handler
 const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -137,8 +138,8 @@ export const Home: React.FC = () => {
 
   const { data: homeData, isLoading: isLoadingHome } = useHomeData(!isCompany);
   const { data: companyHomeData, isLoading: isLoadingCompanyHome } = useCompanyHomeData(isCompany);
-  const { data: unreadNotificationsData } = useUnreadNotifications();
-  const hasUnreadNotifications = (unreadNotificationsData?.pages[0]?.pagination?.total || 0) > 0;
+  const { data: unreadCount } = useUnreadCount();
+  const hasUnreadNotifications = (unreadCount ?? 0) > 0;
 
   const [lastViewedIds, setLastViewedIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('last_viewed_workers');
@@ -746,10 +747,88 @@ export const Home: React.FC = () => {
             )}
           </div>
         </SectionContainer>
+
+        {/* Download the mobile app */}
+        <DownloadAppSection />
       </div>
     </div>
   );
 };
+
+/** App Store / Google Play badges linking to the Khadam mobile app. */
+const DownloadAppSection: React.FC = () => {
+  const { t } = useLanguage();
+
+  return (
+    <section className="px-4">
+      <GlassCard className="p-5 relative overflow-hidden">
+        <div className="absolute end-0 top-0 bottom-0 w-40 bg-gradient-to-l from-brand-500/10 to-transparent pointer-events-none" />
+
+        <div className="relative flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-brand-500/20 border border-brand-500/30 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0">
+              <Smartphone size={18} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-primary">{t('section_download_app')}</h2>
+              <p className="text-[10px] text-secondary mt-0.5">{t('download_app_desc')}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <StoreButton
+              href={APP_STORE_URL}
+              label={t('download_app_store_label')}
+              name={t('download_app_store_name')}
+              icon={<AppleLogo />}
+            />
+            <StoreButton
+              href={GOOGLE_PLAY_URL}
+              label={t('download_google_play_label')}
+              name={t('download_google_play_name')}
+              icon={<GooglePlayLogo />}
+            />
+          </div>
+        </div>
+      </GlassCard>
+    </section>
+  );
+};
+
+const StoreButton: React.FC<{
+  href: string;
+  label: string;
+  name: string;
+  icon: React.ReactNode;
+}> = ({ href, label, name, icon }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-xl bg-glass border border-border hover:bg-glassHigh transition-all duration-300"
+  >
+    <span className="shrink-0 text-primary">{icon}</span>
+    <span className="flex flex-col text-start leading-tight">
+      <span className="text-[9px] text-secondary">{label}</span>
+      <span className="text-sm font-bold text-primary">{name}</span>
+    </span>
+  </a>
+);
+
+const AppleLogo: React.FC = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M16.365 1.43c0 1.14-.42 2.2-1.12 3-.79.9-2.07 1.6-3.13 1.51-.13-1.1.43-2.25 1.1-3 .77-.86 2.11-1.5 3.15-1.51zM20.5 17.13c-.55 1.27-.82 1.84-1.53 2.96-.99 1.56-2.39 3.5-4.12 3.51-1.54.02-1.93-1-4.02-.99-2.09.01-2.52 1.01-4.06.99-1.73-.01-3.05-1.76-4.04-3.32-2.77-4.36-3.06-9.48-1.35-12.2 1.21-1.93 3.13-3.06 4.93-3.06 1.83 0 2.98 1.01 4.5 1.01 1.47 0 2.36-1.01 4.48-1.01 1.6 0 3.3.87 4.51 2.38-3.97 2.18-3.32 7.85.7 9.73z" />
+  </svg>
+);
+
+const GooglePlayLogo: React.FC = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3.6 1.84a1.5 1.5 0 0 0-.6 1.2v17.92c0 .5.23.95.6 1.2l10.1-10.16L3.6 1.84z" fill="#34A853" />
+    <path d="M17.5 8.35 13.7 12l3.8 3.65 4.02-2.28c.65-.37.65-1.37 0-1.74L17.5 8.35z" fill="#FBBC04" />
+    <path d="M3.6 1.84 13.7 12l3.8-3.65L5.3 1.5c-.6-.34-1.24-.16-1.7.34z" fill="#EA4335" />
+    <path d="M3.6 22.16c.46.5 1.1.68 1.7.34l12.2-6.85L13.7 12 3.6 22.16z" fill="#4285F4" />
+  </svg>
+);
 
 const SectionContainer: React.FC<{
   title: string;
